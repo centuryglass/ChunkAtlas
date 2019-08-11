@@ -1,10 +1,10 @@
-#MCMap
+# MCMap
 Finds all loaded chunks in a minecraft region directory and saves them to an image file.
 
-#Compiling
+### Compiling MCMap
 Make sure you have libpng, png++, and a C++ compiler that supports C++17. The makefile will only work in Linux or similar systems, but figuring out a cross-platform build system is probably pretty simple. If everything is set up correctly, running `make` should be enough to build the MCMap program.
 
-#Using MCMap
+### Using MCMap
 `MCMap regionFolder imagePath.png [mapEdge][chunkPixels]`
 
 - regionFolder: The path to a minecraft region folder. This should contain a bunch of .mca files.
