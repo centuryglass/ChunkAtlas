@@ -25,10 +25,15 @@ TARGET_ARCH?=-march=native
 # Command used to clean out build files:
 CLEANCMD:=rm -rf $(OBJDIR)
 
+
 ########################## Primary build target: ##############################
 $(TARGET_BUILD_PATH) : build
 	@echo Linking "$(TARGET_APP):"
 	$(V_AT)$(CXX) $(LINK_ARGS)
+
+###################### Build/configure gzstream lib: ##########################
+GZSTREAM_DIR:=$(PROJECT_DIR)/gzstream
+include $(GZSTREAM_DIR)/Makefile
 
 ############################### Set build flags: ##############################
 #### Config-specific flags: ####
@@ -68,7 +73,7 @@ CXXFLAGS:=-std=gnu++17 $(CXXFLAGS)
 #### C Preprocessor flags: ####
 
 # Include directories:
-INCLUDE_FLAGS:=-I$(SOURCE_DIR) $(INCLUDE_FLAGS)
+INCLUDE_FLAGS:=-I$(SOURCE_DIR) -I$(GZSTREAM_DIR) $(INCLUDE_FLAGS)
 
 # Disable dependency generation if multiple architectures are set
 DEPFLAGS:=$(if $(word 2, $(TARGET_ARCH)), , -MMD)
@@ -86,13 +91,15 @@ CPPFLAGS:=-pthread \
           $(CPPFLAGS)
 
 #### Linker flags: ####
+        
 LDFLAGS := -lpthread $(TARGET_ARCH) $(CONFIG_LDFLAGS) \
             $(shell pkg-config --libs $(PKG_CONFIG_LIBS)) \
+            $(GZ_LDFLAGS) \
 	        $(LDFLAGS)
 
 #### Aggregated build arguments: ####
 
-OBJECTS:=$(OBJDIR)/Main.o $(OBJDIR)/MapImage.o $(OBJDIR)/MCAFile.o
+OBJECTS:=$(OBJDIR)/Main.o $(OBJDIR)/MapImage.o $(OBJDIR)/MCAFile.o $(OBJECTS)
 
 
 # Complete set of flags used to compile source files:
@@ -102,9 +109,9 @@ BUILD_FLAGS:=$(CFLAGS) $(CXXFLAGS) $(CPPFLAGS)
 LINK_ARGS:= -o $(TARGET_BUILD_PATH) $(OBJECTS) $(LDFLAGS)
 
 ###################### Supporting Build Targets: ##############################
-.PHONY: build
+.PHONY: gz_default build
 
-build : $(OBJECTS)
+build : gz_default $(OBJECTS)
 
 $(OBJECTS) :
 	@echo "Compiling $(<F):"
