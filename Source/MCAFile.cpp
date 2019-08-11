@@ -1,8 +1,11 @@
 #include "MCAFile.h"
+#include "Debug.h"
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <cstdint>
+#include <bitset>
+#include <arpa/inet.h>
 
 // width/height in chunks of a region file:
 static const constexpr int dimInChunks = 32;
@@ -32,19 +35,71 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
         std::cerr << "Failed to open " << mcaPath << "\n";
         return;
     }
+
+    // Read a byte sequence:
+    const auto readBytes = [this, &regionFile](char* buffer, size_t size)
+    {
+        if (regionFile.bad() || regionFile.eof())
+        {
+            std::cerr << mcaPath << ": file is in an invalid state.\n";
+            return (size_t) 0;
+            //exit(1);
+        }
+        regionFile.read(buffer, size);
+        if (! regionFile)
+        {
+            std::cerr << mcaPath << ": only read " << regionFile.gcount()
+                    << " bytes at " << regionFile.tellg() << ", expected "
+                    << size << "\n";
+            //exit(1);
+        }
+        return (size_t) regionFile.gcount();
+    };
+
+    // Read numBytes bytes of big-endian data into an unsigned integer:
+    const auto readInt = [&regionFile, &readBytes](size_t numBytes)
+    {
+        unsigned int readValue = 0;
+        if (numBytes > sizeof(readValue))
+        {
+            std::cerr << "Tried to read " << numBytes << " into a "
+                    << sizeof(readValue) << " byte value!\n";
+            return static_cast<unsigned int>(0);
+            //exit(1);
+        }
+        std::vector<unsigned char> buffer;
+        buffer.resize(numBytes);
+        if(readBytes(reinterpret_cast<char*>(buffer.data()), numBytes)
+                != numBytes)
+        {
+            return static_cast<unsigned int>(0);
+        }
+        size_t bitOffset = (numBytes - 1) * 8;
+        for(const unsigned char byte : buffer)
+        {
+            readValue = readValue | (byte << bitOffset);
+            bitOffset -= 8;
+        }
+        return readValue;
+    };
+
     const constexpr int numChunks = dimInChunks * dimInChunks;
     const constexpr int bufferSize = numChunks * 4;
-    char buffer [bufferSize];
-    regionFile.read(buffer, bufferSize);
-    if (! regionFile)
-    {
-        std::cerr << mcaPath << ": only read " << regionFile.gcount()
-            << " bytes, expected " << bufferSize << "\n";
-    }
-
+    unsigned char buffer [bufferSize];
+    DBG("\nReading " << bufferSize << " bytes of index data from "
+            << mcaPath << ":");
+    static const constexpr int sectorSize = 4096; 
+    const size_t fileSize = std::filesystem::file_size(mcaPath);
+    DBG("File size: " << (fileSize / sectorSize) << " sectors, "
+            << fileSize << " bytes.");
+    size_t bytesRead = readBytes(reinterpret_cast<char*>(buffer), bufferSize);
     for (int i = 0; i < numChunks; i++)
     {
         const int chunkIndex = i * 4;
+        if (chunkIndex >= bytesRead)
+        {
+            continue;
+        }
         bool chunkLoaded = false;
         for (int cI = chunkIndex; cI < chunkIndex + 4; cI++)
         {
@@ -56,9 +111,77 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
         }
         if (chunkLoaded)
         {
-            int chunkX = regionX + (i % 32);
-            int chunkY = regionY + (i / 32);
+            const int chunkX = regionX + (i % 32);
+            const int chunkY = regionY + (i / 32);
             loadedChunks.push_back({chunkX, chunkY});
+
+            // Find chunk data:
+            DBG_V("Chunk " << (i + 1) << "/" << numChunks
+                    << ", byte index " << chunkIndex << "/"
+                    << ((numChunks - 1) * 4) << "\n");
+            const int sectorOffset = (buffer[chunkIndex] << 16)
+                    | (buffer[chunkIndex + 1] << 8)
+                    | buffer[chunkIndex + 2];
+
+            unsigned int sectorCount = buffer[chunkIndex + 3];
+            unsigned int byteOffset = sectorOffset * sectorSize;
+            if (byteOffset > fileSize)
+            {
+                std::cerr << "Illegal offset past end of file: "
+                        << byteOffset << " ("
+                        << std::bitset<sizeof(byteOffset) * 8>(byteOffset)
+                        << ")\n";
+                //exit(1);
+                continue;
+            }
+            DBG_V(i << ": Chunk " << chunkX << ", " << chunkY
+                    << " data is " << sectorCount 
+                    << " sector(s) at byte offset "
+                    << (sectorOffset * sectorSize));
+            regionFile.seekg(sectorOffset * sectorSize);
+            if (! regionFile || regionFile.eof())
+            {
+                std::cerr << "Chunk " << (i + 1) << "/" << numChunks
+                    << ", byte index " << chunkIndex << "/"
+                    << ((numChunks - 1) * 4) << ": "
+                    << "Failed to seek to offset "
+                    << (sectorOffset * sectorSize) << " in file of size "
+                    << fileSize << "\n";
+                // exit(1);
+                continue;
+            }
+            unsigned int chunkByteSize = readInt(4);
+            size_t byteSectorCount = chunkByteSize / sectorSize;
+            if ((chunkByteSize % sectorSize) > 0)
+            {
+                byteSectorCount++;
+            }
+            if (byteSectorCount > sectorCount)
+            {
+                std::cerr << i << ": Chunk " << chunkX << ", " << chunkY
+                        << " at offset " << sectorOffset
+                        << "/" << (fileSize / sectorSize) << ":\n"
+                        << "Expected " << sectorCount << " sectors but found "
+                        << byteSectorCount << "("
+                        << std::bitset<32>(chunkByteSize) << ")\n";
+                //exit(1);
+                continue;
+            }
+
+            DBG_V(i << ": Chunk " << chunkX << ", " << chunkY
+                    << " data is " << chunkByteSize << " bytes (" 
+                    << (chunkByteSize / sectorSize) << ") sectors\n");
+
+            std::vector<unsigned char> chunkData;
+            chunkData.resize(chunkByteSize);
+            size_t bytesRead = readBytes(
+                    reinterpret_cast<char *>(chunkData.data()), chunkByteSize);
+            if (bytesRead == chunkByteSize)
+            {
+                DBG_V(i << ": Chunk " << chunkX << ", " << chunkY
+                        << ", " << bytesRead << "/" << chunkByteSize
+                        << " bytes read.");
+            }
         }
     }
 }

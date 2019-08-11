@@ -4,6 +4,7 @@
  * @brief  Draws some test map data.
  */
 
+#include "Debug.h"
 #include "MapImage.h"
 #include "MCAFile.h"
 #include <filesystem>
@@ -46,8 +47,8 @@ int main(int argc, char** argv)
     {
         MCAFile entryFile(entry.path());
         std::vector<Point> entryChunks = entryFile.getLoadedChunks();
-        std::cout << "Found " << entryChunks.size() << " chunks in file "
-            << entry.path().filename() << "\n";
+        DBG("Found " << entryChunks.size() << " chunks in file "
+            << entry.path().filename() << "\n");
         for (const Point& chunkPoint : entryChunks)
         {
             bool greenTile = ((chunkPoint.y % 2) == 0);
@@ -59,41 +60,6 @@ int main(int argc, char** argv)
                     greenTile ? green : white);
             count++;
         }
-        /*
-        std::string name(entry.path().filename());
-        const char* numChars = "-0123456789";
-        size_t xStart = name.find_first_of(numChars);
-        size_t xEnd = name.find('.', xStart);
-        size_t yStart = xEnd + 1;
-        size_t yEnd = name.find('.', yStart);
-        if (xStart == std::string::npos || xEnd == std::string::npos
-                || yEnd == std::string::npos)
-        {
-            std::cout << "Skipping invalid file " << name << "\n";
-            continue;
-        }
-        int x = std::stoi(name.substr(xStart, xEnd - xStart));
-        int y = std::stoi(name.substr(yStart, yEnd - yStart));
-
-        // Each file is a block of 32 x 32 chunks.  For now, treat all chunks
-        // as explored if their file exists:
-        const int mcaFileDim = 32;
-        x *= mcaFileDim;
-        y *= mcaFileDim;
-        for (int cY = y; cY < y + mcaFileDim; cY++)
-        {
-            for (int cX = x; cX < x + mcaFileDim; cX++)
-            {
-                bool greenTile = ((cY % 2) == 0);
-                if ((cX % 2) == 0)
-                {
-                    greenTile = ! greenTile;
-                }
-                m.setChunkColor(cX, cY, greenTile ? green : white);
-                count++;
-            }
-        }
-        */
     }
     int numChunks = mapEdge * mapEdge;
     double explorePercent = (double) count * 100 / numChunks;
