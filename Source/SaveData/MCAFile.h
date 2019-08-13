@@ -5,7 +5,7 @@
  */
 
 #pragma once
-#include "Point.h"
+#include "ChunkData.h"
 #include <vector>
 #include <filesystem>
 
@@ -22,13 +22,13 @@ public:
     virtual ~MCAFile() { }
 
     /**
-     * @brief  Gets the coordinates of all loaded chunks stored in the file.
+     * @brief  Gets information on all loaded chunks stored in the file.
      *
-     * @return  The list of chunk coordinates.
+     * @return  The list of chunk data objects.
      */
-    const std::vector<Point>& getLoadedChunks();
+    const std::vector<ChunkData>& getLoadedChunks();
 
 private:
     std::filesystem::path mcaPath;
-    std::vector<Point> loadedChunks;
+    std::vector<ChunkData> loadedChunks;
 };

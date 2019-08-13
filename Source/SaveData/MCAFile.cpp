@@ -1,4 +1,5 @@
 #include "MCAFile.h"
+#include "ChunkNBT.h"
 #include "Debug.h"
 #include <fstream>
 #include <iostream>
@@ -6,6 +7,8 @@
 #include <cstdint>
 #include <bitset>
 #include <arpa/inet.h>
+
+#include <cstdio>
 
 // width/height in chunks of a region file:
 static const constexpr int dimInChunks = 32;
@@ -46,7 +49,7 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
             //exit(1);
         }
         regionFile.read(buffer, size);
-        if (! regionFile)
+        if (! regionFile || regionFile.gcount() != size)
         {
             std::cerr << mcaPath << ": only read " << regionFile.gcount()
                     << " bytes at " << regionFile.tellg() << ", expected "
@@ -59,12 +62,12 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
     // Read numBytes bytes of big-endian data into an unsigned integer:
     const auto readInt = [&regionFile, &readBytes](size_t numBytes)
     {
-        unsigned int readValue = 0;
+        uint64_t readValue = 0;
         if (numBytes > sizeof(readValue))
         {
             std::cerr << "Tried to read " << numBytes << " into a "
                     << sizeof(readValue) << " byte value!\n";
-            return static_cast<unsigned int>(0);
+            return static_cast<uint64_t>(0);
             //exit(1);
         }
         std::vector<unsigned char> buffer;
@@ -72,7 +75,7 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
         if(readBytes(reinterpret_cast<char*>(buffer.data()), numBytes)
                 != numBytes)
         {
-            return static_cast<unsigned int>(0);
+            return static_cast<uint64_t>(0);
         }
         size_t bitOffset = (numBytes - 1) * 8;
         for(const unsigned char byte : buffer)
@@ -113,7 +116,7 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
         {
             const int chunkX = regionX + (i % 32);
             const int chunkY = regionY + (i / 32);
-            loadedChunks.push_back({chunkX, chunkY});
+            Point chunkPos = { chunkX, chunkY };
 
             // Find chunk data:
             DBG_V("Chunk " << (i + 1) << "/" << numChunks
@@ -127,11 +130,14 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
             unsigned int byteOffset = sectorOffset * sectorSize;
             if (byteOffset > fileSize)
             {
-                std::cerr << "Illegal offset past end of file: "
+                std::cerr << "Chunk " << i << "/" << numChunks
+                        << ", byte index " << chunkIndex
+                        << ": Illegal offset past end of file: "
                         << byteOffset << " ("
                         << std::bitset<sizeof(byteOffset) * 8>(byteOffset)
-                        << ")\n";
-                //exit(1);
+                        << ", sector = " << sectorOffset << "/"
+                        << (fileSize / sectorSize) << ")\n";
+
                 continue;
             }
             DBG_V(i << ": Chunk " << chunkX << ", " << chunkY
@@ -147,10 +153,10 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
                     << "Failed to seek to offset "
                     << (sectorOffset * sectorSize) << " in file of size "
                     << fileSize << "\n";
-                // exit(1);
                 continue;
             }
             unsigned int chunkByteSize = readInt(4);
+            unsigned char compressionType = readInt(1);
             size_t byteSectorCount = chunkByteSize / sectorSize;
             if ((chunkByteSize % sectorSize) > 0)
             {
@@ -164,7 +170,6 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
                         << "Expected " << sectorCount << " sectors but found "
                         << byteSectorCount << "("
                         << std::bitset<32>(chunkByteSize) << ")\n";
-                //exit(1);
                 continue;
             }
 
@@ -182,13 +187,15 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
                         << ", " << bytesRead << "/" << chunkByteSize
                         << " bytes read.");
             }
+            ChunkNBT nbtData(chunkData);
+            loadedChunks.push_back(nbtData.getChunkData(chunkPos));
         }
     }
 }
 
 
 // Gets the coordinates of all loaded chunks stored in the file.
-const std::vector<Point>& MCAFile::getLoadedChunks()
+const std::vector<ChunkData>& MCAFile::getLoadedChunks()
 {
     return loadedChunks;
 }

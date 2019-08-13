@@ -31,10 +31,6 @@ $(TARGET_BUILD_PATH) : build
 	@echo Linking "$(TARGET_APP):"
 	$(V_AT)$(CXX) $(LINK_ARGS)
 
-###################### Build/configure gzstream lib: ##########################
-GZSTREAM_DIR:=$(PROJECT_DIR)/gzstream
-include $(GZSTREAM_DIR)/Makefile
-
 ############################### Set build flags: ##############################
 #### Config-specific flags: ####
 ifeq ($(CONFIG),Debug)
@@ -73,14 +69,20 @@ CXXFLAGS:=-std=gnu++17 $(CXXFLAGS)
 #### C Preprocessor flags: ####
 
 # Include directories:
-INCLUDE_FLAGS:=-I$(SOURCE_DIR) -I$(GZSTREAM_DIR) $(INCLUDE_FLAGS)
+INCLUDE_FLAGS:=-I$(SOURCE_DIR) \
+               -I$(SOURCE_DIR)/Mapping \
+               -I$(SOURCE_DIR)/SaveData \
+               -I$(SOURCE_DIR)/WorldInfo \
+               $(INCLUDE_FLAGS)
 
 # Disable dependency generation if multiple architectures are set
 DEPFLAGS:=$(if $(word 2, $(TARGET_ARCH)), , -MMD)
 
-PKG_CONFIG_LIBS=libpng
+PKG_CONFIG_LIBS=libpng zlib
 
-DEFINE_FLAGS:=
+ifeq ($(VERBOSE),1)
+    DEFINE_FLAGS:=-DVERBOSE=1
+endif
 
 CPPFLAGS:=-pthread \
           $(DEPFLAGS) \
@@ -99,7 +101,22 @@ LDFLAGS := -lpthread $(TARGET_ARCH) $(CONFIG_LDFLAGS) \
 
 #### Aggregated build arguments: ####
 
-OBJECTS:=$(OBJDIR)/Main.o $(OBJDIR)/MapImage.o $(OBJDIR)/MCAFile.o $(OBJECTS)
+# Map objects use data to draw map images.
+MAP_OBJECTS:=$(OBJDIR)/MapImage.o
+
+# Data objects extract information from Minecraft region files.
+DATA_OBJECTS:=$(OBJDIR)/ChunkNBT.o \
+              $(OBJDIR)/MCAFile.o
+
+# World objects store information about a Minecraft world.
+WORLD_OBJECTS:=$(OBJDIR)/ChunkData.o \
+               $(OBJDIR)/Structure.o \
+
+OBJECTS:=$(MAP_OBJECTS) \
+         $(DATA_OBJECTS) \
+         $(WORLD_OBJECTS) \
+         $(OBJDIR)/Main.o \
+         $(OBJECTS)
 
 
 # Complete set of flags used to compile source files:
@@ -109,9 +126,13 @@ BUILD_FLAGS:=$(CFLAGS) $(CXXFLAGS) $(CPPFLAGS)
 LINK_ARGS:= -o $(TARGET_BUILD_PATH) $(OBJECTS) $(LDFLAGS)
 
 ###################### Supporting Build Targets: ##############################
-.PHONY: gz_default build
+.PHONY: build clean
 
-build : gz_default $(OBJECTS)
+build : $(OBJECTS)
+
+clean :
+	-$(V_AT)rm -rf $(PROJECT_DIR)/build
+	-$(V_AT)rm -f $(TARGET_BUILD_PATH)
 
 $(OBJECTS) :
 	@echo "Compiling $(<F):"
@@ -120,9 +141,21 @@ $(OBJECTS) :
 
 -include $(OBJECTS:%.o=%.d)
 
+# Map Objects:
+$(OBJDIR)/MapImage.o: \
+	$(SOURCE_DIR)/Mapping/MapImage.cpp
+
+# Data Objects:
+$(OBJDIR)/MCAFile.o: \
+	$(SOURCE_DIR)/SaveData/MCAFile.cpp
+$(OBJDIR)/ChunkNBT.o: \
+	$(SOURCE_DIR)/SaveData/ChunkNBT.cpp
+
+# World Objects:
+$(OBJDIR)/ChunkData.o: \
+	$(SOURCE_DIR)/WorldInfo/ChunkData.cpp
+$(OBJDIR)/Structure.o: \
+	$(SOURCE_DIR)/WorldInfo/Structure.cpp
+
 $(OBJDIR)/Main.o: \
 	$(SOURCE_DIR)/Main.cpp
-$(OBJDIR)/MapImage.o: \
-	$(SOURCE_DIR)/MapImage.cpp
-$(OBJDIR)/MCAFile.o: \
-	$(SOURCE_DIR)/MCAFile.cpp
