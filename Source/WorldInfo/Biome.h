@@ -1,10 +1,12 @@
 /**
  * @file  Biome.h
  *
- * @brief  Enumerates minecraft biome types.
+ * @brief  Defines the code values used to represent all minecraft world
+ *         biomes.
  */
 
 #pragma once
+#include <png++/png.hpp>
 
 enum class Biome
 {
@@ -83,5 +85,15 @@ enum class Biome
     end_highlands = 42,
     end_barrens = 43,
     the_void = 127
-
 };
+
+
+/**
+ * @brief  Gets a color value to represent a Minecraft biome.
+ *
+ * @param biome  The biome type to represent.
+ *
+ * @return       An appropriate color to represent that biome.
+ */
+png::rgb_pixel getBiomeColor(const Biome biome);
+
