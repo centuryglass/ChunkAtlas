@@ -5,7 +5,7 @@
  */
 
 #include "Debug.h"
-#include "MapImage.h"
+#include "BasicMapper.h"
 #include "MCAFile.h"
 #include <filesystem>
 #include <string>
@@ -40,8 +40,15 @@ int main(int argc, char** argv)
     }
 
     using namespace std::filesystem;
+    // Path to region files:
     path dataPath(argv[1]);
-    MapImage m(argv[2], mapEdge, mapEdge, chunkPx);
+
+    // Initialize Mapper with the provided path:
+    path imagePath(argv[2]);
+    path basicImagePath(imagePath);
+    basicImagePath.replace_filename(std::string("basic_")
+            + imagePath.filename().string());
+    BasicMapper m(basicImagePath.c_str(), mapEdge, mapEdge, chunkPx);
 
     // save region file paths and count:
     std::vector<path> regionFiles;
@@ -76,8 +83,8 @@ int main(int argc, char** argv)
     [&updateCounts, &regionFiles, &imageLock, &m]
     (const size_t startIndex, const size_t numToRead)
     {
-        static const MapImage::Pixel white(255, 255, 255);
-        static const MapImage::Pixel green(0, 255, 0);
+        //static const MapImage::Pixel white(255, 255, 255);
+        //static const MapImage::Pixel green(0, 255, 0);
         for (int i = startIndex; i < startIndex + numToRead; i++)
         {
             path entryPath = regionFiles[i];
@@ -86,15 +93,18 @@ int main(int argc, char** argv)
             updateCounts(1, entryChunks.size());
             for (const ChunkData& chunk : entryChunks)
             {
+                /*
                 Point chunkPoint = chunk.getPos();
                 bool greenTile = ((chunkPoint.y % 2) == 0);
                 if ((chunkPoint.x % 2) == 0)
                 {
                     greenTile = ! greenTile;
                 }
+                */
                 std::lock_guard<std::mutex> lock(imageLock);
-                m.setChunkColor(chunkPoint.x, chunkPoint.y,
-                        greenTile ? green : white);
+                //m.setChunkColor(chunkPoint.x, chunkPoint.y,
+                //        greenTile ? green : white);
+                m.drawChunk(chunk);
             }
         }
     };
@@ -125,6 +135,6 @@ int main(int argc, char** argv)
     std::cout << "Mapped " << chunkCount << " chunks out of " << numChunks
         << ", map is " << explorePercent << "\% explored.\n";
     
-    m.saveImage();
+    m.saveMapFile();
     return 0;
 }

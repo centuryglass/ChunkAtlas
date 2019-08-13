@@ -102,7 +102,9 @@ LDFLAGS := -lpthread $(TARGET_ARCH) $(CONFIG_LDFLAGS) \
 #### Aggregated build arguments: ####
 
 # Map objects use data to draw map images.
-MAP_OBJECTS:=$(OBJDIR)/MapImage.o
+MAP_OBJECTS:=$(OBJDIR)/MapImage.o \
+             $(OBJDIR)/Mapper.o \
+             $(OBJDIR)/BasicMapper.o
 
 # Data objects extract information from Minecraft region files.
 DATA_OBJECTS:=$(OBJDIR)/ChunkNBT.o \
@@ -110,6 +112,7 @@ DATA_OBJECTS:=$(OBJDIR)/ChunkNBT.o \
 
 # World objects store information about a Minecraft world.
 WORLD_OBJECTS:=$(OBJDIR)/ChunkData.o \
+               $(OBJDIR)/Biome.o \
                $(OBJDIR)/Structure.o \
 
 OBJECTS:=$(MAP_OBJECTS) \
@@ -144,6 +147,10 @@ $(OBJECTS) :
 # Map Objects:
 $(OBJDIR)/MapImage.o: \
 	$(SOURCE_DIR)/Mapping/MapImage.cpp
+$(OBJDIR)/Mapper.o: \
+	$(SOURCE_DIR)/Mapping/Mapper.cpp
+$(OBJDIR)/BasicMapper.o: \
+	$(SOURCE_DIR)/Mapping/BasicMapper.cpp
 
 # Data Objects:
 $(OBJDIR)/MCAFile.o: \
@@ -154,6 +161,8 @@ $(OBJDIR)/ChunkNBT.o: \
 # World Objects:
 $(OBJDIR)/ChunkData.o: \
 	$(SOURCE_DIR)/WorldInfo/ChunkData.cpp
+$(OBJDIR)/Biome.o: \
+	$(SOURCE_DIR)/WorldInfo/Biome.cpp
 $(OBJDIR)/Structure.o: \
 	$(SOURCE_DIR)/WorldInfo/Structure.cpp
 

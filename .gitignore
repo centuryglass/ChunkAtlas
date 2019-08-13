@@ -1,5 +1,5 @@
 build
 MCMap
-*.png
+*test.png
 gzstream/*.o
 gzstream/*.a
