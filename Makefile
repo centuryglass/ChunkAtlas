@@ -106,7 +106,9 @@ MAP_OBJECTS:=$(OBJDIR)/MapImage.o \
              $(OBJDIR)/Mapper.o \
              $(OBJDIR)/BasicMapper.o \
              $(OBJDIR)/BiomeMapper.o \
-             $(OBJDIR)/ActivityMapper.o
+             $(OBJDIR)/ActivityMapper.o \
+             $(OBJDIR)/StructureMapper.o \
+             $(OBJDIR)/MapCollector.o
 
 
 # Data objects extract information from Minecraft region files.
@@ -158,6 +160,10 @@ $(OBJDIR)/BiomeMapper.o: \
 	$(SOURCE_DIR)/Mapping/BiomeMapper.cpp
 $(OBJDIR)/ActivityMapper.o: \
 	$(SOURCE_DIR)/Mapping/ActivityMapper.cpp
+$(OBJDIR)/StructureMapper.o: \
+	$(SOURCE_DIR)/Mapping/StructureMapper.cpp
+$(OBJDIR)/MapCollector.o: \
+	$(SOURCE_DIR)/Mapping/MapCollector.cpp
 
 # Data Objects:
 $(OBJDIR)/MCAFile.o: \

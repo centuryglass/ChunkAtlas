@@ -5,9 +5,7 @@
  */
 
 #include "Debug.h"
-#include "BasicMapper.h"
-#include "BiomeMapper.h"
-#include "ActivityMapper.h"
+#include "MapCollector.h"
 #include "MCAFile.h"
 #include <filesystem>
 #include <string>
@@ -106,14 +104,7 @@ int main(int argc, char** argv)
     {
         imagePath.erase(imagePath.length() - 4);
     }
-    std::string basicPath = imagePath + "_basic.png";
-    BasicMapper basicMapper(basicPath.c_str(), mapEdge, mapEdge, chunkPx);
-    std::string biomePath = imagePath + "_biome.png";
-    BiomeMapper biomeMapper(biomePath.c_str(), mapEdge, mapEdge, chunkPx);
-    std::string activityPath = imagePath + "_activity.png";
-    ActivityMapper activityMapper(activityPath.c_str(), mapEdge, mapEdge,
-            chunkPx);
-
+    MapCollector mappers(imagePath, mapEdge, mapEdge, chunkPx);
 
     // Provide updateCounts so threads can safely change the processed
     // file/chunk counts and print progress.
@@ -137,8 +128,7 @@ int main(int argc, char** argv)
     std::mutex imageLock;
     // Thread function to process a portion of all region files.
     const auto readRegions =
-    [&updateCounts, &regionFiles, &imageLock, &basicMapper, &biomeMapper,
-            &activityMapper]
+    [&updateCounts, &regionFiles, &imageLock, &mappers]
     (const size_t startIndex, const size_t numToRead)
     {
         for (int i = startIndex; i < startIndex + numToRead; i++)
@@ -150,9 +140,7 @@ int main(int argc, char** argv)
             for (const ChunkData& chunk : entryChunks)
             {
                 std::lock_guard<std::mutex> lock(imageLock);
-                basicMapper.drawChunk(chunk);
-                biomeMapper.drawChunk(chunk);
-                activityMapper.drawChunk(chunk);
+                mappers.drawChunk(chunk);
             }
         }
     };
@@ -183,8 +171,6 @@ int main(int argc, char** argv)
     std::cout << "Mapped " << chunkCount << " chunks out of " << numChunks
         << ", map is " << explorePercent << "\% explored.\n";
     
-    basicMapper.saveMapFile();
-    biomeMapper.saveMapFile();
-    activityMapper.saveMapFile();
+    mappers.saveMapFile();
     return 0;
 }

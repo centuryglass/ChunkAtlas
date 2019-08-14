@@ -253,11 +253,17 @@ ChunkData ChunkNBT::getChunkData(const Point pos)
     };
 
     parseTag[NBTTag::tLong] =
-    [this, &readName, &readLong, &lastUpdate, &inhabitedTime]
+    [this, &readName, &readLong, &lastUpdate, &inhabitedTime, &inStructureRefs,
+            &currentStruct, &structures]
     (const bool isNamed)
     {
         std::string name = readName(isNamed);
         std::int64_t longVal = readLong();
+        if(inStructureRefs && currentStruct != Structure::unknown 
+                && !isNamed)
+        {
+            structures.insert(currentStruct);
+        }
         if (name.empty())
         {
             return;
@@ -337,15 +343,7 @@ ChunkData ChunkNBT::getChunkData(const Point pos)
     (const bool isNamed)
     {
         std::string name = readName(isNamed);
-        if (inStructureRefs && currentStructName.empty())
-        {
-            currentStruct = parseStructure(name);
-            if (currentStruct != Structure::unknown)
-            {
-                currentStructName = name;
-            }
-        }
-        else if (!openTags.empty() && openTags.top() == Keys::structure
+        if (!openTags.empty() && openTags.top() == Keys::structure
                 && name == Keys::structureRefs)
         {
             inStructureRefs = true;
@@ -371,10 +369,23 @@ ChunkData ChunkNBT::getChunkData(const Point pos)
     };
 
     parseTag[NBTTag::tLongArray] =
-    [this, &readName, &readByte, &readInt, &parseTag]
+    [this, &readName, &readByte, &readInt, &parseTag, &inStructureRefs,
+            &currentStructName, &currentStruct]
     (const bool isNamed)
     {
         std::string name = readName(isNamed);
+        if (inStructureRefs && currentStructName.empty())
+        {
+            currentStruct = parseStructure(name);
+            if (currentStruct != Structure::unknown)
+            {
+                currentStructName = name;
+            }
+            else
+            {
+                std::cerr << "unknown structure " << name << "\n";
+            }
+        }
         if (name == Keys::biome)
         {
             std::cout << "Found longArray biome list.\n";
@@ -384,16 +395,13 @@ ChunkData ChunkNBT::getChunkData(const Point pos)
         {
             parseTag[NBTTag::tLong](false);
         }
+        currentStruct = Structure::unknown;
+        currentStructName = "";
     };
 
     do
     {
         NBTTag type = static_cast<NBTTag>(readByte());
-        if(inStructureRefs && currentStruct != Structure::unknown 
-                && type != NBTTag::tEnd)
-        {
-            structures.insert(currentStruct);
-        }
         parseTag[type](true);
     }
     while(! openTags.empty() && dataIndex < extractedData.size());

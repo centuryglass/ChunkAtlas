@@ -8,17 +8,26 @@
 #include <string>
 #include <png++/png.hpp>
 
+// Structure values are assigned so that smaller structure types have higher
+// values than larger structure types.
 enum class Structure
 {
-    monument,
-    mansion,
-    swampHut,
-    mineshaft,
-    igloo,
-    stronghold,
-    desertPyramid,
-    junglePyramid,
-    unknown
+    monument = 4,
+    mansion = 5,
+    swampHut = 10,
+    mineshaft = 0,
+    igloo = 11,
+    stronghold = 6,
+    desertPyramid = 7,
+    junglePyramid = 8,
+    pillagerOutpost = 9,
+    village = 1,
+    oceanRuin = 12,
+    shipwreck = 13,
+    buriedTreasure = 14,
+    endCity = 2,
+    fortress = 3,
+    unknown = -1
 };
 
 /**
