@@ -22,7 +22,18 @@ public:
     virtual ~MCAFile() { }
 
     /**
-     * @brief  Gets information on all loaded chunks stored in the file.
+     * @brief  Finds a region file's upper left chunk coordinate from its file
+     *         name.
+     *
+     * @param filePath  The path to a region file.
+     *
+     * @return          The chunk coordinates, or { -1, -1 } if the file name
+     *                  was not properly constructed.
+     */
+    static Point getChunkCoords(std::filesystem::path filePath);
+
+    /**
+     * @brief  Gets information about all loaded chunks stored in the file.
      *
      * @return  The list of chunk data objects.
      */

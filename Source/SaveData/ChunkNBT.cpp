@@ -16,13 +16,11 @@ static const constexpr size_t bufferSize = 8192;
 
 namespace Keys
 {
-    static const constexpr char* inhabitedTime = "InhabitedTime";
-    static const constexpr char* lastUpdate    = "LastUpdate";
-    static const constexpr char* biome         = "Biomes";
-    static const constexpr char* structure     = "Structures";
-    static const constexpr char* structureRefs = "References";
-
-
+    static const std::string inhabitedTime = "InhabitedTime";
+    static const std::string lastUpdate    = "LastUpdate";
+    static const std::string biome         = "Biomes";
+    static const std::string structure     = "Structures";
+    static const std::string structureRefs = "References";
 }
 
 static void printZerror(const int errorCode, z_stream& zStream)
@@ -163,18 +161,15 @@ ChunkData ChunkNBT::getChunkData(const Point pos)
         }
         int nameLength = readShort();
         std::string name;
-        name.resize(nameLength);
+        name.resize(nameLength, '!');
         for (int i = 0; i < nameLength; i++)
         {
             char charVal = readByte();
-            if (charVal < 128)
+            name.replace(i, 1, 1, charVal);
+            if (charVal == '\0')
             {
-                name += charVal;
+                return name;
             }
-        }
-        if (name.length() > 40)
-        {
-            name.erase(40);
         }
         return name;
     };
@@ -201,10 +196,6 @@ ChunkData ChunkNBT::getChunkData(const Point pos)
         {
             return;
         }
-        if (inBiomeList && (openTags.top() == Keys::biome))
-        {
-            inBiomeList = false;
-        }
         else if (inStructureRefs && (openTags.top() == Keys::structureRefs))
         {
             inStructureRefs = false;
@@ -223,26 +214,42 @@ ChunkData ChunkNBT::getChunkData(const Point pos)
     {
         std::string name = readName(isNamed);
         int byteVal = readByte();
-        if (inBiomeList && !isNamed)
+        if (inBiomeList)
         {
+            while (byteVal < 0)
+            {
+                byteVal += 128;
+            }
             biomes.push_back(static_cast<Biome>(byteVal));
         }
     };
 
     parseTag[NBTTag::tShort] =
-    [this,  &readName, &readShort]
+    [this,  &readName, &readShort, &inBiomeList, &biomes]
     (const bool isNamed)
     {
         std::string name = readName(isNamed);
         std::int16_t shortVal = readShort();
+        if (inBiomeList)
+        {
+            biomes.push_back(static_cast<Biome>(shortVal));
+        }
     };
 
     parseTag[NBTTag::tInt] =
-    [this, &readName, &readInt]
+    [this, &readName, &readInt, &inBiomeList, &biomes]
     (const bool isNamed)
     {
         std::string name = readName(isNamed);
         std::int32_t intVal = readInt();
+        if (inBiomeList)
+        {
+            while (intVal < 0)
+            {
+                intVal += 128;
+            }
+            biomes.push_back(static_cast<Biome>(intVal));
+        }
     };
 
     parseTag[NBTTag::tLong] =
@@ -282,15 +289,20 @@ ChunkData ChunkNBT::getChunkData(const Point pos)
     };
 
     parseTag[NBTTag::tByteArray] =
-    [this, &readName, &readInt, &parseTag]
+    [this, &readName, &readInt, &parseTag, &inBiomeList]
     (const bool isNamed)
     {
         std::string name = readName(isNamed);
+        if (name == Keys::biome)
+        {
+            inBiomeList = true;
+        }
         int length = readInt();
         for (int i = 0; i < length; i++)
         {
             parseTag[NBTTag::tByte](false);
         }
+        inBiomeList = false;
     };
 
     parseTag[NBTTag::tString] =
@@ -302,21 +314,26 @@ ChunkData ChunkNBT::getChunkData(const Point pos)
     };
 
     parseTag[NBTTag::tList] =
-    [this, &readName, &readByte, &readInt, &parseTag]
+    [this, &readName, &readByte, &readInt, &parseTag, &inBiomeList]
     (const bool isNamed)
     {
         std::string name = readName(isNamed);
+        if (name == Keys::biome)
+        {
+            inBiomeList = true;
+        }
         NBTTag type = static_cast<NBTTag>(readByte());
         int length = readInt();
         for (int i = 0; i < length; i++)
         {
             parseTag[type](false);
         }
+        inBiomeList = false;
     };
 
     parseTag[NBTTag::tCompound] =
     [this, &openTags, &readName, &currentStructName, &currentStruct,
-            &inStructureRefs, &inBiomeList]
+            &inStructureRefs]
     (const bool isNamed)
     {
         std::string name = readName(isNamed);
@@ -333,23 +350,24 @@ ChunkData ChunkNBT::getChunkData(const Point pos)
         {
             inStructureRefs = true;
         }
-        else if (name == Keys::biome)
-        {
-            inBiomeList = true;
-        }
         openTags.push(name);
     };
 
     parseTag[NBTTag::tIntArray] =
-    [this, &readName, &readByte, &readInt, &parseTag]
+    [this, &readName, &readByte, &readInt, &parseTag, &inBiomeList]
     (const bool isNamed)
     {
         std::string name = readName(isNamed);
+        if (name == Keys::biome)
+        {
+            inBiomeList = true;
+        }
         int length = readInt();
         for (int i = 0; i < length; i++)
         {
             parseTag[NBTTag::tInt](false);
         }
+        inBiomeList = false;
     };
 
     parseTag[NBTTag::tLongArray] =
@@ -357,6 +375,10 @@ ChunkData ChunkNBT::getChunkData(const Point pos)
     (const bool isNamed)
     {
         std::string name = readName(isNamed);
+        if (name == Keys::biome)
+        {
+            std::cout << "Found longArray biome list.\n";
+        }
         int length = readInt();
         for (int i = 0; i < length; i++)
         {

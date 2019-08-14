@@ -17,20 +17,12 @@ static const constexpr int dimInChunks = 32;
 MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
 {
     // read the region file's base coordinates from the file name:
-    const std::string name(mcaPath.filename());
-    const std::string numChars("-0123456789");
-    const size_t xStart = name.find_first_of(numChars);
-    const size_t xEnd = name.find('.', xStart);
-    const size_t yStart = xEnd + 1;
-    const size_t yEnd = name.find('.', yStart);
-    if (xStart == std::string::npos || xEnd == std::string::npos
-            || yEnd == std::string::npos)
+    Point regionPt = getChunkCoords(filePath);
+    if (regionPt.x == -1 && regionPt.z == -1)
     {
         std::cerr << "Can't parse coordinates from file " << mcaPath << ".\n";
         return;
     }
-    int regionX = dimInChunks * std::stoi(name.substr(xStart, xEnd - xStart));
-    int regionY = dimInChunks * std::stoi(name.substr(yStart, yEnd - yStart));
 
     std::ifstream regionFile(mcaPath, std::ios::binary);
     if (! regionFile.is_open())
@@ -114,9 +106,9 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
         }
         if (chunkLoaded)
         {
-            const int chunkX = regionX + (i % 32);
-            const int chunkY = regionY + (i / 32);
-            Point chunkPos = { chunkX, chunkY };
+            const int chunkX = regionPt.x + (i % 32);
+            const int chunkZ = regionPt.z + (i / 32);
+            Point chunkPos = { chunkX, chunkZ };
 
             // Find chunk data:
             DBG_V("Chunk " << (i + 1) << "/" << numChunks
@@ -140,7 +132,7 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
 
                 continue;
             }
-            DBG_V(i << ": Chunk " << chunkX << ", " << chunkY
+            DBG_V(i << ": Chunk " << chunkX << ", " << chunkZ
                     << " data is " << sectorCount 
                     << " sector(s) at byte offset "
                     << (sectorOffset * sectorSize));
@@ -164,7 +156,7 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
             }
             if (byteSectorCount > sectorCount)
             {
-                std::cerr << i << ": Chunk " << chunkX << ", " << chunkY
+                std::cerr << i << ": Chunk " << chunkX << ", " << chunkZ
                         << " at offset " << sectorOffset
                         << "/" << (fileSize / sectorSize) << ":\n"
                         << "Expected " << sectorCount << " sectors but found "
@@ -173,7 +165,7 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
                 continue;
             }
 
-            DBG_V(i << ": Chunk " << chunkX << ", " << chunkY
+            DBG_V(i << ": Chunk " << chunkX << ", " << chunkZ
                     << " data is " << chunkByteSize << " bytes (" 
                     << (chunkByteSize / sectorSize) << ") sectors\n");
 
@@ -183,7 +175,7 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
                     reinterpret_cast<char *>(chunkData.data()), chunkByteSize);
             if (bytesRead == chunkByteSize)
             {
-                DBG_V(i << ": Chunk " << chunkX << ", " << chunkY
+                DBG_V(i << ": Chunk " << chunkX << ", " << chunkZ
                         << ", " << bytesRead << "/" << chunkByteSize
                         << " bytes read.");
             }
@@ -194,7 +186,30 @@ MCAFile::MCAFile(std::filesystem::path filePath) : mcaPath(filePath)
 }
 
 
-// Gets the coordinates of all loaded chunks stored in the file.
+// Finds a region file's upper left chunk coordinate from its file name.
+Point MCAFile::getChunkCoords(std::filesystem::path filePath)
+{
+    const std::string name(filePath.filename());
+    const std::string numChars("-0123456789");
+    const size_t xStart = name.find_first_of(numChars);
+    const size_t xEnd = name.find('.', xStart);
+    const size_t zStart = xEnd + 1;
+    const size_t zEnd = name.find('.', zStart);
+    if (xStart == std::string::npos || xEnd == std::string::npos
+            || zEnd == std::string::npos)
+    {
+        // Because region files hold 32x32 chunks, (-1, -1) will never be a
+        // valid coordinate, so it is acceptable as an error value.
+        // std::optional is probably even better though, consider switching.
+        return { -1, -1};
+    }
+    int regionX = dimInChunks * std::stoi(name.substr(xStart, xEnd - xStart));
+    int regionZ = dimInChunks * std::stoi(name.substr(zStart, zEnd - zStart));
+    return { regionX, regionZ };
+}
+
+
+// Gets information about all loaded chunks stored in the file.
 const std::vector<ChunkData>& MCAFile::getLoadedChunks()
 {
     return loadedChunks;

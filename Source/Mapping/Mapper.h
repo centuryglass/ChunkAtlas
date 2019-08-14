@@ -30,13 +30,6 @@ public:
     virtual ~Mapper() { }
 
     /**
-     * @brief  Fills the entire map image with a solid background color.
-     *
-     * @param color  The fill color to use.
-     */
-    void setBackgroundColor(const png::rgb_pixel color);
-
-    /**
      * @brief  Writes map image data to the image path.
      */
     void saveMapFile();
@@ -49,6 +42,19 @@ public:
     void drawChunk(const ChunkData& chunk);
 
 private:
+    /**
+     * @brief  Handles any final tasks that need to be done before the map can
+     *         be exported as an image.
+     *
+     *  The default implementation of this method does nothing. Mapper 
+     * subclasses should override this method if there's anything they need to
+     * do after processing chunks to complete the map.
+     *
+     * @param map  The mapper's MapImage, passed in so final changes can be
+     *             made.
+     */
+    virtual void finalProcessing(MapImage& map) { }
+
     /**
      * @brief  Gets what color, if any, that should be drawn to the map for a
      *         specific chunk. 
@@ -63,8 +69,6 @@ private:
     virtual std::optional<png::rgb_pixel> getChunkColor
     (const ChunkData& chunk) = 0;
 
+    // All map image data:
     MapImage map;
-    size_t width;
-    size_t height;
-    size_t pixelSize;
 };

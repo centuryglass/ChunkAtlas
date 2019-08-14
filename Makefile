@@ -104,7 +104,10 @@ LDFLAGS := -lpthread $(TARGET_ARCH) $(CONFIG_LDFLAGS) \
 # Map objects use data to draw map images.
 MAP_OBJECTS:=$(OBJDIR)/MapImage.o \
              $(OBJDIR)/Mapper.o \
-             $(OBJDIR)/BasicMapper.o
+             $(OBJDIR)/BasicMapper.o \
+             $(OBJDIR)/BiomeMapper.o \
+             $(OBJDIR)/ActivityMapper.o
+
 
 # Data objects extract information from Minecraft region files.
 DATA_OBJECTS:=$(OBJDIR)/ChunkNBT.o \
@@ -151,6 +154,10 @@ $(OBJDIR)/Mapper.o: \
 	$(SOURCE_DIR)/Mapping/Mapper.cpp
 $(OBJDIR)/BasicMapper.o: \
 	$(SOURCE_DIR)/Mapping/BasicMapper.cpp
+$(OBJDIR)/BiomeMapper.o: \
+	$(SOURCE_DIR)/Mapping/BiomeMapper.cpp
+$(OBJDIR)/ActivityMapper.o: \
+	$(SOURCE_DIR)/Mapping/ActivityMapper.cpp
 
 # Data Objects:
 $(OBJDIR)/MCAFile.o: \

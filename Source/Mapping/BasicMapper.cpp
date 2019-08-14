@@ -17,7 +17,7 @@ std::optional<png::rgb_pixel> BasicMapper::getChunkColor
     static const MapImage::Pixel white(255, 255, 255);
     static const MapImage::Pixel green(0, 255, 0);
     Point chunkPoint = chunk.getPos();
-    bool greenTile = ((chunkPoint.y % 2) == 0);
+    bool greenTile = ((chunkPoint.z % 2) == 0);
     if ((chunkPoint.x % 2) == 0)
     {
         greenTile = ! greenTile;
