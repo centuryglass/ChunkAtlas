@@ -158,5 +158,13 @@ png::rgb_pixel getBiomeColor(const Biome biome)
         { Biome::the_void,
                 png::rgb_pixel(0x00, 0x00, 0x00) },
     };
-    return colorMap.at(biome);
+    try
+    {
+        return colorMap.at(biome);
+    }
+    catch (const std::out_of_range& e)
+    {
+        std::cerr << "No color provided for biome " << (int) biome << "\n";
+        return png::rgb_pixel(0, 0, 0);
+    }
 }

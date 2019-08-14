@@ -6,6 +6,7 @@
 
 #pragma once
 #include <string>
+#include <png++/png.hpp>
 
 enum class Structure
 {
@@ -38,3 +39,12 @@ std::string structureName(const Structure structure);
  *              did not have a valid match.
  */
 Structure parseStructure(const std::string name);
+
+/**
+ * @brief  Gets a color value to represent a Minecraft structure.
+ *
+ * @param structure  The structure type to represent.
+ *
+ * @return           An appropriate color to represent that structure.
+ */
+png::rgb_pixel getStructureColor(const Structure structure);

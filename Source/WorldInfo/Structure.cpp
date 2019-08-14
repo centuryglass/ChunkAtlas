@@ -53,3 +53,38 @@ Structure parseStructure(const std::string name)
     }
     return iter->second;
 }
+
+
+// Gets a color value to represent a Minecraft structure.
+png::rgb_pixel getStructureColor(const Structure structure)
+{
+    static const std::map<Structure, png::rgb_pixel> nameMap =
+    {
+        { Structure::monument,
+                png::rgb_pixel(0x00, 0xe2, 0xaa) },
+        { Structure::mansion,
+                png::rgb_pixel(0xae, 0x5c, 0x28) },
+        { Structure::swampHut,
+                png::rgb_pixel(0x05, 0x4c, 0x3e) },
+        { Structure::mineshaft ,
+                png::rgb_pixel(0x85, 0x06, 0x03) },
+        { Structure::igloo,
+                png::rgb_pixel(0x0d, 0xe0, 0xec) },
+        { Structure::stronghold,
+                png::rgb_pixel(0xa3, 0x0c, 0xcc) },
+        { Structure::desertPyramid,
+                png::rgb_pixel(0xd0, 0xff, 0x00) },
+        { Structure::junglePyramid,
+                png::rgb_pixel(0x9d, 0x97, 0x09) },
+    };
+    try
+    {
+        return nameMap.at(structure);
+    }
+    catch (const std::out_of_range& e)
+    {
+        std::cerr << "Invalid structure type " << structure
+                << " encountered.\n";
+        return png::rgb_pixel(0, 0, 0);
+    }
+}
