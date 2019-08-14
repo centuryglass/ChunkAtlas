@@ -14,43 +14,148 @@
 #include <thread>
 #include <vector>
 #include <mutex>
+#include <map>
 
+// Default values:
+// TODO: load these from a config file
+const std::string defaultMapDir(std::string("/home/") + getenv("USER")
+        + "/MCregion");
+const constexpr char* defaultImageName = "server";
+const constexpr char* defaultDirInfo = "directory.txt";
 const constexpr int worldBorder = 1600;
 const constexpr int defaultMapEdge = worldBorder * 2;
 const constexpr int defaultChunkPx = 2;
 const constexpr int minSize = 256;
 const constexpr int maxSize = 10000;
 
+// Command line argument option types:
+enum class ArgOption
+{
+    help,
+    regionDir,
+    output,
+    worldBorder,
+    chunkPixels,
+    directoryFile
+};
+
+static void printHelp()
+{
+    std::cout << "Usage: ./MCMap [options]\n"
+        << "Options:\n"
+        << "  -h, --help:               Print this help text.\n"
+        << "  -r, --regionDir [path]:   Set region data directory path.\n"
+        << "  -o, --out [path]:         Set map image output path.\n"
+        << "  -b, --border [chunkSize]: Set map width/height in chunks.\n"
+        << "  -p, --pixels [number]:    Set chunk width/height in pixels.\n"
+        << "  -d, --directory [path]:   Set coordinate directory file path.\n";
+}
+
 
 int main(int argc, char** argv)
 {
-    if (argc < 3)
+    using namespace std::filesystem;
+
+    // Initialize command line options:
+    // Map options to short flag values:
+    std::map<ArgOption, std::string> shortOptionFlags;
+    // Map options to long flag values:
+    std::map<ArgOption, std::string> longOptionFlags;
+    // Map option flag strings to option types:
+    std::map<std::string, ArgOption> flagOptions;
+    // Initialize an option in all option maps:
+    const auto initOption = [&]
+    (const ArgOption option, const std::string shortFlag,
+            const std::string longFlag)
     {
-        std::cout << "Missing required arguments.\nValid usage: MCMap "
-                << "regionFolder imagePath.png [mapEdge][chunkPx]\n";
-        return 0;
-    }
+        shortOptionFlags[option] = shortFlag;
+        longOptionFlags[option] = longFlag;
+        flagOptions[shortFlag] = option;
+        flagOptions[longFlag] = option;
+    };
+    initOption(ArgOption::help, "-h", "--help");
+    initOption(ArgOption::regionDir, "-r", "--regionDir");
+    initOption(ArgOption::output, "-o", "--out");
+    initOption(ArgOption::worldBorder, "-b", "--border");
+    initOption(ArgOption::chunkPixels, "-p", "--pixels");
+    initOption(ArgOption::directoryFile, "-d", "--directoryFile");
+
+
+    // Initialize default option values:
     int mapEdge = defaultMapEdge;
     int chunkPx = defaultChunkPx;
-    if (argc >= 4)
+    path regionDataPath(defaultMapDir);
+    std::string imagePath(defaultImageName);
+    std::string dirInfoPath(defaultDirInfo);
+
+    // Process all command line options:
+    for (int i = 1; i < (argc - 1); i++)
     {
-        std::cout << "Using a world size of " << argv[3] << " chunks.\n";
-        mapEdge = atoi(argv[3]);
-    }
-    if (argc >= 5)
-    {
-        std::cout << "Using " << argv[4] << " pixels per chunk.\n";
-        chunkPx = atoi(argv[4]);
+        ArgOption option;
+        std::string optionFlag(argv[i]);
+        try
+        {
+            option = flagOptions.at(optionFlag);
+        }
+        catch (const std::out_of_range& e)
+        {
+            std::cerr << "Error: invalid option " << optionFlag << "\n";
+            option = ArgOption::help;
+        }
+        switch (option)
+        {
+        case ArgOption::help:
+        {
+            std::cout << "Usage: ./MCMap [options]\nOptions:\n";
+            const auto printFlag = [&shortOptionFlags, &longOptionFlags]
+            (const ArgOption flag, const char* description)
+            {
+                std::cout << "  " << shortOptionFlags[flag] << ", "
+                        << longOptionFlags[flag] << ":\n\t\t" << description
+                        << "\n";
+            };
+            printFlag(ArgOption::help,
+                    "Print this help text.");
+            printFlag(ArgOption::regionDir,
+                    "Set region data directory path.");
+            printFlag(ArgOption::output,
+                    "Set map image output path.");
+            printFlag(ArgOption::worldBorder, 
+                    "Set map width/height in chunks.");
+            printFlag(ArgOption::chunkPixels,
+                    "Set chunk width/height in pixels.");
+            printFlag(ArgOption::directoryFile,
+                    "Set coordinate directory file path.");
+            exit(0);
+        }
+        case ArgOption::regionDir:
+            regionDataPath = argv[i + 1];
+            break;
+        case ArgOption::output:
+            imagePath = argv[i + 1];
+            if (imagePath.substr(imagePath.length() - 4) == ".png")
+            {
+                imagePath.erase(imagePath.length() - 4);
+            }
+            break;
+        case ArgOption::worldBorder:
+            mapEdge = atoi(argv[i + 1]);
+            break;
+        case ArgOption::chunkPixels:
+            chunkPx = atoi(argv[i + 1]);
+            break;
+        case ArgOption::directoryFile:
+            dirInfoPath = atoi(argv[i + 1]);
+        }
     }
 
-    using namespace std::filesystem;
-    // Path to region files:
-    path dataPath(argv[1]);
+
     // save region file paths and count:
     std::vector<path> regionFiles;
     int maxDistanceFromOrigin = 0;
     const int maxAllowed = worldBorder;
-    for (const auto& dirEntry : directory_iterator(dataPath))
+    size_t outOfBounds = 0;
+    for (const auto& dirEntry : directory_iterator(regionDataPath))
     {
         // find maximum distance from origin:
         int fileMax = 0;
@@ -72,13 +177,16 @@ int main(int argc, char** argv)
         }
         else
         {
-            std::cerr << "Warning: Map won't go past the world border at "
-                << (worldBorder * 16) << ", so map file "
-                << dirEntry.path().filename() << " at ("
-                << (chunkCoords.x * 16) << "," << (chunkCoords.z * 16)
-                << ") will be ignored.\n";
+            outOfBounds++;
         }
     }
+    if (outOfBounds > 0)
+    {
+            std::cerr << "Warning: " << outOfBounds
+                << " region files past the world border at "
+                << (worldBorder * 16) << " will be ignored.\n";
+    }
+    // Ensure map sizes fit within the maximum image size:
     mapEdge = maxDistanceFromOrigin * 2;
     while((mapEdge * chunkPx) < minSize)
     {
@@ -99,12 +207,7 @@ int main(int argc, char** argv)
     const size_t numRegionFiles = regionFiles.size();
 
     // Initialize Mappers with the provided path:
-    std::string imagePath(argv[2]);
-    if (imagePath.substr(imagePath.length() - 4) == ".png")
-    {
-        imagePath.erase(imagePath.length() - 4);
-    }
-    MapCollector mappers(imagePath, mapEdge, mapEdge, chunkPx);
+    MapCollector mappers(imagePath, dirInfoPath, mapEdge, mapEdge, chunkPx);
 
     // Provide updateCounts so threads can safely change the processed
     // file/chunk counts and print progress.
@@ -121,7 +224,7 @@ int main(int argc, char** argv)
         if (regionsAdded > 0)
         {
             std::cout << "Finished file " << regionCount << "/"
-                    << numRegionFiles << " \n";
+                    << numRegionFiles << " \r";
         }
     };
 
