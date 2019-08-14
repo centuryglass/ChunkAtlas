@@ -6,6 +6,8 @@
 
 #include "Debug.h"
 #include "BasicMapper.h"
+#include "BiomeMapper.h"
+#include "ActivityMapper.h"
 #include "MCAFile.h"
 #include <filesystem>
 #include <string>
@@ -15,8 +17,12 @@
 #include <vector>
 #include <mutex>
 
-const constexpr int defaultMapEdge = 3200;
+const constexpr int worldBorder = 1600;
+const constexpr int defaultMapEdge = worldBorder * 2;
 const constexpr int defaultChunkPx = 2;
+const constexpr int minSize = 256;
+const constexpr int maxSize = 10000;
+
 
 int main(int argc, char** argv)
 {
@@ -42,21 +48,72 @@ int main(int argc, char** argv)
     using namespace std::filesystem;
     // Path to region files:
     path dataPath(argv[1]);
-
-    // Initialize Mapper with the provided path:
-    path imagePath(argv[2]);
-    path basicImagePath(imagePath);
-    basicImagePath.replace_filename(std::string("basic_")
-            + imagePath.filename().string());
-    BasicMapper m(basicImagePath.c_str(), mapEdge, mapEdge, chunkPx);
-
     // save region file paths and count:
     std::vector<path> regionFiles;
+    int maxDistanceFromOrigin = 0;
+    const int maxAllowed = worldBorder;
     for (const auto& dirEntry : directory_iterator(dataPath))
     {
-        regionFiles.push_back(dirEntry.path());
+        // find maximum distance from origin:
+        int fileMax = 0;
+        Point chunkCoords = MCAFile::getChunkCoords(dirEntry.path());
+        if (chunkCoords.x == -1 && chunkCoords.z == -1)
+        {
+            std::cerr << dirEntry.path().filename() 
+                    << " does not have a legal region file name format.\n";
+            continue;
+        }
+        fileMax = std::max(fileMax, (chunkCoords.x >= 0 ?
+                    (chunkCoords.x + 32) : (chunkCoords.x * -1)));
+        fileMax = std::max(fileMax, (chunkCoords.z >= 0 ?
+                    (chunkCoords.z + 32) : (chunkCoords.z * -1)));
+        if (fileMax <= maxAllowed)
+        {
+            maxDistanceFromOrigin = std::max(fileMax, maxDistanceFromOrigin);
+            regionFiles.push_back(dirEntry.path());
+        }
+        else
+        {
+            std::cerr << "Warning: Map won't go past the world border at "
+                << (worldBorder * 16) << ", so map file "
+                << dirEntry.path().filename() << " at ("
+                << (chunkCoords.x * 16) << "," << (chunkCoords.z * 16)
+                << ") will be ignored.\n";
+        }
+    }
+    mapEdge = maxDistanceFromOrigin * 2;
+    while((mapEdge * chunkPx) < minSize)
+    {
+        chunkPx++;
+    }
+    while((mapEdge * chunkPx) > maxSize && chunkPx > 1)
+    {
+        chunkPx--;
+    }
+    if((mapEdge * chunkPx) > maxSize)
+    {
+        mapEdge = maxSize;
+        size_t maxBlock = (mapEdge / 2) * 32 * 16;
+        std::cout << "Warning: Map would exceed the maximum image size of "
+            << maxSize << " x " << maxSize << ", chunks further than "
+            << maxBlock << " blocks from (0,0) will be cropped.\n";
     }
     const size_t numRegionFiles = regionFiles.size();
+
+    // Initialize Mappers with the provided path:
+    std::string imagePath(argv[2]);
+    if (imagePath.substr(imagePath.length() - 4) == ".png")
+    {
+        imagePath.erase(imagePath.length() - 4);
+    }
+    std::string basicPath = imagePath + "_basic.png";
+    BasicMapper basicMapper(basicPath.c_str(), mapEdge, mapEdge, chunkPx);
+    std::string biomePath = imagePath + "_biome.png";
+    BiomeMapper biomeMapper(biomePath.c_str(), mapEdge, mapEdge, chunkPx);
+    std::string activityPath = imagePath + "_activity.png";
+    ActivityMapper activityMapper(activityPath.c_str(), mapEdge, mapEdge,
+            chunkPx);
+
 
     // Provide updateCounts so threads can safely change the processed
     // file/chunk counts and print progress.
@@ -80,11 +137,10 @@ int main(int argc, char** argv)
     std::mutex imageLock;
     // Thread function to process a portion of all region files.
     const auto readRegions =
-    [&updateCounts, &regionFiles, &imageLock, &m]
+    [&updateCounts, &regionFiles, &imageLock, &basicMapper, &biomeMapper,
+            &activityMapper]
     (const size_t startIndex, const size_t numToRead)
     {
-        //static const MapImage::Pixel white(255, 255, 255);
-        //static const MapImage::Pixel green(0, 255, 0);
         for (int i = startIndex; i < startIndex + numToRead; i++)
         {
             path entryPath = regionFiles[i];
@@ -93,18 +149,10 @@ int main(int argc, char** argv)
             updateCounts(1, entryChunks.size());
             for (const ChunkData& chunk : entryChunks)
             {
-                /*
-                Point chunkPoint = chunk.getPos();
-                bool greenTile = ((chunkPoint.y % 2) == 0);
-                if ((chunkPoint.x % 2) == 0)
-                {
-                    greenTile = ! greenTile;
-                }
-                */
                 std::lock_guard<std::mutex> lock(imageLock);
-                //m.setChunkColor(chunkPoint.x, chunkPoint.y,
-                //        greenTile ? green : white);
-                m.drawChunk(chunk);
+                basicMapper.drawChunk(chunk);
+                biomeMapper.drawChunk(chunk);
+                activityMapper.drawChunk(chunk);
             }
         }
     };
@@ -135,6 +183,8 @@ int main(int argc, char** argv)
     std::cout << "Mapped " << chunkCount << " chunks out of " << numChunks
         << ", map is " << explorePercent << "\% explored.\n";
     
-    m.saveMapFile();
+    basicMapper.saveMapFile();
+    biomeMapper.saveMapFile();
+    activityMapper.saveMapFile();
     return 0;
 }
