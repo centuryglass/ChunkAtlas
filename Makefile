@@ -108,6 +108,7 @@ MAP_OBJECTS:=$(OBJDIR)/MapImage.o \
              $(OBJDIR)/BiomeMapper.o \
              $(OBJDIR)/ActivityMapper.o \
              $(OBJDIR)/StructureMapper.o \
+             $(OBJDIR)/DirectoryMapper.o \
              $(OBJDIR)/MapCollector.o
 
 
@@ -162,6 +163,8 @@ $(OBJDIR)/ActivityMapper.o: \
 	$(SOURCE_DIR)/Mapping/ActivityMapper.cpp
 $(OBJDIR)/StructureMapper.o: \
 	$(SOURCE_DIR)/Mapping/StructureMapper.cpp
+$(OBJDIR)/DirectoryMapper.o: \
+	$(SOURCE_DIR)/Mapping/DirectoryMapper.cpp
 $(OBJDIR)/MapCollector.o: \
 	$(SOURCE_DIR)/Mapping/MapCollector.cpp
 
