@@ -1,7 +1,7 @@
 /**
- * @file  MapCollector.h
+ * @file  MapCollector.java
  *
- * @brief  Provides a single interface for generating all map types.
+ * Provides a single interface for generating all map types.
  */
 package com.centuryglass.mcmap.mapping;
 
@@ -11,7 +11,7 @@ import java.nio.file.Path;
 public class MapCollector
 {
     /**
-     * @brief  Sets all map image properties on construction.
+     * Sets all map image properties on construction.
      *
      * @param imagePath       Generic image path used to create all map image
      *                        paths.
@@ -44,7 +44,7 @@ public class MapCollector
 
 
     /**
-     * @brief  Writes all map images to their image paths.
+     * Writes all map images to their image paths.
      */
     public void saveMapFile()
     {
@@ -56,7 +56,7 @@ public class MapCollector
     }
 
     /**
-     * @brief  Updates all maps with data from a single chunk.
+     * Updates all maps with data from a single chunk.
      *
      * @param chunk  The world chunk to add to the maps.
      */

@@ -17,7 +17,7 @@ public class MCAFile
     
     
     /**
-     * @brief  Loads data from a .mca file on construction.
+     *  Loads data from a .mca file on construction.
      *
      * @param mcaPath  The Minecraft anvil region file path.
      */
@@ -130,7 +130,7 @@ public class MCAFile
     }
 
     /**
-     * @brief  Finds a region file's upper left chunk coordinate from its file
+     *  Finds a region file's upper left chunk coordinate from its file
      *         name.
      *
      * @param filePath  The path to a region file.
@@ -156,7 +156,7 @@ public class MCAFile
     }
 
     /**
-     * @brief  Gets information about all loaded chunks stored in the file.
+     *  Gets information about all loaded chunks stored in the file.
      *
      * @return  The list of chunk data objects.
      */

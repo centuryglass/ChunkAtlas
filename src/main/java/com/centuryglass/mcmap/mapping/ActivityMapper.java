@@ -1,8 +1,8 @@
 /**
- * @file  ActivityMapper.h
+ * @file  ActivityMapper.java
  *
- * @brief  Draws a map showing the amount of time that players have spent in
- *         specific chunks
+ * Draws a map showing the amount of time that players have spent in specific
+ * chunks
  */
 
 package com.centuryglass.mcmap.mapping;
@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class ActivityMapper extends Mapper
 {
     /**
-     * @brief  Sets map image properties on construction.
+     * Sets map image properties on construction.
      *
      * @param imagePath       Path to where the map image will be saved.
      *
@@ -42,7 +42,7 @@ public class ActivityMapper extends Mapper
     }
 
     /**
-     * @brief  Saves the inhabitedTime of a chunk so it can be drawn later.
+     * Saves the inhabitedTime of a chunk so it can be drawn later.
      *
      * @param chunk  The chunk that may be drawn.
      *
@@ -61,8 +61,7 @@ public class ActivityMapper extends Mapper
     }
 
     /**
-     * @brief  Draws chunk activity data to the map after all chunks have been
-     *         analyzed.
+     * Draws chunk activity data to the map after all chunks have been analyzed.
      *
      * @param map  The map image where activity data will be drawn.
      */

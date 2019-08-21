@@ -1,7 +1,7 @@
 /**
  * @file MapImage.java
  *
- * @brief  Simplifies the process of storing map data in an image.
+ * Simplifies the process of storing map data in an image.
  */
 
 package com.centuryglass.mcmap.mapping;
@@ -13,8 +13,8 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 /**
- * @brief  MapImage is a wrapper for a png++ image object, providing functions
- *         useful for drawing Minecraft map data.
+ * MapImage is a wrapper for a PNG image object, providing functions useful for
+ * drawing Minecraft map data.
  *
  *  In addition to providing convenience functions for coloring specific map
  * chunks, the MapImage also optionally draws a background and border
@@ -26,8 +26,8 @@ public class MapImage
     private static final String BACKGROUND_PATH = "emptyMap.png";
     
     /**
-     * @brief  Loads image data on construction, and optionally draws the
-     *         default background and border.
+     * Loads image data on construction, and optionally draws the default
+     * background and border.
      *
      * @param imagePath        The path where the image will be saved.
      *
@@ -101,7 +101,7 @@ public class MapImage
     }
     
     /**
-     * @brief  Gets the color of a specific image pixel.
+     * Gets the color of a specific image pixel.
      *
      * @param xPos  The pixel's x-coordinate.
      *
@@ -121,7 +121,7 @@ public class MapImage
     }
     
     /**
-     * @brief  Gets the color applied to a specific chunk.
+     * Gets the color applied to a specific chunk.
      *
      * @param xPos  The chunk's x-coordinate.
      *
@@ -141,7 +141,7 @@ public class MapImage
     }
     
     /**
-     * @brief  Sets the color of a specific image pixel.
+     * Sets the color of a specific image pixel.
      *
      * @param xPos   The pixel's x-coordinate.
      *
@@ -159,7 +159,7 @@ public class MapImage
     }
     
     /**
-     * @brief  Sets the color of a specific chunk.
+     * Sets the color of a specific chunk.
      *
      * @param xPos   The chunk's x-coordinate.
      *
@@ -194,7 +194,7 @@ public class MapImage
     }
     
     /**
-     * @brief  Saves the image to its output path.
+     * Saves the image to its output path.
      */
     public void saveImage()
     {
@@ -212,7 +212,7 @@ public class MapImage
     }
     
     /**
-     * @brief  Gets the width of the image, measured in Minecraft map chunks.
+     * Gets the width of the image, measured in Minecraft map chunks.
      *
      * @return  The map width.
      */
@@ -222,7 +222,7 @@ public class MapImage
     }
     
     /**
-     * @brief  Gets the height of the image, measured in Minecraft map chunks.
+     * Gets the height of the image, measured in Minecraft map chunks.
      *
      * @return  The map height.
      */
@@ -232,7 +232,7 @@ public class MapImage
     }
     
     /**
-     * @brief  Gets the length in pixels of each chunk edge within the map.
+     * Gets the length in pixels of each chunk edge within the map.
      *
      * @return  The chunk pixel dimensions. This serves as the multiplier
      *          used when converting map dimensions from chunks to pixels.
@@ -243,7 +243,7 @@ public class MapImage
     }
     
     /**
-     * @brief  Get the upper left pixel used to represent a chunk.
+     * Get the upper left pixel used to represent a chunk.
      *
      * @param chunkPos  The coordinates of a map chunk.
      *

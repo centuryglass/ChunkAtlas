@@ -1,7 +1,7 @@
 /**
  * @file  Structure.java
  *
- * @brief  Enumerates Minecraft structure types.
+ *  Enumerates Minecraft structure types.
  */
 
 package com.centuryglass.mcmap.worldinfo;
@@ -33,7 +33,7 @@ public enum Structure
     UNKNOWN (-1);
     
     /**
-     * @brief  Gets a structure's name value.
+     *  Gets a structure's name value.
      *
      * @param structure  A Minecraft structure type.
      *
@@ -45,7 +45,7 @@ public enum Structure
     }
 
     /**
-     * @brief  Tries to parse a structure type from a name value.
+     *  Tries to parse a structure type from a name value.
      *
      * @param name  A possible structure name.
      *
@@ -63,7 +63,7 @@ public enum Structure
     }
 
     /**
-     * @brief  Gets a color value to represent a Minecraft structure.
+     *  Gets a color value to represent a Minecraft structure.
      *
      * @param structure  The structure type to represent.
      *
@@ -75,7 +75,7 @@ public enum Structure
     }
     
     /**
-     * @brief  Gets a value used to prioritize this structure within maps.
+     *  Gets a value used to prioritize this structure within maps.
      *         Higher values take precedence over lower values.
      * 
      * @return  The priority value.

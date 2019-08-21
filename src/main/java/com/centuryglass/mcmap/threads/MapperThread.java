@@ -1,7 +1,7 @@
 /**
  * @file  MapperThread.java
  * 
- * @brief  Handles all map data updates within a separate thread.
+ *  Handles all map data updates within a separate thread.
  */
 package com.centuryglass.mcmap.threads;
 
@@ -19,7 +19,7 @@ public class MapperThread extends Thread
     private static final long TIMEOUT = 1; // seconds
     
     /**
-     * @brief  Stores the map collection object on construction.
+     *  Stores the map collection object on construction.
      * 
      * @param mapCollector  The container holding all map instance types.
      */
@@ -31,7 +31,7 @@ public class MapperThread extends Thread
     }
 
     /**
-     * @brief  Signals to the map thread that it should stop once it processes
+     *  Signals to the map thread that it should stop once it processes
      *         all chunks in its queue.
      */
     public void requestStop()
@@ -40,7 +40,7 @@ public class MapperThread extends Thread
     }
 
     /**
-     * @brief  Adds another chunk for the thread to process.
+     *  Adds another chunk for the thread to process.
      * 
      * @param chunk  Minecraft map data to add to all maps.
      */

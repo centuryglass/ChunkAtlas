@@ -1,7 +1,7 @@
 /**
- * @file  StructureMapper.h
+ * @file  StructureMapper.java
  *
- * @brief  Draws a map showing the structures of created chunks.
+ *  Draws a map showing the structures of created chunks.
  */
 package com.centuryglass.mcmap.mapping;
 
@@ -13,7 +13,7 @@ import java.util.Set;
 public class StructureMapper extends Mapper
 {
     /**
-     * @brief  Sets map image properties on construction.
+     *  Sets map image properties on construction.
      *
      * @param imagePath       Path to where the map image will be saved.
      *
@@ -30,7 +30,7 @@ public class StructureMapper extends Mapper
     }
 
     /**
-     * @brief  Provides a color for any valid chunk based on the structure or
+     *  Provides a color for any valid chunk based on the structure or
      *         structures it contains.
      *
      * @param chunk  The chunk that may be drawn.

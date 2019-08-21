@@ -1,7 +1,7 @@
 /**
  * @file  ReaderThread.java
  * 
- * @brief  Reads and processes Minecraft .mca region files within a thread.
+ *  Reads and processes Minecraft .mca region files within a thread.
  */
 package com.centuryglass.mcmap.threads;
 
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class ReaderThread extends Thread
 {
     /**
-     * @brief  Sets the list of paths this thread will process and the objects
+     *  Sets the list of paths this thread will process and the objects
      *         where it will send processed data.
      * 
      * @param regionPaths     The list of all region file paths the thread will
@@ -34,7 +34,7 @@ public class ReaderThread extends Thread
     }
     
     /**
-     * @brief  Read and map all assigned region files within the thread.
+     *  Read and map all assigned region files within the thread.
      */
     @Override
     public void run()

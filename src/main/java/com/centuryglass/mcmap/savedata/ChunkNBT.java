@@ -36,7 +36,7 @@ public class ChunkNBT
     }
 
     /** 
-     * @brief  Extract and access compressed NBT data.
+     *  Extract and access compressed NBT data.
      *
      * @param compressedData  An array of compressed NBT byte data.
      */
@@ -82,13 +82,13 @@ public class ChunkNBT
     }
 
     /**
-     * @brief  Gets data about this map chunk.
+     *  Gets data about this map chunk.
      *
      * @param pos  The map coordinate to be saved with the chunk.
      *
      * @return     The chunk data object.
      */
-    public ChunkData getChunkData(Point pos) throws IOException
+    public ChunkData getChunkData(Point pos)
     {
         ByteStream chunkStream = new ByteStream(extractedData);
         
@@ -396,9 +396,18 @@ public class ChunkNBT
         // Process tags until the buffer is empty:
         do
         {
-            NBTTag type = NBTTag.values()[Byte.toUnsignedInt(
-                    chunkStream.readByte())];
-            parseTag.get(type).accept(true);
+            NBTTag type;
+            try
+            {
+                type = NBTTag.values()[Byte.toUnsignedInt(
+                        chunkStream.readByte())];
+                parseTag.get(type).accept(true);
+            }
+            catch (IOException e)
+            {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
         }
         while(! openTags.isEmpty() && chunkStream.available() > 0);
         ChunkData chunk = new ChunkData(pos, (int) dataState.inhabitedTime,

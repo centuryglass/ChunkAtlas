@@ -1,7 +1,7 @@
 /**
- * @file  ChunkData.h
+ * @file  ChunkData.java
  *
- * @brief  Stores information about a Minecraft map chunk.
+ *  Stores information about a Minecraft map chunk.
  */
 package com.centuryglass.mcmap.worldinfo;
 
@@ -14,7 +14,7 @@ import java.util.TreeSet;
 public class ChunkData
 {
     /**
-     * @brief  Saves mandatory chunk data on construction.
+     *  Saves mandatory chunk data on construction.
      *
      * @param pos         The chunk's coordinates.
      *
@@ -33,7 +33,7 @@ public class ChunkData
     }
     
     /**
-     * @brief  Adds a biome to the list of chunk biome counts.
+     *  Adds a biome to the list of chunk biome counts.
      *
      * @param biome  A Minecraft biome value.
      */
@@ -51,7 +51,7 @@ public class ChunkData
     }
 
     /**
-     * @brief  Adds a structure to the set of chunk structure.
+     *  Adds a structure to the set of chunk structure.
      *
      * @param structure  A Minecraft generated structure type.
      */
@@ -61,7 +61,7 @@ public class ChunkData
     }
 
     /**
-     * @brief  Gets the chunk's position.
+     *  Gets the chunk's position.
      *
      * @return  The chunk map coordinates.
      */
@@ -71,7 +71,7 @@ public class ChunkData
     }
     
     /**
-     * @brief  Gets the chunk's inhabited time.
+     *  Gets the chunk's inhabited time.
      *
      * @return  The number of ticks that players have spent within the chunk.
      */
@@ -81,7 +81,7 @@ public class ChunkData
     }
 
     /**
-     * @brief  Get the chunk's last update time.
+     *  Get the chunk's last update time.
      *
      * @return  A timestamp for the chunk's last update.
      */
@@ -91,7 +91,7 @@ public class ChunkData
     }
 
     /**
-     * @brief  Get the chunk's biome counts.
+     *  Get the chunk's biome counts.
      *
      * @return  All biomes in the chunk, mapped to their frequencies.
      */
@@ -101,7 +101,7 @@ public class ChunkData
     }
 
     /**
-     * @brief  Get the chunk's structure list.
+     *  Get the chunk's structure list.
      *
      * @return  All structures present within the chunk.
      */

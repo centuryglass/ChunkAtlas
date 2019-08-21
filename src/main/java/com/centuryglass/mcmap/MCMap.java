@@ -1,7 +1,7 @@
 /**
  * @file  MCMap.java
  *
- * @brief  Draws all Minecraft region map data.
+ * Draws all Minecraft region map data.
  */
 package com.centuryglass.mcmap;
 

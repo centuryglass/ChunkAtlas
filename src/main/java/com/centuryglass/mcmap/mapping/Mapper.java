@@ -1,7 +1,7 @@
 /**
- * @file  Mapper.h
+ * @file  Mapper.java
  *
- * @brief  A basis for classes that use chunk data to draw map images.
+ *  A basis for classes that use chunk data to draw map images.
  */
 package com.centuryglass.mcmap.mapping;
 
@@ -12,7 +12,7 @@ import java.awt.Point;
 public abstract class Mapper
 {
     /**
-     * @brief  Sets map image properties on construction.
+     *  Sets map image properties on construction.
      *
      * @param imagePath       Path to where the map image will be saved.
      *
@@ -30,7 +30,7 @@ public abstract class Mapper
     }
     
     /**
-     * @brief  Writes map image data to the image path.
+     *  Writes map image data to the image path.
      */
     public final void saveMapFile()
     {
@@ -39,7 +39,7 @@ public abstract class Mapper
     }
     
     /**
-     * @brief  Updates the map with data from a single chunk.
+     *  Updates the map with data from a single chunk.
      *
      * @param chunk  The world chunk to add to the map.
      */
@@ -54,7 +54,7 @@ public abstract class Mapper
     }
     
     /**
-     * @brief  Gets what color, if any, that should be drawn to the map for a
+     *  Gets what color, if any, that should be drawn to the map for a
      *         specific chunk. 
      *
      *  Mapper subclasses will implement this function to control the type of
@@ -67,7 +67,7 @@ public abstract class Mapper
     protected abstract Color getChunkColor(ChunkData chunk);
     
     /**
-     * @brief  Handles any final tasks that need to be done before the map can
+     *  Handles any final tasks that need to be done before the map can
      *         be exported as an image.
      *
      *  The default implementation of this method just draws the x and z axis.

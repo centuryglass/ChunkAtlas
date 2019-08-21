@@ -1,7 +1,7 @@
 /**
  * @file  ByteStream.java
  * 
- * @brief  A file byte stream class with an ideal interface for reading
+ *  A file byte stream class with an ideal interface for reading
  *         Minecraft world data.
  */
 package com.centuryglass.mcmap.savedata;
@@ -16,6 +16,13 @@ import java.util.Arrays;
 
 public class ByteStream
 {
+    /**
+     * Creates a ByteStream to read data from a file.
+     * 
+     * @param toOpen                  The file data source.
+     * 
+     * @throws FileNotFoundException  If the file does not exist.
+     */
     public ByteStream(File toOpen) throws FileNotFoundException
     {
         stream = new FileInputStream(toOpen);
@@ -27,6 +34,11 @@ public class ByteStream
         buffer.limit(0);
     }
     
+    /**
+     * Creates a ByteStream to read data from a byte array.
+     * 
+     * @param byteArray  An array of bytes to access through the stream. 
+     */
     public ByteStream(byte[] byteArray)
     {
         stream = null;
@@ -37,7 +49,7 @@ public class ByteStream
     }
     
     /**
-     * @brief  Gets the stream's current position within the file or byte array.
+     * Gets the stream's current position within the file or byte array.
      * 
      * @return  The index of the next byte in the stream. 
      */
@@ -51,8 +63,8 @@ public class ByteStream
     }
     
     /**
-     * @brief  Get an estimate of the number of remaining bytes that can be read
-     *         from the stream without blocking.
+     * Get an estimate of the number of remaining bytes that can be read from
+     * the stream without blocking.
      * 
      * @return  The number of bytes available. 
      */
@@ -75,7 +87,7 @@ public class ByteStream
     }
     
     /**
-     * @brief  Reads a single byte from the stream at the current position.
+     * Reads a single byte from the stream at the current position.
      * 
      * @return  The next byte.
      * 
@@ -91,7 +103,7 @@ public class ByteStream
     };
     
     /**
-     * @brief  Reads a big-endian, two byte short value from the stream.
+     * Reads a big-endian, two byte short value from the stream.
      * 
      * @return  The value that was read.
      * 
@@ -107,7 +119,7 @@ public class ByteStream
     }
     
     /**
-     * @brief  Reads a big-endian, four byte int value from the stream.
+     * Reads a big-endian, four byte int value from the stream.
      * 
      * @return  The value that was read.
      * 
@@ -123,7 +135,7 @@ public class ByteStream
     }
     
     /**
-     * @brief  Reads a big-endian, four byte float value from the stream.
+     * Reads a big-endian, four byte float value from the stream.
      * 
      * @return  The value that was read.
      * 
@@ -139,7 +151,7 @@ public class ByteStream
     }    
     
     /**
-     * @brief  Reads a big-endian, eight byte double value from the stream.
+     * Reads a big-endian, eight byte double value from the stream.
      * 
      * @return  The value that was read.
      * 
@@ -155,8 +167,7 @@ public class ByteStream
     }  
     
     /**
-     * @brief  Reads a big-endian int value with a variable byte size from the
-     *         stream.
+     * Reads a big-endian int value with a variable byte size from the stream.
      * 
      * @param byteSize      The number of bytes to read into the integer. This
      *                      value should not be greater than four or less than
@@ -200,7 +211,7 @@ public class ByteStream
     }
     
     /**
-     * @brief  Reads a big-endian, eight byte long value from the stream.
+     * Reads a big-endian, eight byte long value from the stream.
      * 
      * @return  The value that was read.
      * 
@@ -216,8 +227,7 @@ public class ByteStream
     }
     
     /**
-     * @brief  Reads a big-endian long value with a variable byte size from the
-     *         stream.
+     * Reads a big-endian long value with a variable byte size from the stream.
      * 
      * @param byteSize      The number of bytes to read into the integer. This
      *                      value should not be greater than eight or less than
@@ -253,7 +263,7 @@ public class ByteStream
     }
     
     /**
-     * @brief  Reads an array of bytes from the stream.
+     * Reads an array of bytes from the stream.
      * 
      * @param size          Maximum number of bytes to read.
      * 
@@ -287,7 +297,7 @@ public class ByteStream
     }
     
     /**
-     * @brief  Skip forward in the stream by a specific byte count.
+     * Skip forward in the stream by a specific byte count.
      * 
      * @param toSkip        Maximum number of bytes to skip.
      * 
@@ -315,11 +325,14 @@ public class ByteStream
     }
     
     /**
-     * @brief  Buffer up to size stream bytes.
+     * Buffer up to size stream bytes.
      * 
-     * @param size  The number of bytes to buffer.
+     * @param size          The number of bytes to buffer.
      * 
-     * @return      The number of bytes that were actually buffered.
+     * @return              The number of bytes that were actually buffered.
+     * 
+     * @throws IOException  If any errors occur when reading from the source
+     *                      file.
      */
     public int readToBuffer(int size) throws IOException
     {

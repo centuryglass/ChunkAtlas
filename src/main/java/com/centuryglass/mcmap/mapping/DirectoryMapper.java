@@ -1,7 +1,7 @@
 /**
- * @file  DirectoryMapper.h
+ * @file  DirectoryMapper.java
  *
- * @brief  Draws a map showing directory information on top of biome info.
+ * Draws a map showing directory information on top of biome info.
  */
 package com.centuryglass.mcmap.mapping;
 
@@ -21,7 +21,7 @@ public class DirectoryMapper extends BiomeMapper
     private static final double BIOME_COLOR_MULT = 0.5;
     
     /**
-     * @brief  Sets map image properties on construction.
+     * Sets map image properties on construction.
      *
      * @param imagePath       Path to where the map image will be saved.
      *
@@ -44,7 +44,7 @@ public class DirectoryMapper extends BiomeMapper
     }
 
     /**
-     * @brief  Provides a color for any valid chunk based on biome.
+     * Provides a color for any valid chunk based on biome.
      *
      * @param chunk  The chunk that may be drawn.
      *
@@ -71,7 +71,7 @@ public class DirectoryMapper extends BiomeMapper
     }
 
     /**
-     * @brief  Adds directory info to the map before exporting it.
+     * Adds directory info to the map before exporting it.
      *
      * @param map  The mapper's MapImage.
      */

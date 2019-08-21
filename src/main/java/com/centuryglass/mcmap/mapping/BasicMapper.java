@@ -1,7 +1,7 @@
 /**
- * @file  BasicMapper.h
+ * @file  BasicMapper.java
  *
- * @brief  Draws a map showing which chunks have been loaded.
+ * Draws a map showing which chunks have been loaded.
  */
 
 package com.centuryglass.mcmap.mapping;
@@ -13,7 +13,7 @@ import java.awt.Point;
 public class BasicMapper extends Mapper
 {
     /**
-     * @brief  Sets map image properties on construction.
+     * Sets map image properties on construction.
      *
      * @param imagePath       Path to where the map image will be saved.
      *
@@ -30,8 +30,8 @@ public class BasicMapper extends Mapper
     }
     
     /**
-     * @brief  Provides a color for any valid chunk, using a green and white
-     *         checkerboard pattern.
+     * Provides a color for any valid chunk, using a green and white
+     * checkerboard pattern.
      *
      * @param chunk  The chunk that may be drawn.
      *

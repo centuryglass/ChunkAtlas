@@ -1,7 +1,7 @@
 /**
- * @file NBTTag.h
+ * @file NBTTag.java
  *
- * @brief  Lists NBT tag types.
+ *  Lists NBT tag types.
  */
 package com.centuryglass.mcmap.savedata;
 

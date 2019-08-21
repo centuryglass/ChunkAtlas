@@ -1,7 +1,7 @@
 /**
- * @file  BiomeMapper.h
+ * @file  BiomeMapper.java
  *
- * @brief  Draws a map showing the biomes of created chunks.
+ * Draws a map showing the biomes of created chunks.
  */
 
 package com.centuryglass.mcmap.mapping;
@@ -14,7 +14,7 @@ import java.util.Map;
 public class BiomeMapper extends Mapper
 {
     /**
-     * @brief  Sets map image properties on construction.
+     * Sets map image properties on construction.
      *
      * @param imagePath       Path to where the map image will be saved.
      *
@@ -31,8 +31,8 @@ public class BiomeMapper extends Mapper
     }
 
     /**
-     * @brief  Provides a color for any valid chunk based on the biome or
-     *         biomes it contains.
+     * Provides a color for any valid chunk based on the biome or biomes it
+     * contains.
      *
      * @param chunk  The chunk that may be drawn.
      *
@@ -65,15 +65,7 @@ public class BiomeMapper extends Mapper
             red /= biomeSum;
             green /= biomeSum;
             blue /= biomeSum;
-            try
-            {
-                color = new Color((int) red, (int) green, (int) blue);
-            }
-            catch (java.lang.IllegalArgumentException e)
-            {
-                System.err.println("Illegal color: " + red + ", " + green + ", " + blue);
-                System.exit(1);               
-            }
+            color = new Color((int) red, (int) green, (int) blue);
         }
         return color;
     }

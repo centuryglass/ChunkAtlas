@@ -1,8 +1,7 @@
 /**
- * @file  Biome.h
+ * @file  Biome.java
  *
- * @brief  Defines the code values used to represent all minecraft world
- *         biomes.
+ *  Defines the code values used to represent all Minecraft world biomes.
  */
 package com.centuryglass.mcmap.worldinfo;
 
@@ -89,7 +88,7 @@ public enum Biome
     THE_VOID (127);
 
     /**
-     * @brief  Gets a color value to represent a Minecraft biome.
+     *  Gets a color value to represent a Minecraft biome.
      *
      * @param biome  The biome type to represent.
      *
@@ -101,7 +100,7 @@ public enum Biome
     }
     
     /**
-     * @brief  Gets a biome from its NBT code value.
+     *  Gets a biome from its NBT code value.
      * 
      * @param biomeCode  A biome's NBT code number.
      * 

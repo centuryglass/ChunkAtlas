@@ -1,12 +1,11 @@
 /**
  * @file ProgressCount.java
  * 
- * @brief  Provides thread-safe tracking of processed region file and chunk
+ *  Provides thread-safe tracking of processed region file and chunk
  *         counts.
  */
 package com.centuryglass.mcmap.threads;
 
-import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -27,8 +26,10 @@ public class ProgressThread extends Thread
     }
     
     /**
-     * @brief  Initialize the ProgressCount with zero values, and save the
-     *         total number of region files for progress updates.
+     * Initialize the ProgressCount with zero values, and save the total number
+     * of region files for progress updates.
+     * 
+     * @param numRegions  The total number of region files in the map.
      */
     public ProgressThread(int numRegions)
     {
@@ -40,7 +41,7 @@ public class ProgressThread extends Thread
     }
     
     /**
-     * @brief  Signals to the progress thread that it should stop once it
+     *  Signals to the progress thread that it should stop once it
      *         processes all updates in its queue.
      */
     public void requestStop()
@@ -49,7 +50,7 @@ public class ProgressThread extends Thread
     }
 
     /**
-     * @brief  Gets the number of processed region files.
+     *  Gets the number of processed region files.
      * 
      * @return  The region count. 
      */
@@ -59,7 +60,7 @@ public class ProgressThread extends Thread
     }
 
     /**
-     * @brief  Gets the number of processed Minecraft map chunks.
+     *  Gets the number of processed Minecraft map chunks.
      * 
      * @return  The chunk count. 
      */
@@ -69,7 +70,7 @@ public class ProgressThread extends Thread
     }
 
     /**
-     * @brief  Adds to the processed region and chunk counts.
+     *  Adds to the processed region and chunk counts.
      * 
      * @param regions  The number of additional processed region files.
      * 
@@ -84,7 +85,7 @@ public class ProgressThread extends Thread
     }
     
     /**
-     * @brief  Updates region and chunk counts, printing the region count if its
+     *  Updates region and chunk counts, printing the region count if its
      *         value changes, and moving the cursor back so that the next print
      *         call overwrites the region count message.
      */
