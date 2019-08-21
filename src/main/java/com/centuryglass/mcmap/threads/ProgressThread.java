@@ -1,0 +1,127 @@
+/**
+ * @file ProgressCount.java
+ * 
+ * @brief  Provides thread-safe tracking of processed region file and chunk
+ *         counts.
+ */
+package com.centuryglass.mcmap.threads;
+
+import com.centuryglass.mcmap.worldinfo.ChunkData;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+
+public class ProgressThread extends Thread
+{
+    // Duration the thread will wait for new progress updates before pausing
+    // to check if it should exit:
+    private static final long TIMEOUT = 1; // seconds
+    
+    // Stores buffered update data.
+    private class Update
+    {
+        public int addedRegions;
+        public int addedChunks;
+    }
+    
+    /**
+     * @brief  Initialize the ProgressCount with zero values, and save the
+     *         total number of region files for progress updates.
+     */
+    public ProgressThread(int numRegions)
+    {
+        updateQueue = new LinkedBlockingQueue();
+        shouldExit = new AtomicBoolean();
+        numRegionFiles = numRegions;
+        regionCount = 0;
+        chunkCount = 0;
+    }
+    
+    /**
+     * @brief  Signals to the progress thread that it should stop once it
+     *         processes all updates in its queue.
+     */
+    public void requestStop()
+    {
+        shouldExit.set(true);
+    }
+
+    /**
+     * @brief  Gets the number of processed region files.
+     * 
+     * @return  The region count. 
+     */
+    public synchronized int getRegionCount()
+    {
+        return regionCount;
+    }
+
+    /**
+     * @brief  Gets the number of processed Minecraft map chunks.
+     * 
+     * @return  The chunk count. 
+     */
+    public synchronized int getChunkCount()
+    {
+        return chunkCount;
+    }
+
+    /**
+     * @brief  Adds to the processed region and chunk counts.
+     * 
+     * @param regions  The number of additional processed region files.
+     * 
+     * @param chunks   The number of additional processed map chunks. 
+     */
+    public void addToCounts(int regions, int chunks)
+    {
+        Update update = new Update();
+        update.addedRegions = regions;
+        update.addedChunks = chunks;
+        updateQueue.add(update);
+    }
+    
+    /**
+     * @brief  Updates region and chunk counts, printing the region count if its
+     *         value changes, and moving the cursor back so that the next print
+     *         call overwrites the region count message.
+     */
+    @Override
+    public void run()
+    {
+        while (! shouldExit.get() || ! updateQueue.isEmpty())
+        {
+            try
+            {
+                Update update = updateQueue.poll(TIMEOUT, TimeUnit.SECONDS);
+                if (update != null)
+                {
+                    regionCount += update.addedRegions;
+                    chunkCount += update.addedChunks;
+                    if (update.addedRegions > 0)
+                    {
+                        System.out.print("\033[2K"); // Erase line content
+                        System.out.print("Finished file " + regionCount + "/"
+                            + numRegionFiles + ": ");
+                        System.out.flush();
+                    }
+                }
+            }
+            catch (InterruptedException e)
+            {
+                // If interrupted, just continue on to check shouldExit
+                // again and go back to waiting.
+            }
+        }
+    }
+    // Threadsafe data queue that allows waiting for new items:
+    private final BlockingQueue<Update> updateQueue;
+    // Atomically track whether the thread should exit:
+    private final AtomicBoolean shouldExit;
+    private final int numRegionFiles;
+    private int regionCount;
+    private int chunkCount;
+    
+}
