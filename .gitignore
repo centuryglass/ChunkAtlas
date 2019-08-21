@@ -1,4 +1,6 @@
 build
+target
+server*
 MCMap
 *test.png
 gzstream/*.o
