@@ -13,130 +13,50 @@ import com.centuryglass.mcmap.threads.ReaderThread;
 import java.awt.Point;
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.BiConsumer;
 
+/**
+ *  MCMap defines the main set of actions necessary to process all region files
+ * and convert those files to map images. It allows access to mapping routines
+ * both when running MCMap as an executable and when running it as a Spigot
+ * server plugin.
+ */
 public class MCMap
 {
     // Default values:
     // TODO: load these from a config file
-    private static final String DEFAULT_MAP_DIR = "/home/"
-            + System.getenv("USER") + "/MCregion";
-    private static final String DEFAULT_IMAGE_NAME = "server";
-    private static final String DEFAULT_DIR_INFO = "directory.txt";
     private static final int WORLD_BORDER = 1600;
-    private static final int DEFAULT_MAP_EDGE = WORLD_BORDER * 2;
-    private static final int DEFAULT_CHUNK_PX = 2;
     private static final int MIN_SIZE = 256;
     private static final int MAX_SIZE = 10000;
 
-    // Command line argument option types:
-    enum ArgOption
+
+    /**
+     * Generates all map variants from Minecraft server data.
+     * 
+     * @param mapEdge          Width and height of the mapped region, centered
+     *                         on (0, 0) and measured in chunks. This value may
+     *                         be adjusted if the resulting maps would be
+     *                         excessively large.
+     * 
+     * @param pxPerChunk       Width and height in pixels of each chunk within
+     *                         generated map images. This value may be adjusted
+     *                         if the resulting maps would be excessively large.
+     * 
+     * @param regionDataPath   Path to the Minecraft region file directory used
+     *                         to generate maps.
+     * 
+     * @param imagePath        Path where image files will be saved. Use a
+     *                         generic path value like "./map.png", individual
+     *                         map types will be saved to "./map_type.png".
+     * 
+     * @param dirInfoPath      Path to a file containing notable coordinates to
+     *                         mark on the server directory map. Directory files
+     *                         should list one point per line, formatted as
+     *                         X Z PlaceName.
+     */
+    public static void createMaps(int mapEdge, int pxPerChunk,
+            Path regionDataPath, Path imagePath, Path dirInfoPath)
     {
-        HELP,
-        REGION_DIR,
-        OUTPUT,
-        WORLD_BORDER,
-        CHUNK_PIXELS,
-        DIRECTORY_FILE;
-    }
-
-    public static void createMaps(String [] args)
-    {
-        // Initialize command line options:
-        // Map options to short flag values:
-        Map<ArgOption, String> shortOptionFlags = new HashMap();
-        // Map options to long flag values:
-        Map<ArgOption, String> longOptionFlags = new HashMap();
-        // Map option flag strings to option types:
-        Map<String, ArgOption> flagOptions = new HashMap();
-        // Initialize an option in all option maps:
-
-        BiConsumer<ArgOption, String> initOption = (option, flags) ->
-        {
-            String shortFlag = flags.substring(0, flags.indexOf(','));
-            String longFlag = flags.substring(flags.indexOf(',') + 1);
-            shortOptionFlags.put(option, shortFlag);
-            longOptionFlags.put(option, longFlag);
-            flagOptions.put(shortFlag, option);
-            flagOptions.put(longFlag, option);
-        };
-        initOption.accept(ArgOption.HELP, "-h,--help");
-        initOption.accept(ArgOption.REGION_DIR, "-r,--regionDir");
-        initOption.accept(ArgOption.OUTPUT, "-o,--out");
-        initOption.accept(ArgOption.WORLD_BORDER, "-b,--border");
-        initOption.accept(ArgOption.CHUNK_PIXELS, "-p,--pixels");
-        initOption.accept(ArgOption.DIRECTORY_FILE, "-d,--directoryFile");
-
-        // Initialize default option values:
-        int mapEdge = DEFAULT_MAP_EDGE;
-        int chunkPx = DEFAULT_CHUNK_PX;
-        Path regionDataPath = Paths.get(DEFAULT_MAP_DIR);
-        Path imagePath = Paths.get(DEFAULT_IMAGE_NAME);
-        Path dirInfoPath = Paths.get(DEFAULT_DIR_INFO);
-
-        // Process all command line options:
-        for (int i = 0; i < args.length; i++)
-        {
-            String optionFlag = (args[i]);
-            ArgOption option = flagOptions.get(optionFlag);
-            if (optionFlag == null)
-            {
-                System.err.println("Error: invalid option " + optionFlag);
-                option = ArgOption.HELP;
-            }
-            switch (option)
-            {
-            case HELP:
-            {
-                System.out.println("Usage: ./MCMap [options]\nOptions:");
-                BiConsumer<ArgOption, String> printFlag =
-                (helpOption, description) ->
-                {
-                    System.out.println("  " + shortOptionFlags.get(helpOption)
-                            + ", " + longOptionFlags.get(helpOption) 
-                            + ":\n\t\t" + description);
-                };
-                printFlag.accept(ArgOption.HELP,
-                        "Print this help text.");
-                printFlag.accept(ArgOption.REGION_DIR,
-                        "Set region data directory path.");
-                printFlag.accept(ArgOption.OUTPUT,
-                        "Set map image output path.");
-                printFlag.accept(ArgOption.WORLD_BORDER, 
-                        "Set map width/height in chunks.");
-                printFlag.accept(ArgOption.CHUNK_PIXELS,
-                        "Set chunk width/height in pixels.");
-                printFlag.accept(ArgOption.DIRECTORY_FILE,
-                        "Set coordinate directory file path.");
-                return;
-            }
-            case REGION_DIR:
-                regionDataPath = Paths.get(args[i + 1]);
-                break;
-            case OUTPUT:
-                String pathStr = args[i + 1];
-                if (pathStr.substring(pathStr.length() - 4).equals(".png"))
-                {
-                    pathStr = pathStr.substring(0, pathStr.length() - 4);
-                }
-                imagePath = Paths.get(pathStr);
-                break;
-            case WORLD_BORDER:
-                mapEdge = Integer.parseInt(args[i + 1]);
-                break;
-            case CHUNK_PIXELS:
-                chunkPx = Integer.parseInt(args[i + 1]);
-                break;
-            case DIRECTORY_FILE:
-                dirInfoPath = Paths.get(args[i + 1]);
-            }
-        }
-
-
         // save region file paths and count:
         ArrayList<Path> regionFiles = new ArrayList();
         int maxDistanceFromOrigin = 0;
@@ -168,8 +88,7 @@ public class MCMap
             else
             {
                 outOfBounds++;
-            }
-            
+            }        
         }
         if (outOfBounds > 0)
         {
@@ -179,15 +98,15 @@ public class MCMap
         }
         mapEdge = maxDistanceFromOrigin * 2;
         // Ensure map sizes fit within the maximum image size:
-        while((mapEdge * chunkPx) < MIN_SIZE)
+        while((mapEdge * pxPerChunk) < MIN_SIZE)
         {
-            chunkPx++;
+            pxPerChunk++;
         }
-        while((mapEdge * chunkPx) > MAX_SIZE && chunkPx > 1)
+        while((mapEdge * pxPerChunk) > MAX_SIZE && pxPerChunk > 1)
         {
-            chunkPx--;
+            pxPerChunk--;
         }
-        if((mapEdge * chunkPx) > MAX_SIZE)
+        if((mapEdge * pxPerChunk) > MAX_SIZE)
         {
             mapEdge = MAX_SIZE;
             int maxBlock = (mapEdge / 2) * 32 * 16;
@@ -199,7 +118,7 @@ public class MCMap
         int numRegionFiles = regionFiles.size();
         // Initialize Mappers with the provided path:
         final MapCollector mappers = new MapCollector(imagePath, dirInfoPath,
-                mapEdge, mapEdge, chunkPx);
+                mapEdge, mapEdge, pxPerChunk);
         
         // Provide threadsafe tracking of processed region and chunk counts:
         ProgressThread progressThread = new ProgressThread(numRegionFiles);

@@ -1,8 +1,7 @@
 /**
  * @file  ActivityMapper.java
  *
- * Draws a map showing the amount of time that players have spent in specific
- * chunks
+ * Creates the Minecraft player activity map.
  */
 
 package com.centuryglass.mcmap.mapping;
@@ -12,6 +11,10 @@ import java.awt.Color;
 import java.awt.Point;
 import java.util.Arrays;
 
+/**
+ * ActivityMapper a map showing the relative amount of time that players have
+ * spent in specific Minecraft region chunks.
+ */
 public class ActivityMapper extends Mapper
 {
     /**

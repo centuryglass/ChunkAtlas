@@ -1,7 +1,7 @@
 /**
  * @file  BiomeMapper.java
  *
- * Draws a map showing the biomes of created chunks.
+ * Creates the Minecraft region biome map.
  */
 
 package com.centuryglass.mcmap.mapping;
@@ -11,6 +11,11 @@ import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
 import java.util.Map;
 
+/**
+ * BiomeMapper draws a map showing the biomes of all generated chunks within
+ * the mapped region. Individual structure colors are defined in the
+ * worldinfo.Biome enum, and documented in the project's mapKey.png file.
+ */
 public class BiomeMapper extends Mapper
 {
     /**

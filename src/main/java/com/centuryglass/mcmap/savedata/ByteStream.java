@@ -1,8 +1,8 @@
 /**
  * @file  ByteStream.java
  * 
- *  A file byte stream class with an ideal interface for reading
- *         Minecraft world data.
+ *  Provides a more convenient interface for processing streams of binary 
+ * Minecraft region data.
  */
 package com.centuryglass.mcmap.savedata;
 
@@ -14,6 +14,15 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+/**
+ * ByteStream is a binary data stream class, extracting and processing data from
+ * either a specific file or a byte array.
+ * 
+ *  ByteStream objects assume that all data is big-endian, and stored using a
+ * set of standard data types of varying sizes. ByteStream is not heavily
+ * specialized for handling Minecraft data, and could easily be reused in other
+ * applications.
+ */
 public class ByteStream
 {
     /**

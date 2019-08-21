@@ -1,7 +1,7 @@
 /**
  * @file  DirectoryMapper.java
  *
- * Draws a map showing directory information on top of biome info.
+ * Creates the user directory location map.
  */
 package com.centuryglass.mcmap.mapping;
 
@@ -15,7 +15,15 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Scanner;
 import java.util.function.BiConsumer;
-
+ 
+/**
+ *  DirectoryMapper draws a map showing user-provided directory information on
+ * top of biome info.
+ * 
+ *  A directory file provides a list of named map coordinates, formatted as
+ * "X Z name" (e.g. 0 0 origin). These map coordinates are drawn over a dimmed
+ * biome map, then printed to the console in order.
+ */
 public class DirectoryMapper extends BiomeMapper
 {
     private static final double BIOME_COLOR_MULT = 0.5;
@@ -103,6 +111,11 @@ public class DirectoryMapper extends BiomeMapper
                 }
             }
         };
+        if (directoryPath == null)
+        {
+            System.err.println("DirectoryMapper: no directory list provided.");
+            return;
+        }
         
         Scanner directoryReader;
         try

@@ -9,6 +9,12 @@ import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
 import java.awt.Point;
 
+/**
+ *  Mapper classes are responsible for determining which color to apply to the
+ * map for each Minecraft map chunk. Each Mapper uses different criteria to
+ * select map colors, allowing for diverse map types representing different
+ * types of Minecraft world information.
+ */
 public abstract class Mapper
 {
     /**

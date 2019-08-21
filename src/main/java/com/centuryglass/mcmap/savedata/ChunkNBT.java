@@ -1,4 +1,11 @@
-
+/**
+ * @file  ChunkNBT.java
+ * 
+ * Extracts Minecraft region information from NBT-formatted byte data.
+ * 
+ * https://minecraft.gamepedia.com/NBT_format provides documentation for the
+ * NBT data format.
+ */
 package com.centuryglass.mcmap.savedata;
 
 import com.centuryglass.mcmap.worldinfo.Biome;
@@ -9,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,11 +28,17 @@ import java.util.function.Function;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
-
+/**
+ * ChunkNBT extracts compressed NBT chunk data arrays, and parses the extracted
+ * information to generate worldinfo.ChunkData objects.
+ */
 public class ChunkNBT
 {
-    private static final String TMP_DIR_PATH = "/tmp/MCMap";
-    private static final int BUF_SIZE = 8192;
+    // For roughly 97% of chunks, inflated chunk data will take up no more than
+    // 14x as much space as compressed data. Using this to set inflation buffer
+    // size increases performance by reducing the number of reallocations 
+    // needed.
+    private static final int BUF_MULT = 14;
 
     private class Keys
     {
@@ -33,6 +47,8 @@ public class ChunkNBT
         public static final String BIOME          = "Biomes";
         public static final String STRUCTURES     = "Structures";
         public static final String STRUCT_REFS    = "References";
+        public static final String STRUCT_STARTS  = "Starts";
+        
     }
 
     /** 
@@ -47,7 +63,8 @@ public class ChunkNBT
             return;
         }
 
-        extractedData = new byte[BUF_SIZE];
+        final int bufferSize = compressedData.length * BUF_MULT;
+        extractedData = new byte[bufferSize];
         Inflater inflater = new Inflater();
         inflater.setInput(compressedData, 0, compressedData.length);
         while (! inflater.needsInput())
@@ -55,7 +72,7 @@ public class ChunkNBT
             if (inflater.getTotalOut() >= extractedData.length)
             {
                 extractedData = Arrays.copyOf(extractedData,
-                        extractedData.length + BUF_SIZE);
+                        extractedData.length + bufferSize);
             }
             try
             {
@@ -174,7 +191,8 @@ public class ChunkNBT
             }
             if (dataState.inStructureRefs)
             {
-                if (openTags.peek().equals(Keys.STRUCT_REFS))
+                if (openTags.peek().equals(Keys.STRUCT_REFS)
+                        || openTags.peek().equals(Keys.STRUCT_STARTS))
                 {
                     dataState.inStructureRefs = false;
                 }
@@ -332,7 +350,8 @@ public class ChunkNBT
         {
             String name = readName.apply(isNamed);
             if (! openTags.isEmpty() && openTags.peek().equals(Keys.STRUCTURES)
-                    && name.equals(Keys.STRUCT_REFS))
+                    && (name.equals(Keys.STRUCT_REFS)
+                    || name.equals(Keys.STRUCT_STARTS)))
             {
                 dataState.inStructureRefs = true;
             }

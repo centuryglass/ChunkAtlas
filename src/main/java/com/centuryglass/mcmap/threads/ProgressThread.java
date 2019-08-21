@@ -103,9 +103,9 @@ public class ProgressThread extends Thread
                     chunkCount += update.addedChunks;
                     if (update.addedRegions > 0)
                     {
-                        System.out.print("\033[2K"); // Erase line content
-                        System.out.print("Finished file " + regionCount + "/"
-                            + numRegionFiles + ": ");
+                        System.out.println("Finished file " + regionCount + "/"
+                                + numRegionFiles + ", " + chunkCount
+                                + " chunks read.");
                         System.out.flush();
                     }
                 }

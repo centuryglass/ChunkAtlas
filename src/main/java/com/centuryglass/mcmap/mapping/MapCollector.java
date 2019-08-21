@@ -8,6 +8,11 @@ package com.centuryglass.mcmap.mapping;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.nio.file.Path;
 
+/**
+ *  MapCollector creates and manages all Mapper subclasses through a single
+ * interface. Since map data is applied identically to each Mapper, MapCollector
+ * takes care of the process of repeating each action for each map type.
+ */
 public class MapCollector
 {
     /**

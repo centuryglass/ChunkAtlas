@@ -1,7 +1,7 @@
 /**
  * @file  StructureMapper.java
  *
- *  Draws a map showing the structures of created chunks.
+ *  Creates the generated Minecraft structure map.
  */
 package com.centuryglass.mcmap.mapping;
 
@@ -10,6 +10,12 @@ import com.centuryglass.mcmap.worldinfo.Structure;
 import java.awt.Color;
 import java.util.Set;
 
+/**
+ *  StructureMapper creates maps showing where different generated structures
+ * can be found within the Minecraft world.  Individual structure colors are
+ * defined in the worldinfo.Structure enum, and documented in the project's
+ * mapKey.png file.
+ */
 public class StructureMapper extends Mapper
 {
     /**

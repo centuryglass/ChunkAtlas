@@ -1,7 +1,7 @@
 /**
  * @file  BasicMapper.java
  *
- * Draws a map showing which chunks have been loaded.
+ * Creates the basic loaded chunk map.
  */
 
 package com.centuryglass.mcmap.mapping;
@@ -10,6 +10,10 @@ import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
 import java.awt.Point;
 
+/**
+ *  BasicMapper creates a simple map that only displays which Minecraft map
+ * chunks have been generated.
+ */
 public class BasicMapper extends Mapper
 {
     /**

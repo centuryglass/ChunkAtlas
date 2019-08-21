@@ -6,10 +6,12 @@
 
 package com.centuryglass.mcmap.mapping;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import javax.imageio.ImageIO;
 
 /**
@@ -23,7 +25,7 @@ import javax.imageio.ImageIO;
 public class MapImage 
 {
     private static final int BORDER_DIVISOR = 19;
-    private static final String BACKGROUND_PATH = "emptyMap.png";
+    private static final String BACKGROUND_PATH = "/emptyMap.png";
     
     /**
      * Loads image data on construction, and optionally draws the default
@@ -66,10 +68,12 @@ public class MapImage
                 BufferedImage.TYPE_INT_RGB);
         if (drawBackground)
         {
+            URL imageURL = getClass().getResource(BACKGROUND_PATH);
+            System.out.println(imageURL.toString());
             BufferedImage sourceImage;
             try
             {
-                sourceImage = ImageIO.read(new File(BACKGROUND_PATH));
+                sourceImage = ImageIO.read(imageURL);
             }
             catch (IOException e)
             {
@@ -77,26 +81,9 @@ public class MapImage
                         + BACKGROUND_PATH + " failed.");
                 return;
             }
-            final double xScale = mapImage.getWidth() / sourceImage.getWidth();
-            final double zScale = mapImage.getHeight()
-                    / sourceImage.getHeight();
-            for (int z = 0; z < imageHeight; z++)
-            {
-                int sourceX = 0;
-                int sourceZ = Math.min((int)(z / zScale),
-                        sourceImage.getHeight() - 1);
-                int lastColor = sourceImage.getRGB(sourceX, sourceZ);
-                for (int x = 0; x < imageWidth; x++)
-                {
-                    if ((x / xScale) != sourceX)
-                    {
-                        sourceX = Math.min((int)(x / xScale),
-                                sourceImage.getWidth() - 1);
-                        lastColor = sourceImage.getRGB(sourceX, sourceZ);
-                    }
-                    mapImage.setRGB(x, z, lastColor);
-                }
-            }
+            Graphics2D graphics = mapImage.createGraphics();
+            graphics.drawImage(sourceImage, 0, 0, imageWidth, imageHeight,
+                    null);
         }
     }
     
