@@ -1,13 +1,10 @@
 # MCMap
 Finds all loaded chunks in a minecraft region directory and saves them to an image file.
 
-### Compiling MCMap
-Make sure you have libpng, png++, and a C++ compiler that supports C++17. The makefile will only work in Linux or similar systems, but figuring out a cross-platform build system is probably pretty simple. If everything is set up correctly, running `make` should be enough to build the MCMap program.
+### Building MCMap
+MCMap was created in NetBeans 11.1. The easiest way to rebuild the project is to open the project directory in Netbeans and select "Build Project" in the Run menu.
 
 ### Using MCMap
-`MCMap regionFolder imagePath.png [mapEdge][chunkPixels]`
+MCMap will work as both an executable jar and a Minecraft Spigot server plugin. To run MCMap directly from the command line, use `java -jar MCMap-0.1.jar [OPTIONS]`. Running `java -jar MCMap-0.1.jar --help` will list descriptions of all available options.
 
-- regionFolder: The path to a minecraft region folder. This should contain a bunch of .mca files.
-- imagePath: The path where the image will be saved in PNG file format.
-- mapEdge: Optional width/height in chunks of the world map, 3200 by default.
-- chunkPixels: Optional width/height in pixels of each drawn chunk, 2 by default.
+To run MCMap as a server plugin, place MCMap-0.1.jar in your server's plugins directory. Maps are generated automatically whenever the server restarts. 
