@@ -69,7 +69,6 @@ public class MapImage
         if (drawBackground)
         {
             URL imageURL = getClass().getResource(BACKGROUND_PATH);
-            System.out.println(imageURL.toString());
             BufferedImage sourceImage;
             try
             {
@@ -124,7 +123,7 @@ public class MapImage
         {
             return new Color(0);
         }
-        return new Color(mapImage.getRGB(xPos, zPos));
+        return new Color(mapImage.getRGB(pixelPos.x, pixelPos.y));
     }
     
     /**

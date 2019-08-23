@@ -13,10 +13,10 @@ import com.centuryglass.mcmap.worldinfo.ChunkData;
 import com.centuryglass.mcmap.worldinfo.Structure;
 import java.awt.Point;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
@@ -168,6 +168,7 @@ public class ChunkNBT
             public long inhabitedTime;
             public boolean inBiomeList;
             public boolean inStructureRefs;
+            public boolean inStructureStarts;
             public Structure currentStruct = Structure.UNKNOWN;
             public String currentStructName;
             
@@ -180,6 +181,7 @@ public class ChunkNBT
         DataState dataState = new DataState();
         ArrayList<Biome> biomes = new ArrayList();
         Set<Structure> structures = new TreeSet();
+        Map<Point, Structure> structureRefs = new HashMap();
         
         Map<NBTTag, Consumer<Boolean>> parseTag = new HashMap();
         // Define how each NBT tag type is parsed:
@@ -189,12 +191,13 @@ public class ChunkNBT
             {
                 return;
             }
-            if (dataState.inStructureRefs)
+            if (dataState.inStructureRefs || dataState.inStructureStarts)
             {
                 if (openTags.peek().equals(Keys.STRUCT_REFS)
                         || openTags.peek().equals(Keys.STRUCT_STARTS))
                 {
                     dataState.inStructureRefs = false;
+                    dataState.inStructureStarts = false;
                 }
                 else if (openTags.peek().equals(dataState.currentStructName))
                 {
@@ -223,11 +226,6 @@ public class ChunkNBT
         parseTag.put(NBTTag.SHORT, (isNamed)->
         {
             skipValue.accept(2, isNamed);
-            if (dataState.inBiomeList)
-            {
-                System.err.println("Biome short?!?");
-                System.exit(1);
-            }
         });
         parseTag.put(NBTTag.INT, (isNamed)->
         {
@@ -258,11 +256,23 @@ public class ChunkNBT
                 System.err.println(e.getMessage());
                 return;
             }     
-            if(dataState.inStructureRefs 
+            if((dataState.inStructureRefs || dataState.inStructureStarts) 
                     && dataState.currentStruct != Structure.UNKNOWN 
                     && !isNamed)
             {
-                structures.add(dataState.currentStruct);
+                if (dataState.inStructureStarts)
+                {
+                    structures.add(dataState.currentStruct);
+                }
+                else //inStructureRefs
+                {
+                    ByteBuffer longSplitter = ByteBuffer.allocate(8);
+                    longSplitter.putLong(longVal);
+                    longSplitter.position(0);
+                    structureRefs.put(new Point(longSplitter.getInt(),
+                            longSplitter.getInt()),
+                            dataState.currentStruct);
+                }
             }
             if (name.isEmpty())
             {
@@ -349,11 +359,16 @@ public class ChunkNBT
         parseTag.put(NBTTag.COMPOUND, (isNamed)->
         {
             String name = readName.apply(isNamed);
-            if (! openTags.isEmpty() && openTags.peek().equals(Keys.STRUCTURES)
-                    && (name.equals(Keys.STRUCT_REFS)
-                    || name.equals(Keys.STRUCT_STARTS)))
+            if (! openTags.isEmpty() && openTags.peek().equals(Keys.STRUCTURES))
             {
-                dataState.inStructureRefs = true;
+                if (name.equals(Keys.STRUCT_REFS))
+                {
+                    dataState.inStructureRefs = true;
+                }
+                else if (name.equals(Keys.STRUCT_STARTS))
+                {
+                    dataState.inStructureStarts = true;
+                }
             }
             openTags.push(name);
         });
@@ -383,7 +398,7 @@ public class ChunkNBT
         parseTag.put(NBTTag.LONG_ARRAY, (isNamed)->
         {
             String name = readName.apply(isNamed);
-            if (dataState.inStructureRefs 
+            if ((dataState.inStructureRefs || dataState.inStructureStarts) 
                     && dataState.currentStructName.isEmpty())
             {
                 dataState.currentStruct = Structure.parse(name);
@@ -438,6 +453,10 @@ public class ChunkNBT
         for (Structure structure : structures)
         {
             chunk.addStructure(structure);
+        }
+        for (Map.Entry<Point, Structure> entry : structureRefs.entrySet())
+        {
+            chunk.addStructureRef(entry.getKey(), entry.getValue());
         }
         return chunk;
     }

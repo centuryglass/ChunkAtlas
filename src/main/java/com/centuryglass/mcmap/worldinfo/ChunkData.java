@@ -29,6 +29,7 @@ public class ChunkData
         inhabitedTime = inhabited;
         lastUpdate = updateTime;
         biomeCounts = new HashMap();
+        structureRefs = new HashMap();
         structures = new TreeSet();
     }
     
@@ -51,13 +52,36 @@ public class ChunkData
     }
 
     /**
-     *  Adds a structure to the set of chunk structure.
+     * Adds a structure to the set of chunk structures.
      *
      * @param structure  A Minecraft generated structure type.
      */
     public void addStructure(Structure structure)
     {
         structures.add(structure);
+    }
+    
+    /**
+     * Saves the chunk's reference to a structure found within a nearby chunk.
+     * 
+     * @param chunkCoords  The coordinates of the chunk where a structure is
+     *                     being generated.
+     * 
+     * @param structure    The type of structure that will be generated. 
+     */
+    public void addStructureRef(Point chunkCoords, Structure structure)
+    {
+        // Each chunk can only show one structure type. If multiple structures
+        // share a chunk, save the one with the highest priority.
+        if (structureRefs.containsKey(chunkCoords))
+        {
+            Structure oldStruct = structureRefs.get(chunkCoords);
+            if (oldStruct.getPriority() >= structure.getPriority())
+            {
+                return;
+            }
+        }
+        structureRefs.put(chunkCoords, structure);
     }
 
     /**
@@ -109,10 +133,22 @@ public class ChunkData
     {
         return structures;
     }
+    
+    /**
+     * Gets this chunk's list of references to nearby structures.
+     * 
+     * @return  A map associating chunk coordinates with a structure type that
+     *          will be generated at that position.
+     */
+    public Map<Point, Structure> getStructureRefs()
+    {
+        return structureRefs;
+    }
 
     private final Point chunkPos;
     private final long inhabitedTime;
     private final long lastUpdate;
     private final Map<Biome, Integer> biomeCounts;
-    private final Set<Structure> structures;  
+    private final Map<Point, Structure> structureRefs;
+    private final Set<Structure> structures;
 }
