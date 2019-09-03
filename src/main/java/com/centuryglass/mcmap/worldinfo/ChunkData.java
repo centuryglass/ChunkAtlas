@@ -12,7 +12,16 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class ChunkData
-{
+{  
+    // Lists possible chunk data errors.
+    public enum ErrorFlag
+    {
+        NONE,
+        BAD_OFFSET,
+        CHUNK_MISSING,
+        INVALID_NBT;
+    }
+    
     /**
      *  Saves mandatory chunk data on construction.
      *
@@ -31,8 +40,27 @@ public class ChunkData
         biomeCounts = new HashMap();
         structureRefs = new HashMap();
         structures = new TreeSet();
+        errorType = ErrorFlag.NONE;
     }
     
+    /**
+     * Creates a chunk object representing a broken chunk.
+     * 
+     * @param pos         The chunk's coordinates.
+     * 
+     * @param errorType   The type of error encountered when loading chunk data.
+     */
+    public ChunkData(Point pos, ErrorFlag errorType)
+    {
+        chunkPos = (Point) pos.clone();
+        inhabitedTime = 0;
+        lastUpdate = 0;
+        biomeCounts = new HashMap();
+        structureRefs = new HashMap();
+        structures = new TreeSet();
+        this.errorType = errorType;
+    }
+      
     /**
      *  Adds a biome to the list of chunk biome counts.
      *
@@ -144,7 +172,19 @@ public class ChunkData
     {
         return structureRefs;
     }
+    
+    /**
+     * Gets any error flag associated with this chunk.
+     * 
+     * @return  The chunk's error type, or ErrorFlag.NONE if no errors were
+     *          found.
+     */
+    public ErrorFlag getErrorType()
+    {
+        return errorType;
+    }
 
+    private final ErrorFlag errorType;
     private final Point chunkPos;
     private final long inhabitedTime;
     private final long lastUpdate;
