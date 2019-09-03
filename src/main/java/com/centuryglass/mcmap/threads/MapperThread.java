@@ -54,19 +54,20 @@ public class MapperThread extends Thread
     {
         while (! shouldExit.get() || ! chunkQueue.isEmpty())
         {
+            ChunkData chunk = null;
             try
             {
-                ChunkData chunk = chunkQueue.poll(TIMEOUT,
-                        TimeUnit.SECONDS);
-                if (chunk != null)
-                {
-                    mapCollector.drawChunk(chunk);
-                }
+                chunk = chunkQueue.poll(TIMEOUT, TimeUnit.SECONDS);
             }
             catch (InterruptedException e)
             {
+                System.out.println("Mapper thread interrupted");
                 // If interrupted, just continue on to check shouldExit
                 // again and go back to waiting.
+            }
+            if (chunk != null)
+            {
+                mapCollector.drawChunk(chunk);
             }
         }
     }
