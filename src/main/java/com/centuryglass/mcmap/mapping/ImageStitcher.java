@@ -6,6 +6,8 @@
  */
 package com.centuryglass.mcmap.mapping;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -74,7 +76,7 @@ public class ImageStitcher
         }
         if (tilePoints.isEmpty())
         {
-            return; // No valid files don't waste time on a blank image.
+            return; // No valid files, don't waste time on a blank image.
         }
         
         BufferedImage combinedMap = new BufferedImage(width * pixelsPerChunk,
@@ -111,6 +113,17 @@ public class ImageStitcher
             }
             mapPainter.drawImage(tileImage, tilePt.x - xMin, tilePt.y - zMin,
                     tilePixels, tilePixels, null);
+        }
+        // Draw X and Y axis if within the map bounds:
+        mapPainter.setColor(new Color(255, 0, 0, 180));
+        mapPainter.setStroke(new BasicStroke(pixelsPerChunk * 2));
+        if (xMin < 0 && xMax > 0)
+        {
+            mapPainter.drawLine(0 - xMin, 0, 0 - xMin, combinedMap.getHeight());
+        }
+        if (zMin < 0 && zMax > 0)
+        {
+            mapPainter.drawLine(0, 0 - zMin, combinedMap.getWidth(), 0 - zMin);
         }
         if (drawBackground)
         {
