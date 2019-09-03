@@ -20,6 +20,10 @@
             <id>bungeecord-repo</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
+        <repository>
+            <id>java-net-repo</id>
+            <url>https://maven.java.net/content/repositories/public/</url>
+        </repository>  
     </repositories>
     <dependencies>
         <!--Spigot API-->
@@ -28,6 +32,23 @@
             <artifactId>spigot-api</artifactId>
             <version>1.14.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>1.0.4</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
+            <version>1.0</version>
         </dependency>
     </dependencies>
     <build>
@@ -39,18 +60,33 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.2</version>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.1</version>
                 <configuration>
+                    <descriptorRefs>jar-with-dependencies</descriptorRefs>
+                    <filters>
+                        <filter>src/assembly/filter.properties</filter>
+                    </filters>
                     <archive>
                         <manifest>
                             <mainClass>com.centuryglass.mcmap.Main</mainClass>
                             <packageName>com.centuryglass.mcmap</packageName>
                             <addClasspath>true</addClasspath>
-                            <classpathPrefix>classes/</classpathPrefix>
+                            <classpathLayoutType>repository</classpathLayoutType>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

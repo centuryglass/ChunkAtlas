@@ -12,21 +12,24 @@ import com.centuryglass.mcmap.worldinfo.Biome;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import com.centuryglass.mcmap.worldinfo.Structure;
 import java.awt.Point;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonBuilderFactory;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+import javax.json.JsonWriter;
 
 /**
  * ChunkNBT extracts compressed NBT chunk data arrays, and parses the extracted
@@ -39,20 +42,30 @@ public class ChunkNBT
     // size increases performance by reducing the number of reallocations 
     // needed.
     private static final int BUF_MULT = 14;
-
-    private class Keys
+    
+    // The vast majority of chunk data is useless to us. SKIPPED_TAGS defines
+    // the starts of all tag names that should be skipped to save time and
+    // space.
+    static final ArrayList<String> SKIPPED_TAGS;
+    static
     {
-        public static final String INHABITED_TIME = "InhabitedTime";
-        public static final String LAST_UPDATE    = "LastUpdate";
-        public static final String BIOME          = "Biomes";
-        public static final String STRUCTURES     = "Structures";
-        public static final String STRUCT_REFS    = "References";
-        public static final String STRUCT_STARTS  = "Starts";
-        
+        SKIPPED_TAGS = new ArrayList();
+        SKIPPED_TAGS.add("He"); // HeightMap
+        SKIPPED_TAGS.add("Bl"); // BlockStates, BlockLight
+        SKIPPED_TAGS.add("Sk"); // SkyLight
+        SKIPPED_TAGS.add("Up"); // UpgradeData
+        SKIPPED_TAGS.add("Se"); // Sections
+        SKIPPED_TAGS.add("Li"); // LiquidTicks
+        SKIPPED_TAGS.add("Til"); // Tile Entities
+        SKIPPED_TAGS.add("Ent"); // Entities
+        SKIPPED_TAGS.add("Chi"); // Children
+        SKIPPED_TAGS.add("ToB"); // ToBeTicked
+        SKIPPED_TAGS.add("Car"); // CarvingMasks
+        SKIPPED_TAGS.add("Pos"); // PostProcessing
     }
-
+    
     /** 
-     *  Extract and access compressed NBT data.
+     *  Extract and store compressed NBT data.
      *
      * @param compressedData  An array of compressed NBT byte data.
      */
@@ -63,8 +76,9 @@ public class ChunkNBT
             return;
         }
 
+        // Inflate ZLib compressed chunk data:
         final int bufferSize = compressedData.length * BUF_MULT;
-        extractedData = new byte[bufferSize];
+        byte[] extractedData = new byte[bufferSize];
         Inflater inflater = new Inflater();
         inflater.setInput(compressedData, 0, compressedData.length);
         while (! inflater.needsInput())
@@ -87,7 +101,6 @@ public class ChunkNBT
             catch(DataFormatException e)
             {
                 System.err.println("Invalid zlib data!");
-                extractedData = null;
                 return;
             }
         }
@@ -96,373 +109,570 @@ public class ChunkNBT
             extractedData = Arrays.copyOf(extractedData,
                     inflater.getTotalOut());
         }
-    }
 
-    /**
-     *  Gets data about this map chunk.
-     *
-     * @param pos  The map coordinate to be saved with the chunk.
-     *
-     * @return     The chunk data object.
-     */
-    public ChunkData getChunkData(Point pos)
-    {
-        ByteStream chunkStream = new ByteStream(extractedData);
-        
-        // Data access convenience functions:
-        // Read a name string from NBT data:
-        Function<Boolean, String> readName = (isNamed)->
+        // Declare abstract classes for reading and storing chunk data:
+            
+        abstract class Parser
         {
-            if (! isNamed)
+            // Reads some specific data type from extracted data and places it
+            // within a JsonObjectBuilder:
+            public abstract void parseData(String name, 
+                    JsonObjectBuilder builder) throws IOException;
+            // Reads some specific data type from extracted data and places it
+            // within a JsonArrayBuilder:
+            public abstract void parseData(JsonArrayBuilder builder)
+                    throws IOException;
+            // Skips over a specific data tag type
+            public abstract void skipData() throws IOException;
+        }
+        
+        // Initialize data extraction objects:
+        FileByteBuffer chunkStream = new FileByteBuffer(extractedData);
+        JsonBuilderFactory factory = Json.createBuilderFactory(null); 
+        
+        // Store function classes for putting any NBT data type into
+        // objectBuilders and arrayBuilders:
+        Map<NBTTag, Parser> parsers = new HashMap();
+        
+        // Reads miscellaneous data from the chunk data stream:
+        class Reader
+        {
+            // Read a character string:
+            public String readString() throws IOException
             {
-                return "";
-            }
-            try
-            {
-                short nameLength = chunkStream.readShort();
-                if (nameLength > 0)
+                short strLength = chunkStream.readShort();
+                if (strLength > 0)
                 {
-                    byte[] stringBytes = chunkStream.readBytes(nameLength);
+                    byte[] stringBytes = chunkStream.readBytes(strLength);
                     return new String(stringBytes);
                 }
+                return "";           
             }
-            catch (IOException e)
+            // Read an array of any type:
+            public JsonArrayBuilder readArray(NBTTag type) throws IOException
             {
-                System.err.println("ChunkData.getChunkData(Point):"
-                        + " this IOException shouldn't be possible.");
-                System.err.println("Exception: " + e.getMessage());
-                System.exit(1);
-            }
-            return "";
-        };
-        
-        // Skip past a basic value with a known byte size, named or unnamed.
-        BiConsumer<Integer, Boolean> skipValue = (numBytes, isNamed)->
-        {
-            try
-            {
-                int toSkip = numBytes;
-                if (isNamed)
+                JsonArrayBuilder array = factory.createArrayBuilder();
+                int length = chunkStream.readInt();
+                for (int i = 0; i < length; i++)
                 {
-                    toSkip += chunkStream.readShort();
+                    parsers.get(type).parseData(array);
                 }
-                chunkStream.skip(toSkip);         
+                return array;
             }
-            catch (IOException e)
+            // Read an NBT tag byte:
+            public NBTTag readTag() throws IOException
             {
-                System.err.println("ChunkData.getChunkData(Point): "
-                        + "IOException when skipping a" 
-                        + (isNamed ? " named " : "n unnamed ")
-                        + "value of size " + numBytes + ".");
-                System.err.println("Exception: " + e.getMessage());
-                System.exit(1);
+                int tagIdx = Byte.toUnsignedInt(chunkStream.readByte());
+                return NBTTag.values()[tagIdx];
             }
-            
-        };
-        
-        Deque<String> openTags = new ArrayDeque();
-        // Holds shared data in an object that Consumer functions can access.
-        class DataState
-        {
-            public long lastUpdate;
-            public long inhabitedTime;
-            public boolean inBiomeList;
-            public boolean inStructureRefs;
-            public boolean inStructureStarts;
-            public Structure currentStruct = Structure.UNKNOWN;
-            public String currentStructName;
-            
-            public DataState()
+            // Read an object/compound:
+            public JsonObjectBuilder readObject() throws IOException
             {
-                currentStruct = Structure.UNKNOWN;
-                currentStructName = "";
+                JsonObjectBuilder builder = factory.createObjectBuilder();
+                NBTTag tag;
+                do
+                {
+                    if (chunkStream.remaining() == 0)
+                    {
+                        //System.out.println("End of stream at " + chunkStream.getStreamPos());
+                        return builder;
+                    }
+                    tag = readTag();
+                    if (tag == NBTTag.END)
+                    {
+                        return builder;
+                    }
+                    boolean skipTag = false;
+                    String name = readString();
+                    for (String skipped : SKIPPED_TAGS)
+                    {
+                        if (name.startsWith(skipped))
+                        {
+                            skipTag = true;
+                            break;
+                        }
+                    }
+                    if (skipTag)
+                    {
+                        /*
+                        System.out.println("Skipping " +name + ", type="
+                                + tag.toString() + " available= "
+                                + chunkStream.available());
+                        */
+                        parsers.get(tag).skipData();
+                    }
+                    else
+                    {
+                        /*
+                        System.out.println("Reading " + name + ", type="
+                                + tag.toString() + " available= "
+                                + chunkStream.available());
+                        */
+                        parsers.get(tag).parseData(name, builder);
+                    }
+                }
+                while (tag != NBTTag.END);
+                return builder;
             }
         }
-        DataState dataState = new DataState();
-        ArrayList<Biome> biomes = new ArrayList();
-        Set<Structure> structures = new TreeSet();
-        Map<Point, Structure> structureRefs = new HashMap();
+        final Reader reader = new Reader();
         
-        Map<NBTTag, Consumer<Boolean>> parseTag = new HashMap();
         // Define how each NBT tag type is parsed:
-        parseTag.put(NBTTag.END, (isNamed)->
+        // Byte data:
+        parsers.put(NBTTag.BYTE, new Parser()
         {
-            if (openTags.isEmpty())
+            @Override
+            public void parseData(String name, JsonObjectBuilder builder)
+                    throws IOException
             {
-                return;
+                builder.add(name, chunkStream.readByte());
             }
-            if (dataState.inStructureRefs || dataState.inStructureStarts)
+            @Override
+            public void parseData(JsonArrayBuilder builder) throws IOException
             {
-                if (openTags.peek().equals(Keys.STRUCT_REFS)
-                        || openTags.peek().equals(Keys.STRUCT_STARTS))
-                {
-                    dataState.inStructureRefs = false;
-                    dataState.inStructureStarts = false;
-                }
-                else if (openTags.peek().equals(dataState.currentStructName))
-                {
-                    dataState.currentStruct = Structure.UNKNOWN;
-                    dataState.currentStructName = "";
-                }
-                openTags.pop();
+                builder.add(chunkStream.readByte());
+            }
+            @Override
+            public void skipData() throws IOException
+            {
+                chunkStream.skipByte();
             }
         });
-        parseTag.put(NBTTag.BYTE, (isNamed)->
+        // Short data:
+        parsers.put(NBTTag.SHORT, new Parser()
         {
-            String name = readName.apply(isNamed);
-            try
+            @Override
+            public void parseData(String name, JsonObjectBuilder builder)
+                    throws IOException
             {
-                int byteVal = Byte.toUnsignedInt(chunkStream.readByte());
-                if (dataState.inBiomeList)
+                builder.add(name, chunkStream.readShort());
+            }
+            @Override
+            public void parseData(JsonArrayBuilder builder) throws IOException
+            {
+                builder.add(chunkStream.readShort());
+            }
+            @Override
+            public void skipData() throws IOException
+            {
+                chunkStream.skipShort();
+            }
+        });
+        // Integer data:
+        parsers.put(NBTTag.INT, new Parser()
+        {
+            @Override
+            public void parseData(String name, JsonObjectBuilder builder)
+                    throws IOException
+            {
+                builder.add(name, chunkStream.readInt());
+            }
+            @Override
+            public void parseData(JsonArrayBuilder builder) throws IOException
+            {
+                builder.add(chunkStream.readInt());
+            }
+            @Override
+            public void skipData() throws IOException
+            {
+                chunkStream.skipInt();
+            }
+        });
+        // Long data:
+        parsers.put(NBTTag.LONG, new Parser()
+        {
+            @Override
+            public void parseData(String name, JsonObjectBuilder builder)
+                    throws IOException
+            {
+                builder.add(name, chunkStream.readLong());
+            }
+            @Override
+            public void parseData(JsonArrayBuilder builder) throws IOException
+            {
+                builder.add(chunkStream.readLong());
+            }
+            @Override
+            public void skipData() throws IOException
+            {
+                chunkStream.skipLong();
+            }
+        });
+        // Float data:
+        parsers.put(NBTTag.FLOAT, new Parser()
+        {
+            @Override
+            public void parseData(String name, JsonObjectBuilder builder)
+                    throws IOException
+            {
+                builder.add(name, chunkStream.readFloat());
+            }
+            @Override
+            public void parseData(JsonArrayBuilder builder) throws IOException
+            {
+                builder.add(chunkStream.readFloat());
+            }
+            @Override
+            public void skipData() throws IOException
+            {
+                chunkStream.skipFloat();
+            }
+        });
+        // Double data:
+        parsers.put(NBTTag.DOUBLE, new Parser()
+        {
+            @Override
+            public void parseData(String name, JsonObjectBuilder builder)
+                    throws IOException
+            {
+                builder.add(name, chunkStream.readDouble());
+            }
+            @Override
+            public void parseData(JsonArrayBuilder builder) throws IOException
+            {
+                builder.add(chunkStream.readDouble());
+            }
+            @Override
+            public void skipData() throws IOException
+            {
+                chunkStream.skipDouble();
+            }
+        });
+        // Byte array data:
+        parsers.put(NBTTag.BYTE_ARRAY, new Parser()
+        {
+            @Override
+            public void parseData(String name, JsonObjectBuilder builder)
+                    throws IOException
+            {
+                builder.add(name, reader.readArray(NBTTag.BYTE));
+            }
+            @Override
+            public void parseData(JsonArrayBuilder builder) throws IOException
+            {
+                builder.add(reader.readArray(NBTTag.BYTE));
+            }
+            @Override
+            public void skipData() throws IOException
+            {
+                int length = chunkStream.readInt();
+                long numSkipped = chunkStream.skip(length);
+                if (numSkipped != length)
                 {
-                    biomes.add(Biome.fromCode(byteVal));
+                    throw new IOException("ChunkNBT: Tried to skip byte array "
+                            + "of length " + length + ", but only " + numSkipped
+                            + " bytes skipped.");
                 }
             }
-            catch (IOException e)
-            {
-                System.err.println(e.getMessage());
-            } 
         });
-        parseTag.put(NBTTag.SHORT, (isNamed)->
+        // String data:
+        parsers.put(NBTTag.STRING, new Parser()
         {
-            skipValue.accept(2, isNamed);
-        });
-        parseTag.put(NBTTag.INT, (isNamed)->
-        {
-            String name = readName.apply(isNamed);
-            try
+            @Override
+            public void parseData(String name, JsonObjectBuilder builder)
+                    throws IOException
             {
-                long intVal = Integer.toUnsignedLong(chunkStream.readInt());
-                if (dataState.inBiomeList)
+                builder.add(name, reader.readString());
+            }
+            @Override
+            public void parseData(JsonArrayBuilder builder) throws IOException
+            {
+                builder.add(reader.readString());
+            }
+            @Override
+            public void skipData() throws IOException
+            {
+                short length = chunkStream.readShort();
+                long numSkipped = chunkStream.skip(length);
+                if (numSkipped != length)
                 {
-                    biomes.add(Biome.fromCode((int) intVal));
+                    throw new IOException("ChunkNBT: Tried to skip string "
+                            + "of length " + length + ", but only " + numSkipped
+                            + " bytes skipped.");
                 }
-            }
-            catch (IOException e)
-            {
-                System.err.println(e.getMessage());
-            } 
-        });
-        parseTag.put(NBTTag.LONG, (isNamed)->
-        {
-            String name = readName.apply(isNamed);
-            long longVal;
-            try
-            {
-                longVal = chunkStream.readLong();
-            }
-            catch (IOException e)
-            {
-                System.err.println(e.getMessage());
-                return;
             }     
-            if((dataState.inStructureRefs || dataState.inStructureStarts) 
-                    && dataState.currentStruct != Structure.UNKNOWN 
-                    && !isNamed)
-            {
-                if (dataState.inStructureStarts)
-                {
-                    structures.add(dataState.currentStruct);
-                }
-                else //inStructureRefs
-                {
-                    ByteBuffer longSplitter = ByteBuffer.allocate(8);
-                    longSplitter.putLong(longVal);
-                    longSplitter.position(0);
-                    structureRefs.put(new Point(longSplitter.getInt(),
-                            longSplitter.getInt()),
-                            dataState.currentStruct);
-                }
-            }
-            if (name.isEmpty())
-            {
-                return;
-            }
-            if (name.equals(Keys.LAST_UPDATE))
-            {
-                dataState.lastUpdate = longVal;
-            }
-            else if (name.equals(Keys.INHABITED_TIME))
-            {
-                dataState.inhabitedTime = longVal;
-            }
         });
-        parseTag.put(NBTTag.FLOAT, (isNamed)->
+        // List data:
+        parsers.put(NBTTag.LIST, new Parser()
         {
-            skipValue.accept(4, isNamed);
-        });
-        parseTag.put(NBTTag.DOUBLE, (isNamed)->
-        {
-            skipValue.accept(8, isNamed);
-        });
-        parseTag.put(NBTTag.BYTE_ARRAY, (isNamed)->
-        {
-            String name = readName.apply(isNamed);
-            if (name.equals(Keys.BIOME))
+            @Override
+            public void parseData(String name, JsonObjectBuilder builder)
+                    throws IOException
             {
-                dataState.inBiomeList = true;
+                NBTTag type = reader.readTag();
+                builder.add(name, reader.readArray(type));
             }
-            int length;
-            try
-            {
-                length = chunkStream.readInt();
-            }
-            catch (IOException e)
-            {
-                System.out.println(e.getMessage());
-                return;
-            }
-            for (int i = 0; i < length; i++)
-            {
-                parseTag.get(NBTTag.BYTE).accept(false);
-            }
-            dataState.inBiomeList = false;
-        });
-        parseTag.put(NBTTag.STRING, (isNamed)->
-        {
-            try
-            {
-                for (int i = 0; i < (isNamed ? 2 : 1); i++)
-                {
-                    short length = chunkStream.readShort();
-                    chunkStream.skip(length);
-                }
-            }
-            catch (IOException e)
-            {
-                System.out.println(e.getMessage());
-            }
-        });
-        parseTag.put(NBTTag.LIST, (isNamed)->
-        {
-            String name = readName.apply(isNamed);
-            if (name.equals(Keys.BIOME))
-            {
-                dataState.inBiomeList = true;
-            }
-            try
+            @Override
+            public void parseData(JsonArrayBuilder builder) throws IOException
             {
                 NBTTag type = NBTTag.values()[Byte.toUnsignedInt(
                         chunkStream.readByte())];
+                builder.add(reader.readArray(type));
+            }
+            @Override
+            public void skipData() throws IOException
+            {
+                NBTTag type = reader.readTag();
                 int length = chunkStream.readInt();
+                Parser parser = parsers.get(type);
                 for (int i = 0; i < length; i++)
                 {
-                    parseTag.get(type).accept(false);
+                    try
+                    {
+                        parser.skipData();
+                    }
+                    catch (IOException e)
+                    {
+                        System.err.println("ChunkNBT: Tried to skip " + length
+                                + " tags of type " + type.toString()
+                                + ", but failed at index " + i);
+                        throw e;
+                    }
                 }
-            }
-            catch (IOException e)
-            {
-                System.out.println(e.getMessage());
-            }
-            dataState.inBiomeList = false;
+            }  
         });
-        parseTag.put(NBTTag.COMPOUND, (isNamed)->
+        // Object data:
+        parsers.put(NBTTag.COMPOUND, new Parser()
         {
-            String name = readName.apply(isNamed);
-            if (! openTags.isEmpty() && openTags.peek().equals(Keys.STRUCTURES))
+            @Override
+            public void parseData(String name, JsonObjectBuilder builder)
+                    throws IOException
             {
-                if (name.equals(Keys.STRUCT_REFS))
-                {
-                    dataState.inStructureRefs = true;
-                }
-                else if (name.equals(Keys.STRUCT_STARTS))
-                {
-                    dataState.inStructureStarts = true;
-                }
+                builder.add(name, reader.readObject());
             }
-            openTags.push(name);
+            @Override
+            public void parseData(JsonArrayBuilder builder) throws IOException
+            {
+                builder.add(reader.readObject());
+            }
+            @Override
+            public void skipData() throws IOException
+            {
+                NBTTag tag = null;
+                Parser nameSkipper = parsers.get(NBTTag.STRING);
+                do
+                {
+                    if (tag != null)
+                    {
+                        nameSkipper.skipData();
+                        parsers.get(tag).skipData();
+                    }
+                    if (chunkStream.remaining() == 0)
+                    {
+                        return;
+                    }
+                    tag = reader.readTag();
+                }
+                while (tag != NBTTag.END);
+            }
         });
-        parseTag.put(NBTTag.INT_ARRAY, (isNamed)->
+        // Integer array data:
+        parsers.put(NBTTag.INT_ARRAY, new Parser()
         {
-            String name = readName.apply(isNamed);
-            if (name.equals(Keys.BIOME))
+            @Override
+            public void parseData(String name, JsonObjectBuilder builder)
+                    throws IOException
             {
-                dataState.inBiomeList = true;
+                builder.add(name, reader.readArray(NBTTag.INT));
             }
-            int length;
-            try
+            @Override
+            public void parseData(JsonArrayBuilder builder) throws IOException
             {
-                length = chunkStream.readInt();
+                builder.add(reader.readArray(NBTTag.INT));
             }
-            catch (IOException e)
+            @Override
+            public void skipData() throws IOException
             {
-                System.out.println(e.getMessage());
-                return;
+                int length = chunkStream.readInt() * 4;
+                long numSkipped = chunkStream.skip(length);
+                if (numSkipped != length)
+                {
+                    throw new IOException("ChunkNBT: Tried to skip int array "
+                            + "of length " + length + ", but only " + numSkipped
+                            + " bytes skipped.");
+                }
             }
-            for (int i = 0; i < length; i++)
-            {
-                parseTag.get(NBTTag.INT).accept(false);
-            }
-            dataState.inBiomeList = false;
         });
-        parseTag.put(NBTTag.LONG_ARRAY, (isNamed)->
+        // Long array data:
+        parsers.put(NBTTag.LONG_ARRAY, new Parser()
         {
-            String name = readName.apply(isNamed);
-            if ((dataState.inStructureRefs || dataState.inStructureStarts) 
-                    && dataState.currentStructName.isEmpty())
+            @Override
+            public void parseData(String name, JsonObjectBuilder builder)
+                    throws IOException
             {
-                dataState.currentStruct = Structure.parse(name);
-                if (dataState.currentStruct != Structure.UNKNOWN)
+                builder.add(name, reader.readArray(NBTTag.LONG));
+            }
+            @Override
+            public void parseData(JsonArrayBuilder builder) throws IOException
+            {
+                builder.add(reader.readArray(NBTTag.LONG));
+            }
+            @Override
+            public void skipData() throws IOException
+            {
+                int length = chunkStream.readInt() * 8;
+                long numSkipped = chunkStream.skip(length);
+                if (numSkipped != length)
                 {
-                    dataState.currentStructName = name;
-                }
-                else
-                {
-                    System.err.println("Found unknown structure " + name);
+                    throw new IOException("ChunkNBT: Tried to skip int array "
+                            + "of length " + length + ", but only " + numSkipped
+                            + " bytes skipped.");
                 }
             }
-            try
-            {
-                int length = chunkStream.readInt();
-                for (int i = 0; i < length; i++)
-                {
-                    parseTag.get(NBTTag.LONG).accept(false);
-                }
-            }
-            catch (IOException e)
-            {
-                System.out.println(e.getMessage());
-            }
-            dataState.currentStruct = Structure.UNKNOWN;
-            dataState.currentStructName = "";
         });
-
-        // Process tags until the buffer is empty:
-        do
+        
+        // Extract and store all JSON data:
+        try
         {
-            NBTTag type;
-            try
+            if (chunkStream.remaining() > 0)
             {
-                type = NBTTag.values()[Byte.toUnsignedInt(
-                        chunkStream.readByte())];
-                parseTag.get(type).accept(true);
-            }
-            catch (IOException e)
-            {
-                System.err.println(e.getMessage());
-                System.exit(1);
+                chunkJSON = reader.readObject().build();
             }
         }
-        while(! openTags.isEmpty() && chunkStream.available() > 0);
-        ChunkData chunk = new ChunkData(pos, (int) dataState.inhabitedTime,
-                (int) dataState.lastUpdate);
-        for (Biome biome : biomes)
+        catch (IOException e)
         {
-            chunk.addBiome(biome);
+            System.err.println("ChunkNBT: error encountered while parsing"
+                    + " NBT data:");
+            System.err.println(e.getMessage());
+            System.exit(0);
         }
-        for (Structure structure : structures)
+    }
+    
+    // All JSON keys needed to extract chunk data:
+    private class Keys
+    {
+        public static final String LEVEL_DATA     = "Level";
+        public static final String X_POS          = "xPos";
+        public static final String Z_POS          = "zPos";
+        public static final String INHABITED_TIME = "InhabitedTime";
+        public static final String LAST_UPDATE    = "LastUpdate";
+        public static final String BIOMES         = "Biomes";
+        public static final String STRUCTURES     = "Structures";
+        public static final String STRUCT_REFS    = "References";
+        public static final String STRUCT_STARTS  = "Starts";
+        public static final String STRUCT_BOUNDS  = "BB";   
+    }
+    
+    /**
+     * Gets data about this map chunk.
+     *
+     * @return  The chunk data object.
+     */
+    public ChunkData getChunkData()
+    {
+        if (chunkJSON == null)
         {
-            chunk.addStructure(structure);
+            return new ChunkData(new Point(0, 0),
+                    ChunkData.ErrorFlag.INVALID_NBT);
         }
-        for (Map.Entry<Point, Structure> entry : structureRefs.entrySet())
+        JsonObject levelData = chunkJSON.getJsonObject("").getJsonObject(
+                Keys.LEVEL_DATA);
+        if (levelData == null)
         {
-            chunk.addStructureRef(entry.getKey(), entry.getValue());
+            return new ChunkData(new Point(0, 0),
+                    ChunkData.ErrorFlag.INVALID_NBT);
+        }
+        Point pos = new Point(
+                levelData.getInt(Keys.X_POS),
+                levelData.getInt(Keys.Z_POS));
+        long inhabitedTime = levelData.getJsonNumber(Keys.INHABITED_TIME)
+                .longValue();
+        long lastUpdate = levelData.getJsonNumber(Keys.LAST_UPDATE).longValue();
+        ChunkData chunk = new ChunkData(pos, inhabitedTime, lastUpdate);
+        // Read biome data:
+        JsonArray biomeList = levelData.getJsonArray(Keys.BIOMES);
+        if (biomeList == null)
+        {
+            return new ChunkData(pos, ChunkData.ErrorFlag.INVALID_NBT);
+        }
+        for (int i = 0; i < biomeList.size(); i++)
+        {
+            int biomeCode = (int) Integer.toUnsignedLong(biomeList.getInt(i));
+            chunk.addBiome(Biome.fromCode(biomeCode)); 
+        }
+        // Read structure data:
+        JsonObject structureData = levelData.getJsonObject(Keys.STRUCTURES);
+        if (structureData != null)
+        {
+            JsonObject newStructures = structureData.getJsonObject(
+                    Keys.STRUCT_STARTS);
+            if (newStructures != null)
+            {
+                for (Map.Entry<String, JsonValue> entry : newStructures.entrySet())
+                {
+                    Structure structure = Structure.parse(entry.getKey());
+                    chunk.addStructure(structure);
+                    JsonObject structObject = (JsonObject) entry.getValue();
+                    if (structObject.containsKey(Keys.STRUCT_BOUNDS))
+                    {
+                        JsonArray bounds = structObject.getJsonArray(
+                                Keys.STRUCT_BOUNDS);
+                        // bounds = { xMin(0), yMin(1), zMin(2),
+                        //            xMax(3), yMax(4), zMax(5) }
+                        int xMin = bounds.getInt(0) / 16;
+                        int zMin = bounds.getInt(2) / 16;
+                        int xMax = bounds.getInt(3) / 16;
+                        int zMax = bounds.getInt(5) / 16;
+                        for (int x = xMin; x <= xMax; x++)
+                        {
+                            for (int z = zMin; z <= zMax; z++)
+                            {
+                                if(x != pos.x || z != pos.y)
+                                {
+                                    chunk.addStructureRef(pos, structure);
+                                }
+                            }
+                        }
+                    }   
+                }
+            }
+            JsonObject structureRefs = structureData.getJsonObject(
+                    Keys.STRUCT_REFS);
+            if (structureRefs != null)
+            {
+                for (Map.Entry<String, JsonValue> entry : structureRefs.entrySet())
+                {
+                    ByteBuffer pointBuf = ByteBuffer.allocate(8);
+                    Structure structure = Structure.parse(entry.getKey());
+                    JsonArray referenceList = (JsonArray) entry.getValue();
+                    for (int i = 0; i < referenceList.size(); i++)
+                    {
+                        pointBuf.putLong(referenceList.getJsonNumber(i).longValue());
+                        pointBuf.position(0);
+                        chunk.addStructureRef(new Point(pointBuf.getInt(),
+                                pointBuf.getInt()), structure);
+                        pointBuf.position(0);
+                    }
+                }
+            }
         }
         return chunk;
     }
+    
+    /**
+     * Saves chunk data to a JSON file.
+     * 
+     * @param path  A path string where the file will be saved.
+     */
+    public final void saveToFile(String path)
+    {
+        OutputStream jsonOut;
+        try
+        {
+            jsonOut = new FileOutputStream(path);         
+        }
+        catch (Exception e)
+        {
+            System.err.println("ChunkNBT: Error writing to " + path + ":");
+            System.err.println(e.getMessage());
+            return;
+        }
+        try (JsonWriter writer = Json.createWriter(jsonOut))
+        {
+            writer.writeObject(chunkJSON);
+        }
+    }
 
-    // Uncompressed chunk data array:
-    private byte[] extractedData;
-    // Current index within uncompressed data:
-    private int dataIndex;
+    // Uncompressed chunk data:
+    JsonObject chunkJSON;
 }
