@@ -5,10 +5,8 @@ import java.awt.Point;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.function.Function;
 
 public class MCAFile 
 {
@@ -19,14 +17,13 @@ public class MCAFile
     /**
      *  Loads data from a .mca file on construction.
      *
-     * @param mcaPath  The Minecraft anvil region file path.
+     * @param mcaFile  The Minecraft anvil region file to load.
      */
-    public MCAFile(Path mcaPath)
+    public MCAFile(File mcaFile)
     {
         loadedChunks = new ArrayList();
-        mcaFile = mcaPath.toFile();
         // read the region file's base coordinates from the file name:
-        Point regionPt = getChunkCoords(mcaPath);
+        Point regionPt = getChunkCoords(mcaFile);
         if (regionPt.x == -1 && regionPt.y == -1)
         {
             System.err.println("Can't parse coordinates from file "
@@ -34,98 +31,98 @@ public class MCAFile
             return;
         }
         
-        ByteStream regionStream;
+        FileByteBuffer regionBuffer;
         try
         {
-            regionStream = new ByteStream(mcaFile);
+            regionBuffer = new FileByteBuffer(mcaFile);
         }
         catch (FileNotFoundException e)
         {
             System.err.println("Failed to find file " + mcaFile.toString());
             return;
         }
+        catch (IOException e)
+        {
+            System.err.println("Error reading region file: " + e.getMessage());
+            return;
+        }
              
         // Read chunk data offsets within the file:
         int numChunks = DIM_IN_CHUNKS * DIM_IN_CHUNKS;
         final int sectorSize = 4096;
-        try
-        {
-            regionStream.readToBuffer(sectorSize);
-        }
-        catch (IOException e)
-        {
-            System.err.println("Warning: region file " 
-                    + mcaPath.getFileName().toString() + " is invalid.");
-            return;
-        }
-        Map<Point, Long> chunkOffsets = new HashMap();
         int invalidChunks = 0;
+        
+        // If chunk loading fails, use this function to get chunk coordinates
+        // from the chunk index:
+        Function<Integer, Point> getPos = (index) ->
+        {
+            return new Point(regionPt.x + (index % 32),
+                    regionPt.y + (index / 32));    
+        };
+        
+        // Read all chunk offsets and extract chunk data:
         for (int i = 0; i < numChunks; i++)
         {
-            long sectorOffset;
-            byte sectorCount;
+            long sectorOffset = 0;
+            byte sectorCount = 0;
             try
             {
-                sectorOffset = regionStream.readInt(3);
-                sectorCount = regionStream.readByte();
+                sectorOffset = regionBuffer.readInt(3);
+                sectorCount = regionBuffer.readByte();
             }
-            catch (IOException e)
+            catch (ArrayIndexOutOfBoundsException e)
             {
                 System.err.println(e.getMessage());
-                return;
+                System.exit(1);
             }
             if (sectorOffset == 0 && sectorCount == 0)
             {
                 // That sector isn't loaded, skip it.
+                loadedChunks.add(new ChunkData(getPos.apply(i),
+                        ChunkData.ErrorFlag.CHUNK_MISSING));
                 continue;
             }
+            // Seek to offset and read chunk data:
             long byteOffset = sectorOffset * sectorSize;
-            if (byteOffset >= mcaFile.length() || byteOffset < sectorSize)
-            {
-                // Invalid, out of bounds sector, skip it.
-                invalidChunks++;
-                continue;
-            }
-            int chunkX = regionPt.x + (i % 32);
-            int chunkZ = regionPt.y + (i / 32);
-            Point chunkPos = new Point(chunkX, chunkZ);
-            chunkOffsets.put(chunkPos, byteOffset);
-        }
-        // Find chunk data:
-        for (Map.Entry<Point, Long> entry : chunkOffsets.entrySet())
-        {
+            regionBuffer.mark();
             try
             {
-                ByteStream chunkStream = new ByteStream(mcaFile);
-                long bytesSkipped = chunkStream.skip(entry.getValue());
-                if (bytesSkipped == entry.getValue())
-                {
-                    int chunkByteSize = chunkStream.readInt();
-                    byte compressionType = chunkStream.readByte();
-                    byte[] chunkBytes = chunkStream.readBytes(chunkByteSize);
-                    if (chunkBytes.length != chunkByteSize)
-                    {
-                        invalidChunks++;
-                        continue;
-                    }
-                    ChunkNBT nbtData = new ChunkNBT(chunkBytes);
-                    loadedChunks.add(nbtData.getChunkData(entry.getKey()));
-                }
-                else
-                {
-                    invalidChunks++;
-                }
+                regionBuffer.setPos((int) byteOffset);
             }
-            catch (IOException e)
+            catch (IndexOutOfBoundsException e)
             {
+                // Invalid, out of bounds sector, skip it.
+                loadedChunks.add(new ChunkData(getPos.apply(i),
+                        ChunkData.ErrorFlag.BAD_OFFSET));
                 invalidChunks++;
+                regionBuffer.reset();
+                continue;
             }
+            int chunkByteSize = regionBuffer.readInt();
+            regionBuffer.skipByte(); // compression type isn't needed
+            byte[] chunkBytes = regionBuffer.readBytes(chunkByteSize);
+            if (chunkBytes.length != chunkByteSize)
+            {
+                System.err.println("Unexpected EOF: Read only "
+                        + chunkBytes.length + " bytes, expected "
+                        + chunkByteSize);
+                invalidChunks++;
+                continue;
+            }
+            ChunkNBT nbtData = new ChunkNBT(chunkBytes);
+            ChunkData extractedData = nbtData.getChunkData();
+            if (extractedData.getErrorType() != ChunkData.ErrorFlag.NONE)
+            {
+                extractedData = new ChunkData(getPos.apply(i),
+                        extractedData.getErrorType());
+            }
+            loadedChunks.add(extractedData);
+            regionBuffer.reset();
         }
         if (invalidChunks > 0)
         {
             System.err.println("Warning: " + invalidChunks + " chunks in "
-                    + mcaPath.getFileName().toString()
-                    + " could not be loaded.");
+                    + mcaFile.getName() + " could not be loaded.");
         }
     }
 
@@ -133,14 +130,14 @@ public class MCAFile
      *  Finds a region file's upper left chunk coordinate from its file
      *         name.
      *
-     * @param filePath  The path to a region file.
+     * @param regionFile  A Minecraft region file.
      *
-     * @return          The chunk coordinates, or { -1, -1 } if the file name
-     *                  was not properly constructed.
+     * @return            The chunk coordinates, or { -1, -1 } if the file name
+     *                    was not properly constructed.
      */
-    public static Point getChunkCoords(Path filePath)
+    public static Point getChunkCoords(File regionFile)
     {
-        final String name = filePath.getFileName().toString();
+        final String name = regionFile.getName();
         final int xStart = 2;
         final int xEnd = name.indexOf(".", xStart);
         final int zStart = xEnd + 1;
@@ -162,6 +159,11 @@ public class MCAFile
      */
     public ArrayList<ChunkData> getLoadedChunks()
     {
+        if (loadedChunks.isEmpty())
+        {
+            System.err.println(mcaFile.getName() + " had zero chunks!");
+            System.exit(1);
+        }
         return new ArrayList(loadedChunks);
     }
    
