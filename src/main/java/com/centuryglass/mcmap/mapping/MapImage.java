@@ -11,7 +11,7 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.util.function.Consumer;
 import javax.imageio.ImageIO;
 
 /**
@@ -22,68 +22,74 @@ import javax.imageio.ImageIO;
  * chunks, the MapImage also optionally draws a background and border
  * resembling the Minecraft map item.
  */
-public class MapImage 
-{
-    private static final int BORDER_DIVISOR = 19;
-    private static final String BACKGROUND_PATH = "/emptyMap.png";
-    
+public class MapImage extends WorldMap
+{   
     /**
-     * Loads image data on construction, and optionally draws the default
+     * Loads image properties on construction, and optionally draws the default
      * background and border.
      *
-     * @param imagePath        The path where the image will be saved.
-     *
+     * @param imageFile        The file where the image will be saved.
+     * 
+     * @param xMin             Lowest x-coordinate within the mapped area,
+     *                         measured in chunks.
+     * 
+     * @param zMin             Lowest z-coordinate within the mapped area,
+     *                         measured in chunks.
+     * 
      * @param  widthInChunks   The map's width, measured in chunks.
      *
      * @param  heightInChunks  The map's height, measured in chunks.
      *
      * @param  pixelsPerChunk  The width and height in pixels of each chunk.
-     *
-     * @param  drawBackground  Whether the default background and borders are
-     *                         drawn.
      */
-    public MapImage(String imagePath,
+    public MapImage(File imageFile,
+            int xMin,
+            int zMin,
             int widthInChunks,
             int heightInChunks,
-            int pixelsPerChunk,
-            boolean drawBackground)
+            int pixelsPerChunk)
     {
-        path = imagePath;
+        super(imageFile.getParentFile(), imageFile.getName(), pixelsPerChunk);
+        
+        this.xMin = xMin;
+        this.zMin = zMin;
         mapWidth = widthInChunks;
         mapHeight = heightInChunks;
-        chunkSize = pixelsPerChunk;
-        
-        int imageWidth = widthInChunks * chunkSize;
-        int imageHeight = heightInChunks * chunkSize;
+        int imageWidth = widthInChunks * pixelsPerChunk;
+        int imageHeight = heightInChunks * pixelsPerChunk;
         int borderPixelWidth = 0;
-        if (drawBackground)
+        if (drawBackgrounds)
         {
             final int largerSize = Math.max(imageWidth, imageHeight);
-            borderPixelWidth = largerSize / BORDER_DIVISOR;
+            borderPixelWidth = MapBackground.getBorderWidth(largerSize);
             imageWidth += (2 * borderPixelWidth);
             imageHeight += (2 * borderPixelWidth);
         }
-        borderWidth = borderPixelWidth / chunkSize;
+        borderWidth = borderPixelWidth / pixelsPerChunk;
         mapImage = new BufferedImage(imageWidth, imageHeight,
-                BufferedImage.TYPE_INT_RGB);
-        if (drawBackground)
+                BufferedImage.TYPE_INT_ARGB);
+        if (drawBackgrounds)
         {
-            URL imageURL = getClass().getResource(BACKGROUND_PATH);
-            BufferedImage sourceImage;
-            try
+            BufferedImage sourceImage = MapBackground.getBackgroundImage();
+            if (sourceImage != null)
             {
-                sourceImage = ImageIO.read(imageURL);
+                Graphics2D graphics = mapImage.createGraphics();
+                graphics.drawImage(sourceImage, 0, 0, imageWidth, imageHeight,
+                        null);
             }
-            catch (IOException e)
-            {
-                System.err.println("Opening background image "
-                        + BACKGROUND_PATH + " failed.");
-                return;
-            }
-            Graphics2D graphics = mapImage.createGraphics();
-            graphics.drawImage(sourceImage, 0, 0, imageWidth, imageHeight,
-                    null);
         }
+    }
+    
+    
+    /**
+     * Enables or disables map backgrounds for all maps created by the
+     * application instance.
+     * 
+     * @param shouldDraw  Whether map backgrounds should be drawn.
+     */
+    public static void setDrawBackgrounds(boolean shouldDraw)
+    {
+        drawBackgrounds = shouldDraw;
     }
     
     /**
@@ -93,7 +99,7 @@ public class MapImage
      *
      * @param yPos  The pixel's y-coordinate.
      *
-     * @return      The color value at the given coordinate, or Color(0) if the
+     * @return      The color value at the given coordinate, or null if the
      *              coordinate is out of bounds.
      */
     public Color getPixelColor(int xPos, int yPos)
@@ -101,7 +107,7 @@ public class MapImage
         if (xPos >= mapImage.getWidth() || yPos >= mapImage.getHeight()
                 || xPos < 0 || yPos < 0)
         {
-            return new Color(0);
+            return null;
         }
         return new Color(mapImage.getRGB(xPos, yPos));
     }
@@ -113,15 +119,16 @@ public class MapImage
      *
      * @param zPos  The chunk's z-coordinate.
      *
-     * @return      The color value at the given coordinate, or Color(0) if the
+     * @return      The color value at the given coordinate, or null if the
      *              coordinate is out of bounds.
      */
+    @Override
     public Color getChunkColor(int xPos, int zPos)
     {
         final Point pixelPos = chunkToPixel(xPos, zPos);
-        if (pixelPos.x < 0 || pixelPos.y < 0)
+        if (pixelPos == null || pixelPos.x < 0 || pixelPos.y < 0)
         {
-            return new Color(0);
+            return null;
         }
         return new Color(mapImage.getRGB(pixelPos.x, pixelPos.y));
     }
@@ -153,109 +160,108 @@ public class MapImage
      *
      * @param color  The color value to apply.
      */
+    @Override
     public void setChunkColor(int xPos, int zPos, Color color)
     {
         final Point pixelPos = chunkToPixel(xPos, zPos);
-        if (pixelPos.x < 0 || pixelPos.y < 0)
+        if (pixelPos == null || pixelPos.x < 0 || pixelPos.y < 0)
         {
             return;
         }
-        for (int y = pixelPos.y; y < (pixelPos.y + chunkSize); y++)
+        for (int y = pixelPos.y; y < (pixelPos.y + getChunkSize()); y++)
         {
             if (y < 0 || y >= mapImage.getHeight())
             {
                 continue;
             }
-            for (int x = pixelPos.x; x < (pixelPos.x + chunkSize); x++)
+            for (int x = pixelPos.x; x < (pixelPos.x + getChunkSize()); x++)
             {
                 if (x < 0 || x >= mapImage.getWidth())
                 {
                     continue;
                 }
                 mapImage.setRGB(x, y, color.getRGB());
-                //System.out.println("Setting " + x + ", " + y + " to "
-                //    + color.toString());
             }
         }
     }
     
     /**
      * Saves the image to its output path.
+     * 
+     * @param mapDir    The directory where the map images will be saved.
+     * 
+     * @param baseName  Base image name to use when saving map files.
      */
-    public void saveImage()
+    @Override
+    protected void saveMapData(File mapDir, String baseName)
     {
-        File imageFile = new File(path);
         try
         {
+            File imageFile = new File(mapDir, baseName + ".png");
             ImageIO.write(mapImage, "png", imageFile);
-            System.out.println("Saved map to " + path);
+            System.out.println("Saved map to " + imageFile.toString());
         }
         catch (IOException e)
         {
-            System.err.println("Failed to save " + path + ": "
-                    + e.getMessage());
+            System.err.println("Failed to save " + mapDir.toString() + "/"
+                    + baseName + ": " + e.getMessage());
         }
-    }
-    
-    /**
-     * Gets the width of the image, measured in Minecraft map chunks.
-     *
-     * @return  The map width.
-     */
-    public int getWidthInChunks()
-    {
-        return mapWidth;
-    }
-    
-    /**
-     * Gets the height of the image, measured in Minecraft map chunks.
-     *
-     * @return  The map height.
-     */
-    public int getHeightInChunks()
-    {
-        return mapHeight;
-    }
-    
-    /**
-     * Gets the length in pixels of each chunk edge within the map.
-     *
-     * @return  The chunk pixel dimensions. This serves as the multiplier
-     *          used when converting map dimensions from chunks to pixels.
-     */
-    public int getChunkEdgeLength()
-    {
-        return chunkSize;
     }
     
     /**
      * Get the upper left pixel used to represent a chunk.
      *
-     * @param chunkPos  The coordinates of a map chunk.
+     * @param xPos      The x-coordinate of a map chunk.
+     * 
+     * @param zPos      The z-coordinate of a map chunk.
      *
-     * @return          The image coordinates of that chunk, or {-1, -1} if the
+     * @return          The image coordinates of that chunk, or null if the
      *                  chunk was out of bounds.
      */
     private Point chunkToPixel(int xPos, int zPos)
     {
         Point pixelPos = new Point(
-                (mapWidth / 2 + xPos) * chunkSize + borderWidth,
-                (mapHeight / 2 + zPos) * chunkSize + borderWidth);
+                (xPos - xMin) * getChunkSize() + borderWidth,
+                (zPos - zMin) * getChunkSize() + borderWidth);
         if (pixelPos.x < 0 || pixelPos.x >= mapImage.getWidth()
                 || pixelPos.y < 0 || pixelPos.y >= mapImage.getHeight())
         {
-            pixelPos.move(-1, -1);
+            return null;
         }
         return pixelPos;
     }
     
-    // Image output path:
-    private final String path;
-    // The map being drawn:
+    /**
+     * Iterates through each chunk in the map, running a callback for each
+     * chunk's coordinates. Empty chunks may or may not be skipped.
+     *
+     * @param chunkAction  The action to perform for each valid chunk.
+     */
+    @Override
+    protected void foreachChunk(Consumer<Point> chunkAction)
+    {
+        final int x0 = xMin;
+        final int z0 = zMin;
+        final int w = mapWidth;
+        final int h = mapHeight;
+        Point chunkPt = new Point();
+        for (chunkPt.y = z0; chunkPt.y < (z0 + h); chunkPt.y++)
+        {
+            for (chunkPt.x = x0; chunkPt.x < (x0 + w); chunkPt.x++)
+            {
+                chunkAction.accept(chunkPt);
+            } 
+        }
+    }
+    
+    // Saved map image data:
     private BufferedImage mapImage;
+    // Whether backgrounds are drawn. This setting is shared across all maps.
+    private static boolean drawBackgrounds = true;
     // Map/image dimensions, measured in chunks:
+    private final int xMin;
+    private final int zMin;
     private final int mapWidth;
     private final int mapHeight;
-    private final int chunkSize;
-    private final int borderWidth;
+    private int borderWidth;
 }
