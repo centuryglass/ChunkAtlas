@@ -280,8 +280,8 @@ public class Main
                         + "increasing to minimum tile size " + MIN_TILE);
                 tileResolution = MIN_TILE;
             }
-            MCMap.createTileMaps(tileResolution, chunkPx, regionDataDir,
-                    imageDir, imagePrefix, dirInfoFile);
+            MCMap.createTileMaps(tileResolution, regionDataDir, imageDir,
+                    imagePrefix, dirInfoFile);
         }
         if (createMapImages)
         {

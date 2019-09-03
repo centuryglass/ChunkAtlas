@@ -58,14 +58,10 @@ public class StructureMapper extends Mapper
      * 
      * @param tileSize         The width and height in chunks of each map tile
      *                         image.
-     * 
-     * @param pixelsPerChunk   The width and height in pixels of each mapped
-     *                         chunk.
      */
-    public StructureMapper(File imageDir, String baseName, int tileSize,
-            int pixelsPerChunk)
+    public StructureMapper(File imageDir, String baseName, int tileSize)
     {
-        super(imageDir, baseName, tileSize, pixelsPerChunk);
+        super(imageDir, baseName, tileSize);
         structureRefs = new HashMap();
     }
 

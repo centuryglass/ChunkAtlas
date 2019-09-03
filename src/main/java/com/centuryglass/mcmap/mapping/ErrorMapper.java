@@ -68,14 +68,10 @@ public class ErrorMapper extends Mapper
      * 
      * @param tileSize         The width and height in chunks of each map tile
      *                         image.
-     * 
-     * @param pixelsPerChunk   The width and height in pixels of each mapped
-     *                         chunk.
      */
-    public ErrorMapper(File imageDir, String baseName, int tileSize,
-            int pixelsPerChunk)
+    public ErrorMapper(File imageDir, String baseName, int tileSize)
     {
-        super(imageDir, baseName, tileSize, pixelsPerChunk);
+        super(imageDir, baseName, tileSize);
     }
     
     /**

@@ -72,9 +72,6 @@ public class MCMap
      *                         performance, as that ensures each region file's
      *                         data will fit within a single tile.
      * 
-     * @param pixelsPerChunk   Width and height in pixels of each chunk within
-     *                         generated map images.
-     * 
      * @param regionDataDir    The Minecraft region file directory used to
      *                         generate maps.
      * 
@@ -91,7 +88,6 @@ public class MCMap
      *                         X Z PlaceName.
      */
     public static void createTileMaps(int tileSize,
-            int pixelsPerChunk,
             File regionDataDir,
             File imageDir,
             String baseName,
@@ -100,7 +96,7 @@ public class MCMap
         ArrayList<File> regionFiles = new ArrayList(Arrays.asList(
                 regionDataDir.listFiles()));
         MapCollector mappers = new MapCollector(imageDir, baseName, tileSize,
-                pixelsPerChunk, dirInfoFile);
+                dirInfoFile);
         // If more than one tile fits in a region, sort regions by tile:
         if (tileSize > 32)
         {

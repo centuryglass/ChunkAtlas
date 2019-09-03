@@ -53,14 +53,10 @@ public abstract class Mapper
      * 
      * @param tileSize         The width and height in chunks of each map tile
      *                         image.
-     * 
-     * @param pixelsPerChunk   The width and height in pixels of each mapped
-     *                         chunk.
      */
-    public Mapper(File imageDir, String baseName, int tileSize,
-            int pixelsPerChunk)
+    public Mapper(File imageDir, String baseName, int tileSize)
     {
-        map = new TileMap(imageDir, baseName, tileSize, pixelsPerChunk);
+        map = new TileMap(imageDir, baseName, tileSize);
     }
     
     /**

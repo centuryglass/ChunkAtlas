@@ -76,27 +76,24 @@ public class MapCollector
      * 
      * @param tileSize        The width of each tile, measured in chunks.
      * 
-     * @param pixelsPerChunk  The width and height in pixels of each chunk.
-     *                         save all maps.
-     * 
      * @param dirInfoFile      A file containing notable coordinates to mark on
      *                         the server directory map. Directory files should
      *                         list one point per line, formatted as 
      *                         X Z PlaceName.
      */
     public MapCollector(File imageDir, String imageName, int tileSize,
-            int pixelsPerChunk, File dirInfoFile)
+            File dirInfoFile)
     {
         activity = new ActivityMapper(new File(imageDir, "activity"), imageName,
-                tileSize, pixelsPerChunk);
+                tileSize);
         biome = new BiomeMapper(new File(imageDir, "biome"), imageName,
-                tileSize, pixelsPerChunk);
+                tileSize);
         structure = new StructureMapper(new File(imageDir, "structure"),
-                imageName, tileSize, pixelsPerChunk);
+                imageName, tileSize);
         directory = new DirectoryMapper(new File(imageDir, "directory"),
-                imageName, dirInfoFile, tileSize, pixelsPerChunk);
+                imageName, dirInfoFile, tileSize);
         errors = new ErrorMapper(new File(imageDir, "errors"), imageName,
-                tileSize, pixelsPerChunk);
+                tileSize);
     }
 
 

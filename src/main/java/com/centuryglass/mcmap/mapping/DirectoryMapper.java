@@ -73,14 +73,11 @@ public class DirectoryMapper extends BiomeMapper
      * 
      * @param tileSize         The width and height in chunks of each map tile
      *                         image.
-     * 
-     * @param pixelsPerChunk   The width and height in pixels of each mapped
-     *                         chunk.
      */
     public DirectoryMapper(File imageDir, String baseName, File dirInfoFile,
-            int tileSize, int pixelsPerChunk)
+            int tileSize)
     {
-        super(imageDir, baseName, tileSize, pixelsPerChunk);
+        super(imageDir, baseName, tileSize);
         directoryFile = dirInfoFile;
     }
     

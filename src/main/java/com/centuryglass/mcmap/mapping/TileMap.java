@@ -34,10 +34,19 @@ public class TileMap extends WorldMap
     private static final int MAX_TILES_IN_MEMORY = 150;
     // TODO: Use bounds based on current memory use instead of file count.
     
-    public TileMap(File mapDir, String baseName, int tileSize,
-            int pixelsPerChunk)
+    /**
+     * Sets initial map data on construction.
+     * 
+     * @param mapDir    The directory where image tiles will be saved.
+     * 
+     * @param baseName  The base string to use when naming image files.
+     * 
+     * @param tileSize  The width and height, in both chunks and pixels, of
+     *                  each map tile image.
+     */
+    public TileMap(File mapDir, String baseName, int tileSize)
     {
-        super(mapDir, baseName, pixelsPerChunk);
+        super(mapDir, baseName, 1);
         initTime = System.currentTimeMillis();
         mapTiles = new HashMap();
         recentTiles = new ArrayDeque();
@@ -279,6 +288,6 @@ public class TileMap extends WorldMap
     // A list of recently modified tile points, used to decide when to load or
     // unload tile data from memory:
     private final Deque<Point> recentTiles;
-    // The width and height in chunks of each map tile:
+    // The width and height in chunks/pixels of each map tile:
     private final int tileSize;
 }

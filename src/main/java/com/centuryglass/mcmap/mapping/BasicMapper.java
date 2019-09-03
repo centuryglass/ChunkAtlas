@@ -52,14 +52,10 @@ public class BasicMapper extends Mapper
      * 
      * @param tileSize         The width and height in chunks of each map tile
      *                         image.
-     * 
-     * @param pixelsPerChunk   The width and height in pixels of each mapped
-     *                         chunk.
      */
-    public BasicMapper(File imageDir, String baseName, int tileSize,
-            int pixelsPerChunk)
+    public BasicMapper(File imageDir, String baseName, int tileSize)
     {
-        super(imageDir, baseName, tileSize, pixelsPerChunk);
+        super(imageDir, baseName, tileSize);
     }
     
     /**
