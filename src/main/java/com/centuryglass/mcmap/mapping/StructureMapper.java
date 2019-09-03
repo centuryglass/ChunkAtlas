@@ -9,6 +9,7 @@ import com.centuryglass.mcmap.worldinfo.ChunkData;
 import com.centuryglass.mcmap.worldinfo.Structure;
 import java.awt.Color;
 import java.awt.Point;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -22,20 +23,49 @@ import java.util.Set;
 public class StructureMapper extends Mapper
 {
     /**
-     *  Sets map image properties on construction.
+     * Initializes a mapper that creates a single structure image map.
      *
-     * @param imagePath       Path to where the map image will be saved.
+     * @param imageFile       The file where the map image will be saved.
+     * 
+     * @param xMin            The lowest x-coordinate within the mapped area,
+     *                        measured in chunks.
+     * 
+     * @param zMin            The lowest z-coordinate within the mapped area,
+     *                        measured in chunks.
+     * 
+     * @param widthInChunks   The width of the mapped region in chunks.
      *
-     * @param widthInChunks   Width of the mapped region in chunks.
+     * @param heightInChunks  The height of the mapped image in chunks.
      *
-     * @param heightInChunks  Height of the mapped image in chunks.
-     *
-     * @param pixelsPerChunk  Width/height in pixels of each chunk.
+     * @param pixelsPerChunk  The width and height in pixels of each mapped
+     *                        chunk.
      */
-    public StructureMapper(String imagePath, int widthInChunks,
-            int heightInChunks, int pixelsPerChunk)
+    public StructureMapper(File imageFile, int xMin, int zMin,
+            int widthInChunks, int heightInChunks, int pixelsPerChunk)
     {
-        super(imagePath, widthInChunks, heightInChunks, pixelsPerChunk);
+        super(imageFile, xMin, zMin, widthInChunks, heightInChunks,
+                pixelsPerChunk);
+        structureRefs = new HashMap();
+    }
+    
+    /**
+     * Initializes a mapper that creates a set of structure map tiles. 
+     * 
+     * @param imageDir         The directory where map tiles will be saved.
+     * 
+     * @param baseName         The base name to use when selecting map image
+     *                         names.
+     * 
+     * @param tileSize         The width and height in chunks of each map tile
+     *                         image.
+     * 
+     * @param pixelsPerChunk   The width and height in pixels of each mapped
+     *                         chunk.
+     */
+    public StructureMapper(File imageDir, String baseName, int tileSize,
+            int pixelsPerChunk)
+    {
+        super(imageDir, baseName, tileSize, pixelsPerChunk);
         structureRefs = new HashMap();
     }
 
@@ -50,6 +80,10 @@ public class StructureMapper extends Mapper
     @Override
     protected Color getChunkColor(ChunkData chunk)
     {
+        if (chunk.getErrorType() != ChunkData.ErrorFlag.NONE)
+        {
+            return null;
+        }
         final Color emptyChunkColor = new Color(0);
         Color color = emptyChunkColor;
         long red = 0;
@@ -90,7 +124,7 @@ public class StructureMapper extends Mapper
      * @param map  The mapper's MapImage.
      */
     @Override
-    protected void finalProcessing(MapImage map)
+    protected void finalProcessing(WorldMap map)
     {
         double maxDistance = Math.sqrt(18);
         for (Map.Entry<Point, Structure> entry : structureRefs.entrySet())
@@ -116,12 +150,8 @@ public class StructureMapper extends Mapper
                     int dZ = z - zI;
                     double distance = Math.sqrt(dX * dX + dZ * dZ);
                     double mult = 1 - (distance / maxDistance);
-                    Color currentColor;
-                    try
-                    {
-                        currentColor = map.getChunkColor(xI, zI);
-                    }
-                    catch(ArrayIndexOutOfBoundsException e)
+                    Color currentColor = map.getChunkColor(xI, zI);
+                    if (currentColor == null)
                     {
                         currentColor = new Color(0);
                     }
@@ -131,7 +161,8 @@ public class StructureMapper extends Mapper
                             (int) (structColor.getGreen() * mult
                                     + currentColor.getGreen() * (1 - mult)),
                             (int) (structColor.getBlue() * mult
-                                    + currentColor.getBlue() * (1 -mult)));
+                                    + currentColor.getBlue() * (1 -mult)),
+                            255);
                 }
                 map.setChunkColor(xI, zI, pointColor);  
             }

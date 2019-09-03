@@ -6,7 +6,7 @@
 package com.centuryglass.mcmap.mapping;
 
 import com.centuryglass.mcmap.worldinfo.ChunkData;
-import java.nio.file.Path;
+import java.io.File;
 
 /**
  *  MapCollector creates and manages all Mapper subclasses through a single
@@ -16,35 +16,87 @@ import java.nio.file.Path;
 public class MapCollector
 {
     /**
-     * Sets all map image properties on construction.
-     *
-     * @param imagePath       Generic image path used to create all map image
-     *                        paths.
-     *
-     * @param dirInfoPath     Path where directory information will be loaded.
+     * Initializes all mappers to create single-image maps with fixed sizes.
+     * 
+     * @param imageDir        The directory where map images will be saved.
+     * 
+     * @param imageName       The start of the filename that will be used to
+     *                        save all maps.
+     * 
+     * @param xMin            Lowest x-coordinate within the mapped area,
+     *                        measured in chunks.
+     * 
+     * @param zMin            Lowest z-coordinate within the mapped area,
+     *                        measured in chunks.
      *
      * @param widthInChunks   Width of the mapped region in chunks.
      *
      * @param heightInChunks  Height of the mapped image in chunks.
      *
      * @param pixelsPerChunk  Width/height in pixels of each chunk.
+     * 
+     * 
+     * @param dirInfoFile     A file containing notable coordinates to mark on
+     *                        the server directory map. Directory files should
+     *                        list one point per line, formatted as 
+     *                        X Z PlaceName.
      */
-    public MapCollector(Path imagePath,
-            Path dirInfoPath,
+    public MapCollector(
+            File imageDir,
+            String imageName,
+            int xMin,
+            int zMin,
             int widthInChunks,
             int heightInChunks,
-            int pixelsPerChunk)
+            int pixelsPerChunk,
+            File dirInfoFile)
     {
-        basic = new BasicMapper(imagePath + "_basic.png", widthInChunks,
+        activity = new ActivityMapper(new File(imageDir, "activity_"
+                + imageName), xMin, zMin, widthInChunks, heightInChunks,
+                pixelsPerChunk);
+        biome = new BiomeMapper(new File(imageDir, "biome_" + imageName), xMin,
+                zMin, widthInChunks, heightInChunks, pixelsPerChunk);
+        structure = new StructureMapper(new File(imageDir, "structure_"
+                + imageName), xMin, zMin, widthInChunks, heightInChunks,
+                pixelsPerChunk);
+        directory = new DirectoryMapper(new File(imageDir, "directory_" 
+                + imageName), dirInfoFile, xMin, zMin, widthInChunks,
                 heightInChunks, pixelsPerChunk);
-        activity = new ActivityMapper(imagePath + "_activity.png",
-                widthInChunks, heightInChunks, pixelsPerChunk);
-        biome = new BiomeMapper(imagePath + "_biome.png",
-                widthInChunks, heightInChunks, pixelsPerChunk);
-        structure = new StructureMapper(imagePath + "_structure.png",
-                widthInChunks, heightInChunks, pixelsPerChunk);
-        directory = new DirectoryMapper(imagePath + "_directory.png",
-                dirInfoPath, widthInChunks, heightInChunks, pixelsPerChunk);
+        errors = new ErrorMapper(new File(imageDir, "error_" + imageName),
+                xMin, zMin, widthInChunks, heightInChunks, pixelsPerChunk);
+    }
+    
+    /**
+     * Initializes all mappers to create tiled image map folders.
+     * 
+     * 
+     * @param imageDir         The directory where map images will be saved.
+     * 
+     * @param imageName        The start of the filename that will be used to
+     * 
+     * @param tileSize        The width of each tile, measured in chunks.
+     * 
+     * @param pixelsPerChunk  The width and height in pixels of each chunk.
+     *                         save all maps.
+     * 
+     * @param dirInfoFile      A file containing notable coordinates to mark on
+     *                         the server directory map. Directory files should
+     *                         list one point per line, formatted as 
+     *                         X Z PlaceName.
+     */
+    public MapCollector(File imageDir, String imageName, int tileSize,
+            int pixelsPerChunk, File dirInfoFile)
+    {
+        activity = new ActivityMapper(new File(imageDir, "activity"), imageName,
+                tileSize, pixelsPerChunk);
+        biome = new BiomeMapper(new File(imageDir, "biome"), imageName,
+                tileSize, pixelsPerChunk);
+        structure = new StructureMapper(new File(imageDir, "structure"),
+                imageName, tileSize, pixelsPerChunk);
+        directory = new DirectoryMapper(new File(imageDir, "directory"),
+                imageName, dirInfoFile, tileSize, pixelsPerChunk);
+        errors = new ErrorMapper(new File(imageDir, "errors"), imageName,
+                tileSize, pixelsPerChunk);
     }
 
 
@@ -53,11 +105,11 @@ public class MapCollector
      */
     public void saveMapFile()
     {
-        basic.saveMapFile();
         activity.saveMapFile();
         biome.saveMapFile();
         structure.saveMapFile();
         directory.saveMapFile();
+        errors.saveMapFile();
     }
 
     /**
@@ -67,17 +119,17 @@ public class MapCollector
      */
     public void drawChunk(ChunkData chunk)
     {
-        basic.drawChunk(chunk);
         activity.drawChunk(chunk);
         biome.drawChunk(chunk);
         structure.drawChunk(chunk);
         directory.drawChunk(chunk);
+        errors.drawChunk(chunk);
     }
 
     // All mapper types:
-    private final BasicMapper basic;
     private final ActivityMapper activity;
     private final BiomeMapper biome;
     private final StructureMapper structure;
     private final DirectoryMapper directory;
+    private final ErrorMapper errors;
 }

@@ -1,24 +1,40 @@
 /**
- * @file  BasicMapper.java
+ * @file  ErrorMapper.java
  *
- * Creates the basic loaded chunk map.
+ * Shows chunk data errors.
  */
 
 package com.centuryglass.mcmap.mapping;
 
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
-import java.awt.Point;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- *  BasicMapper creates a simple map that only displays which Minecraft map
- * chunks have been generated.
+ *  ErrorMapper shows all chunks with missing or invalid data, color coded by
+ * error type.
  */
-public class BasicMapper extends Mapper
+public class ErrorMapper extends Mapper
 {
+    // Define colors used to represent each error type:
+    private static final Map<ChunkData.ErrorFlag, Color> ERROR_COLORS;
+    static
+    {
+        ERROR_COLORS = new HashMap();
+        ERROR_COLORS.put(ChunkData.ErrorFlag.NONE,
+                new Color(0, 255, 0, 255));
+        ERROR_COLORS.put(ChunkData.ErrorFlag.BAD_OFFSET,
+                new Color(255, 255, 0, 255));
+        ERROR_COLORS.put(ChunkData.ErrorFlag.CHUNK_MISSING,
+                new Color(0, 0, 0, 255));
+        ERROR_COLORS.put(ChunkData.ErrorFlag.INVALID_NBT,
+                new Color(255, 0, 0, 255));
+    }
+    
     /**
-     * Initializes a mapper that creates a single basic image map.
+     * Initializes a mapper that creates a single error image map.
      *
      * @param imageFile       The file where the map image will be saved.
      * 
@@ -35,15 +51,15 @@ public class BasicMapper extends Mapper
      * @param pixelsPerChunk  The width and height in pixels of each mapped
      *                        chunk.
      */
-    public BasicMapper(File imageFile, int xMin, int zMin, int widthInChunks,
+    public ErrorMapper(File imageFile, int xMin, int zMin, int widthInChunks,
             int heightInChunks, int pixelsPerChunk)
     {
         super(imageFile, xMin, zMin, widthInChunks, heightInChunks,
                 pixelsPerChunk);
     }
-    
+        
     /**
-     * Initializes a mapper that creates a set of basic map tiles. 
+     * Initializes a mapper that creates a set of map error tiles. 
      * 
      * @param imageDir         The directory where map tiles will be saved.
      * 
@@ -56,7 +72,7 @@ public class BasicMapper extends Mapper
      * @param pixelsPerChunk   The width and height in pixels of each mapped
      *                         chunk.
      */
-    public BasicMapper(File imageDir, String baseName, int tileSize,
+    public ErrorMapper(File imageDir, String baseName, int tileSize,
             int pixelsPerChunk)
     {
         super(imageDir, baseName, tileSize, pixelsPerChunk);
@@ -73,18 +89,6 @@ public class BasicMapper extends Mapper
     @Override
     public Color getChunkColor(ChunkData chunk)
     {
-        if (chunk.getErrorType() != ChunkData.ErrorFlag.NONE)
-        {
-            return null;
-        }
-        Color white = new Color(255, 255, 255, 255);
-        Color green = new Color(0, 255, 0, 255);
-        Point chunkPoint = chunk.getPos();
-        boolean greenTile = ((chunkPoint.y % 2) == 0);
-        if ((chunkPoint.x % 2) == 0)
-        {
-            greenTile = ! greenTile;
-        }
-        return greenTile? green : white;
+        return ERROR_COLORS.get(chunk.getErrorType());
     }    
 }

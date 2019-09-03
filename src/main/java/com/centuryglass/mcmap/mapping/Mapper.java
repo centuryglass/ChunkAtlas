@@ -8,6 +8,7 @@ package com.centuryglass.mcmap.mapping;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
 import java.awt.Point;
+import java.io.File;
 
 /**
  *  Mapper classes are responsible for determining which color to apply to the
@@ -18,21 +19,48 @@ import java.awt.Point;
 public abstract class Mapper
 {
     /**
-     *  Sets map image properties on construction.
+     * Initializes a mapper that creates a single image map.
      *
-     * @param imagePath       Path to where the map image will be saved.
+     * @param imageFile       The file where the map image will be saved.
+     * 
+     * @param xMin            The lowest x-coordinate within the mapped area,
+     *                        measured in chunks.
+     * 
+     * @param zMin            The lowest z-coordinate within the mapped area,
+     *                        measured in chunks.
+     * 
+     * @param widthInChunks   The width of the mapped region in chunks.
      *
-     * @param widthInChunks   Width of the mapped region in chunks.
+     * @param heightInChunks  The height of the mapped image in chunks.
      *
-     * @param heightInChunks  Height of the mapped image in chunks.
-     *
-     * @param pixelsPerChunk  Width/height in pixels of each chunk.
+     * @param pixelsPerChunk  The width and height in pixels of each mapped
+     *                        chunk.
      */
-    public Mapper(String imagePath, int widthInChunks, int heightInChunks,
+    public Mapper(File imageFile, int xMin, int zMin, int widthInChunks,
+            int heightInChunks, int pixelsPerChunk)
+    {
+        map = new MapImage(imageFile, xMin, zMin, widthInChunks, heightInChunks,
+                pixelsPerChunk);  
+    }
+    
+    /**
+     * Initializes a mapper that creates a set of map tiles. 
+     * 
+     * @param imageDir         The directory where map tiles will be saved.
+     * 
+     * @param baseName         The base name to use when selecting map image
+     *                         names.
+     * 
+     * @param tileSize         The width and height in chunks of each map tile
+     *                         image.
+     * 
+     * @param pixelsPerChunk   The width and height in pixels of each mapped
+     *                         chunk.
+     */
+    public Mapper(File imageDir, String baseName, int tileSize,
             int pixelsPerChunk)
     {
-        map = new MapImage(imagePath, widthInChunks, heightInChunks,
-                pixelsPerChunk, true);  
+        map = new TileMap(imageDir, baseName, tileSize, pixelsPerChunk);
     }
     
     /**
@@ -41,7 +69,7 @@ public abstract class Mapper
     public final void saveMapFile()
     {
         finalProcessing(map);
-        map.saveImage();
+        map.saveToDisk();
     }
     
     /**
@@ -80,18 +108,16 @@ public abstract class Mapper
      * Mapper subclasses should extend this method if there's anything they need
      * to do after processing chunks to complete the map.
      *
-     * @param mapImage  The mapper's MapImage, passed in so final changes can be
-     *                  made.
+     * @param map  The mapper's Map, passed in so final changes can be made.
      */
-    protected void finalProcessing(MapImage mapImage) 
+    protected void finalProcessing(WorldMap map) 
     {
+        /*
         final Color lineColor = new Color(255, 0, 0);
-        final int width = map.getWidthInChunks();
-        final int height = map.getHeightInChunks();
-        final int xMin = -(width / 2);
-        final int xMax = width / 2;
-        final int zMin = -(height / 2);
-        final int zMax = height / 2;
+        final int xMin = map.getXMin();
+        final int xMax = xMin + map.getWidth();
+        final int zMin = map.getZMin();
+        final int zMax = zMin + map.getHeight();
         // Draw x and z axis to make it easier to find coordinates:
         for (int z = zMin; z < zMax; z++)
         {
@@ -105,8 +131,9 @@ public abstract class Mapper
             map.setChunkColor(x, 0, lineColor);
             map.setChunkColor(x + 1, 0, lineColor);
         }
+        */
     }
     
     // All map image data:
-    MapImage map;
+    WorldMap map;
 }

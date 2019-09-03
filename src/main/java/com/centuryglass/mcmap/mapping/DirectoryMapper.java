@@ -8,8 +8,8 @@ package com.centuryglass.mcmap.mapping;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
 import java.awt.Point;
+import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,28 +29,61 @@ public class DirectoryMapper extends BiomeMapper
     private static final double BIOME_COLOR_MULT = 0.5;
     
     /**
-     * Sets map image properties on construction.
+     * Initializes a mapper that creates a single directory image map.
      *
-     * @param imagePath       Path to where the map image will be saved.
+     * @param imageFile       The file where the map image will be saved.
+     * 
+     * @param dirInfoFile     A file listing notable locations on the map.
+     * 
+     * @param xMin            The lowest x-coordinate within the mapped area,
+     *                        measured in chunks.
+     * 
+     * @param zMin            The lowest z-coordinate within the mapped area,
+     *                        measured in chunks.
+     * 
+     * @param widthInChunks   The width of the mapped region in chunks.
      *
-     * @param dirInfoPath     Path where directory information will be loaded.
+     * @param heightInChunks  The height of the mapped image in chunks.
      *
-     * @param widthInChunks   Width of the mapped region in chunks.
-     *
-     * @param heightInChunks  Height of the mapped image in chunks.
-     *
-     * @param pixelsPerChunk  Width/height in pixels of each chunk.
+     * @param pixelsPerChunk  The width and height in pixels of each mapped
+     *                        chunk.
      */
-    public DirectoryMapper(String imagePath,
-            Path dirInfoPath,
+    public DirectoryMapper(File imageFile,
+            File dirInfoFile,
+            int xMin,
+            int zMin,
             int widthInChunks,
             int heightInChunks,
             int pixelsPerChunk)
     {
-        super(imagePath, widthInChunks, heightInChunks, pixelsPerChunk);
-        directoryPath = dirInfoPath;
+        super(imageFile, xMin, zMin, widthInChunks, heightInChunks,
+                pixelsPerChunk);
+        directoryFile = dirInfoFile;
     }
-
+    
+    /**
+     * Initializes a mapper that creates a set of map tiles. 
+     * 
+     * @param imageDir         The directory where map tiles will be saved.
+     * 
+     * @param baseName         The base name to use when selecting map image
+     *                         names.
+     * 
+     * @param dirInfoFile      A file listing notable locations on the map.
+     * 
+     * @param tileSize         The width and height in chunks of each map tile
+     *                         image.
+     * 
+     * @param pixelsPerChunk   The width and height in pixels of each mapped
+     *                         chunk.
+     */
+    public DirectoryMapper(File imageDir, String baseName, File dirInfoFile,
+            int tileSize, int pixelsPerChunk)
+    {
+        super(imageDir, baseName, tileSize, pixelsPerChunk);
+        directoryFile = dirInfoFile;
+    }
+    
     /**
      * Provides a color for any valid chunk based on biome.
      *
@@ -84,7 +117,7 @@ public class DirectoryMapper extends BiomeMapper
      * @param map  The mapper's MapImage.
      */
     @Override
-    protected void finalProcessing(MapImage map)
+    protected void finalProcessing(WorldMap map)
     {
         super.finalProcessing(map);
 
@@ -111,7 +144,7 @@ public class DirectoryMapper extends BiomeMapper
                 }
             }
         };
-        if (directoryPath == null)
+        if (directoryFile == null)
         {
             System.err.println("DirectoryMapper: no directory list provided.");
             return;
@@ -120,12 +153,12 @@ public class DirectoryMapper extends BiomeMapper
         Scanner directoryReader;
         try
         {
-            directoryReader = new Scanner(directoryPath.toFile());
+            directoryReader = new Scanner(directoryFile);
         }
         catch (FileNotFoundException e)
         {
             System.err.println("Failed to open map directory listing at "
-                    + directoryPath.toString());
+                    + directoryFile.toString());
             return;
         }
         
@@ -180,5 +213,5 @@ public class DirectoryMapper extends BiomeMapper
     }
 
     // Minecraft world coordinate directory file:
-    private final Path directoryPath;
+    private final File directoryFile;
 }
