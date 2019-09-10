@@ -111,7 +111,9 @@ public class ImageStitcher
                         + e.getMessage());
                 continue;
             }
-            mapPainter.drawImage(tileImage, tilePt.x - xMin, tilePt.y - zMin,
+            mapPainter.drawImage(tileImage,
+                    (tilePt.x - xMin) * pixelsPerChunk,
+                    (tilePt.y - zMin) * pixelsPerChunk,
                     tilePixels, tilePixels, null);
         }
         // Draw X and Y axis if within the map bounds:
@@ -119,11 +121,13 @@ public class ImageStitcher
         mapPainter.setStroke(new BasicStroke(pixelsPerChunk * 2));
         if (xMin < 0 && xMax > 0)
         {
-            mapPainter.drawLine(0 - xMin, 0, 0 - xMin, combinedMap.getHeight());
+            final int xCenter = (0 - xMin) * pixelsPerChunk;
+            mapPainter.drawLine(xCenter, 0, xCenter, combinedMap.getHeight());
         }
         if (zMin < 0 && zMax > 0)
         {
-            mapPainter.drawLine(0, 0 - zMin, combinedMap.getWidth(), 0 - zMin);
+            final int zCenter = (0 - zMin) * pixelsPerChunk;
+            mapPainter.drawLine(0, zCenter, combinedMap.getWidth(), zCenter);
         }
         if (drawBackground)
         {

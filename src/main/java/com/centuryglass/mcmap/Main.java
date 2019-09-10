@@ -317,7 +317,8 @@ public class Main
         }
     }
     
-    private static ArrayList<File> getTileDirs(File mainImageDir)
+    // TODO: find a better place than Main to put this function:
+    public static ArrayList<File> getTileDirs(File mainImageDir)
     {
         ArrayList<File> dirList = new ArrayList();
         if (! mainImageDir.isDirectory())
