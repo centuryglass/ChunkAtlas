@@ -1,7 +1,0 @@
-name: MCMap
-
-version: 0.1
-
-main: org.centuryglass.MCMap
-
-api-version: 1.14

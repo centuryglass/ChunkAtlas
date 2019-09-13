@@ -1,9 +1,0 @@
-name: MCMap
-
-description: WIP minecraft map plugin
-
-version: 0.1
-
-main: com.centuryglass.mcmap.serverplugin.Plugin
-
-api-version: 1.14
