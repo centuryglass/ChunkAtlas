@@ -128,156 +128,155 @@ public enum Biome
     {
         colorMap = new HashMap();
         colorMap.put(OCEAN,
-                    new Color(0x1a, 0x00, 0xfe));
+                new Color(0x09, 0x00, 0x78));
         colorMap.put(DEEP_OCEAN,
-                new Color(0x16, 0x01, 0x50));
+                new Color(0x07, 0x00, 0x59));
         colorMap.put(FROZEN_OCEAN,
-                new Color(0xc2, 0xbb, 0xff));
+                new Color(0x9c, 0x9a, 0xb9));
         colorMap.put(DEEP_FROZEN_OCEAN,
-                new Color(0x2a, 0x36, 0x59));
+                new Color(0x33, 0x33, 0x3d));
         colorMap.put(COLD_OCEAN,
-                new Color(0x76, 0x67, 0xff));
+                new Color(0x78, 0x73, 0xba));
         colorMap.put(DEEP_COLD_OCEAN,
-                new Color(0x2a, 0x36, 0x59));
+                new Color(0x29, 0x28, 0x3c));
         colorMap.put(LUKEWARM_OCEAN,
-                new Color(0x00, 0x81, 0xff));
+                new Color(0x46, 0x3d, 0xb9));
         colorMap.put(DEEP_LUKEWARM_OCEAN,
-                new Color(0x00, 0x34, 0x51));
+                new Color(0x15, 0x13, 0x36));
         colorMap.put(WARM_OCEAN,
-                new Color(0x00, 0xa4, 0xff));
+                new Color(0x0f, 0x01, 0xba));
         colorMap.put(DEEP_WARM_OCEAN,
-                new Color(0x00, 0x34, 0x51));
+                new Color(0x04, 0x00, 0x35));
         colorMap.put(RIVER,
-                new Color(0x72, 0x6f, 0xff));
+                new Color(0x00, 0x5b, 0x78));
         colorMap.put(FROZEN_RIVER,
-                new Color(0xc6, 0xc5, 0xff));
+                new Color(0x68, 0x7e, 0x85));
         colorMap.put(BEACH,
-                new Color(0x9c, 0x9f, 0x88));
+                new Color(0x4e, 0x00, 0x78));
         colorMap.put(STONE_SHORE,
-                new Color(0x51, 0x53, 0x45));
+                new Color(0x74, 0x6f, 0x77));
         colorMap.put(SNOWY_BEACH,
-                new Color(0xe2, 0xe6, 0xc8));
+                new Color(0x97, 0x88, 0x9f));
         colorMap.put(FOREST,
-                new Color(0x0b, 0xa1, 0x0c));
+                new Color(0x00, 0x78, 0x5b));
         colorMap.put(WOODED_HILLS,
-                new Color(0x0c, 0xb9, 0x03));
+                new Color(0x00, 0x3d, 0x0c));
         colorMap.put(FLOWER_FOREST,
-                new Color(0xfa, 0x93, 0xff));
+                new Color(0x00, 0xff, 0x33));
         colorMap.put(BIRCH_FOREST,
-                new Color(0x73, 0xb6, 0x74));
+                new Color(0x50, 0x7c, 0x59));
         colorMap.put(BIRCH_FOREST_HILLS,
-                new Color(0x7e, 0xcd, 0x7f));
+                new Color(0x34, 0x4c, 0x38));
         colorMap.put(TALL_BIRCH_FOREST,
-                new Color(0x7b, 0xb8, 0x7c));
+                new Color(0x7c, 0xaa, 0x85));
         colorMap.put(TALL_BIRCH_HILLS,
-                new Color(0xa4, 0xe9, 0xa5));
+                new Color(0x34, 0x4c, 0x38));
         colorMap.put(DARK_FOREST,
-                new Color(0x36, 0x5f, 0x36));
+                new Color(0x0f, 0x20, 0x13));
         colorMap.put(DARK_FOREST_HILLS,
-                new Color(0x4a, 0x83, 0x4a));
+                new Color(0x0b, 0x2f, 0x12));
         colorMap.put(JUNGLE,
-                new Color(0x00, 0x4a, 0x4a));
+                new Color(0x00, 0x78, 0x5b));
         colorMap.put(JUNGLE_HILLS,
                 new Color(0x02, 0x62, 0x62));
         colorMap.put(MODIFIED_JUNGLE,
-                new Color(0x16, 0x81, 0x81));
+                new Color(0x0d, 0xc6, 0x99));
         colorMap.put(JUNGLE_EDGE,
-                new Color(0x45, 0x89, 0x7a));
+                new Color(0x02, 0xb9, 0x8d));
         colorMap.put(MODIFIED_JUNGLE_EDGE,
-                new Color(0x5c, 0xbf, 0xb7));
+                new Color(0x0c, 0xf7, 0xb3));
         colorMap.put(BAMBOO_JUNGLE,
-                new Color(0x9e, 0x96, 0x8d));
+                new Color(0x45, 0x6f, 0x65));
         colorMap.put(BAMBOO_JUNGLE_HILLS,
-                new Color(0xbf, 0xb3, 0xa6));
+                new Color(0x23, 0x37, 0x32));
         colorMap.put(TAIGA,
-                new Color(0x54, 0x38, 0x36));
+                new Color(0x00, 0x85, 0x72));
         colorMap.put(TAIGA_HILLS,
-                new Color(0x71, 0x4c, 0x49));
+                new Color(0x02, 0x51, 0x45));
         colorMap.put(TAIGA_MOUNTAINS,
-                new Color(0xbd, 0x7d, 0x79));
+                new Color(0x0d, 0x2f, 0x2a));
         colorMap.put(SNOWY_TAIGA,
-                new Color(0x95, 0x89, 0x89));
+                new Color(0x66, 0x7d, 0x7a));
         colorMap.put(SNOWY_TAIGA_HILLS,
-                new Color(0xc2, 0xb1, 0xb1));
+                new Color(0x53, 0x5b, 0x5a));
         colorMap.put(SNOWY_TAIGA_MOUNTAINS,
-                new Color(0xde, 0xc2, 0xc2));
+                new Color(0x32, 0x3c, 0x3a));
         colorMap.put(GIANT_TREE_TAIGA,
-                new Color(0x40, 0x16, 0x13));
+                new Color(0x2d, 0xa6, 0x95));
         colorMap.put(GIANT_TREE_TAIGA_HILLS,
-                new Color(0x6c, 0x23, 0x1e));
+                new Color(0x1b, 0x7c, 0x63));
         colorMap.put(GIANT_SPRUCE_TAIGA,
-                new Color(0x7d, 0x50, 0x46));
+                new Color(0x00, 0x5b, 0x4e));
         colorMap.put(GIANT_SPRUCE_TAIGA_HILLS,
-                new Color(0x99, 0x63, 0x56));
+                new Color(0x00, 0x3a, 0x32));
         colorMap.put(MUSHROOM_FIELDS,
-                new Color(0xa1, 0x0b, 0x2c));
+                new Color(0x6e, 0x00, 0xff));
         colorMap.put(MUSHROOM_FIELDS_SHORE,
-                new Color(0xe2, 0x66, 0x81));
+                new Color(0xb7, 0x90, 0xeb));
         colorMap.put(SWAMP,
-                new Color(0x49, 0x1d, 0x5e));
+                new Color(0x78, 0x00, 0x74));
         colorMap.put(SWAMP_HILLS,
-                new Color(0x86, 0x30, 0xaf));
+                new Color(0x5b, 0x01, 0x58));
         colorMap.put(SAVANNA,
-                new Color(0x90, 0x67, 0x0c));
+                new Color(0x78, 0x46, 0x00));
         colorMap.put(SAVANNA_PLATEAU,
-                new Color(0xb1, 0x7e, 0x0e));
+                new Color(0xb4, 0x70, 0x11));
         colorMap.put(SHATTERED_SAVANNA,
-                new Color(0xb3, 0x90, 0x42));
+                new Color(0x7b, 0x6b, 0x55));
         colorMap.put(SHATTERED_SAVANNA_PLATEAU,
-                new Color(0xf8, 0xcf, 0x75));
+                new Color(0xb6, 0x9d, 0x7a));
         colorMap.put(PLAINS,
-                new Color(0xb4, 0xff, 0x00));
+                new Color(0x66, 0x78, 0x00));
         colorMap.put(SUNFLOWER_PLAINS,
-                new Color(0xe0, 0xfb, 0x96));
+                new Color(0xc3, 0xe5, 0x03));
         colorMap.put(DESERT,
-                new Color(0xce, 0xbb, 0x00));
+                new Color(0x78, 0x71, 0x00));
         colorMap.put(DESERT_HILLS,
-                new Color(0xff, 0xe8, 0x00));
+                new Color(0x61, 0x5c, 0x10));
         colorMap.put(DESERT_LAKES,
-                new Color(0xfb, 0xf6, 0xc4));
+                new Color(0x98, 0x93, 0x5f));
         colorMap.put(SNOWY_TUNDRA,
-                new Color(0xae, 0xba, 0xba));
+                new Color(0xa7, 0x8f, 0xa6));
         colorMap.put(SNOWY_MOUNTAINS,
-                new Color(0xcf, 0xea, 0xeb));
+                new Color(0x75, 0x5a, 0x68));
         colorMap.put(ICE_SPIKES,
-                new Color(0x55, 0x6a, 0x6f));
+                new Color(0xc7, 0xad, 0xbb));
         colorMap.put(MOUNTAINS,
-                new Color(0x7e, 0x7a, 0x7a));
+                new Color(0x78, 0x00, 0x3f));
         colorMap.put(WOODED_MOUNTAINS,
-                new Color(0x7e, 0x8a, 0x7e));
+                new Color(0x4d, 0x17, 0x33));
         colorMap.put(GRAVELLY_MOUNTAINS,
-                new Color(0x5c, 0x63, 0x5c));
+                new Color(0x5a, 0x4f, 0x55));
         colorMap.put(MODIFIED_GRAVELLY_MOUNTAINS,
-                new Color(0x42, 0x44, 0x42));
+                new Color(0xa0, 0x8e, 0x98));
         colorMap.put(MOUNTAIN_EDGE,
-                new Color(0x33, 0x36, 0x33));
+                new Color(0xd3, 0x2f, 0x85));
         colorMap.put(BADLANDS,
-                new Color(0xd8, 0x2d, 0x04));
+                new Color(0x78, 0x1b, 0x00));
         colorMap.put(BADLANDS_PLATEAU,
-                new Color(0xe9, 0x5e, 0x42));
+                new Color(0xb1, 0x21, 0x0c));
         colorMap.put(MODIFIED_BADLANDS_PLATEAU,
-                new Color(0xf7, 0x86, 0x6f));
+                new Color(0xe5, 0x64, 0x3f));
         colorMap.put(WOODED_BADLANDS_PLATEAU,
-                new Color(0x68, 0x11, 0x00));
+                new Color(0x77, 0x51, 0x46));
         colorMap.put(MODIFIED_WOODED_BADLANDS_PLATEAU,
-                new Color(0xbf, 0x22, 0x00));
+                new Color(0xc1, 0x96, 0x89));
         colorMap.put(ERODED_BADLANDS,
-                new Color(0x84, 0x1a, 0x00));
+                new Color(0x6a, 0x55, 0x4f));
         colorMap.put(NETHER,
-                new Color(0xff, 0x18, 0x58));
+                new Color(0xFF, 0x00, 0x00));
         colorMap.put(THE_END,
-                new Color(0xce, 0xc8, 0xab));
+                new Color(0xff, 0x00, 0xff));
         colorMap.put(SMALL_END_ISLANDS,
-                new Color(0xcd, 0xc2, 0x8e));
+                new Color(0xb5, 0x50, 0xb5));
         colorMap.put(END_MIDLANDS,
-                new Color(0xb4, 0xab, 0x7f));
+                new Color(0x65, 0x42, 0x65));
         colorMap.put(END_HIGHLANDS,
-                new Color(0xf4, 0xf0, 0xda));
+                new Color(0xdb, 0xaa, 0xdb));
         colorMap.put(END_BARRENS,
-                new Color(0x91, 0x90, 0x8a));
+                new Color(0x42, 0x37, 0x42));
         colorMap.put(THE_VOID,
                 new Color(0x00, 0x00, 0x00));
-        
     }
     
     private Biome(int code)
