@@ -59,9 +59,6 @@ public class MapCollector
         structure = new StructureMapper(new File(imageDir, "structure_"
                 + imageName), xMin, zMin, widthInChunks, heightInChunks,
                 pixelsPerChunk);
-        directory = new DirectoryMapper(new File(imageDir, "directory_" 
-                + imageName), dirInfoFile, xMin, zMin, widthInChunks,
-                heightInChunks, pixelsPerChunk);
         errors = new ErrorMapper(new File(imageDir, "error_" + imageName),
                 xMin, zMin, widthInChunks, heightInChunks, pixelsPerChunk);
     }
@@ -90,8 +87,6 @@ public class MapCollector
                 tileSize);
         structure = new StructureMapper(new File(imageDir, "structure"),
                 imageName, tileSize);
-        directory = new DirectoryMapper(new File(imageDir, "directory"),
-                imageName, dirInfoFile, tileSize);
         errors = new ErrorMapper(new File(imageDir, "errors"), imageName,
                 tileSize);
     }
@@ -105,7 +100,6 @@ public class MapCollector
         activity.saveMapFile();
         biome.saveMapFile();
         structure.saveMapFile();
-        directory.saveMapFile();
         errors.saveMapFile();
     }
 
@@ -119,7 +113,6 @@ public class MapCollector
         activity.drawChunk(chunk);
         biome.drawChunk(chunk);
         structure.drawChunk(chunk);
-        directory.drawChunk(chunk);
         errors.drawChunk(chunk);
     }
 
@@ -127,6 +120,5 @@ public class MapCollector
     private final ActivityMapper activity;
     private final BiomeMapper biome;
     private final StructureMapper structure;
-    private final DirectoryMapper directory;
     private final ErrorMapper errors;
 }

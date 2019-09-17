@@ -587,8 +587,17 @@ public class ChunkNBT
         }
         for (int i = 0; i < biomeList.size(); i++)
         {
-            int biomeCode = (int) Integer.toUnsignedLong(biomeList.getInt(i));
-            chunk.addBiome(Biome.fromCode(biomeCode)); 
+            int biomeCode = Byte.toUnsignedInt((byte) biomeList.getInt(i));
+            final Biome biome = Biome.fromCode(biomeCode);
+            if (biome == null)
+            {
+                System.err.println("ChunkNBT.getChunkData: Found illegal "
+                        + "biome code " + biomeCode);
+            }
+            else
+            {
+                chunk.addBiome(Biome.fromCode(biomeCode));
+            }
         }
         // Read structure data:
         JsonObject structureData = levelData.getJsonObject(Keys.STRUCTURES);

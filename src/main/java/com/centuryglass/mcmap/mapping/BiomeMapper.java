@@ -8,6 +8,7 @@ package com.centuryglass.mcmap.mapping;
 
 import com.centuryglass.mcmap.worldinfo.Biome;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
+import com.centuryglass.mcmap.images.BiomeTextures;
 import java.awt.Color;
 import java.io.File;
 import java.util.Map;
@@ -42,6 +43,7 @@ public class BiomeMapper extends Mapper
     {
         super(imageFile, xMin, zMin, widthInChunks, heightInChunks,
                 pixelsPerChunk);
+        textureData = new BiomeTextures();
     }
     
     /**
@@ -58,6 +60,7 @@ public class BiomeMapper extends Mapper
     public BiomeMapper(File imageDir, String baseName, int tileSize)
     {
         super(imageDir, baseName, tileSize);
+        textureData = new BiomeTextures();
     }
     
     /**
@@ -83,7 +86,8 @@ public class BiomeMapper extends Mapper
         long blue = 0;
         for (Map.Entry<Biome, Integer> entry : chunkBiomes.entrySet())
         {
-            Color biomeColor = Biome.getBiomeColor(entry.getKey());
+            Color biomeColor = textureData.getPixel(entry.getKey(),
+                    chunk.getPos().x, chunk.getPos().y, 1);
             int count = entry.getValue();
             if (biomeColor == null)
             {
@@ -103,4 +107,6 @@ public class BiomeMapper extends Mapper
         }
         return color;
     }
+    
+    private final BiomeTextures textureData;
 }

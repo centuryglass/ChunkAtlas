@@ -4,7 +4,7 @@
  * Stitches a set of image tiles together into a single map image, optionally
  * with a Minecraft map item background and border.
  */
-package com.centuryglass.mcmap.mapping;
+package com.centuryglass.mcmap.images;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

@@ -5,8 +5,8 @@
  */
 package com.centuryglass.mcmap;
 
-import com.centuryglass.mcmap.mapping.Downscaler;
-import com.centuryglass.mcmap.mapping.ImageStitcher;
+import com.centuryglass.mcmap.images.Downscaler;
+import com.centuryglass.mcmap.images.ImageStitcher;
 import com.centuryglass.mcmap.mapping.MapImage;
 import java.io.File;
 import java.util.ArrayList;
