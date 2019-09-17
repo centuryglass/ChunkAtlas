@@ -40,9 +40,6 @@ public class Downscaler
     public static void scaleTiles(File tileDir, File outDir, int newResolution)
             throws IllegalArgumentException, SecurityException
     {
-        System.out.println ("Copying and scaling images from "
-                + tileDir.toString()
-                + " to " + outDir.toString());
         if (newResolution <= 0)
         {
             throw new IllegalArgumentException("Selected invalid resolution "

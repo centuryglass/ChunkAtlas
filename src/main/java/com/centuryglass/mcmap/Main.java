@@ -32,7 +32,7 @@ public class Main
     private static final int DEFAULT_Z_MIN = -1600;
     private static final int DEFAULT_WIDTH = 3200;
     private static final int DEFAULT_HEIGHT = 3200;
-    private static final int DEFAULT_CHUNK_PX = 2;
+    private static final int DEFAULT_CHUNK_PX = 1;
     private static final int MAX_TILE = 1024;
     private static final int MIN_TILE = 32;
     
