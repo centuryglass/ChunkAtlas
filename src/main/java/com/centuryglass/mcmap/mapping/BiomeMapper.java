@@ -8,7 +8,11 @@ package com.centuryglass.mcmap.mapping;
 
 import com.centuryglass.mcmap.worldinfo.Biome;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
+<<<<<<< HEAD
 import com.centuryglass.mcmap.images.BiomeTextures;
+=======
+import images.BiomeTextures;
+>>>>>>> 7a561ee04e8d7fc2f9f74d7c00e4eda6d9ce4958
 import java.awt.Color;
 import java.io.File;
 import java.util.Map;

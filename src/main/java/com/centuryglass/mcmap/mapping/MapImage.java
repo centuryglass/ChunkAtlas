@@ -5,7 +5,11 @@
  */
 
 package com.centuryglass.mcmap.mapping;
+<<<<<<< HEAD
 import com.centuryglass.mcmap.images.MapBackground;
+=======
+import images.MapBackground;
+>>>>>>> 7a561ee04e8d7fc2f9f74d7c00e4eda6d9ce4958
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
