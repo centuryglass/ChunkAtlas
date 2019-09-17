@@ -1,7 +1,6 @@
 build
 target
 map
-server*
 MCMap
 *test.png
 gzstream/*.o
