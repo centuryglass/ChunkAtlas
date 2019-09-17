@@ -2,6 +2,9 @@
  * @file  DirectoryMapper.java
  *
  * Creates the user directory location map.
+ * 
+ * Directory mapper is no longer in active use, as the MCMap web viewer can now
+ * overlay directory information directly over map images.
  */
 package com.centuryglass.mcmap.mapping;
 

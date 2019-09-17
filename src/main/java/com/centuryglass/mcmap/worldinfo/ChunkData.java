@@ -68,6 +68,11 @@ public class ChunkData
      */
     public void addBiome(Biome biome)
     {
+        if (biome == null)
+        {
+            System.err.println("ChunkData: tried to add null biome!");
+            return;
+        }
         Integer currentCount = biomeCounts.get(biome);
         if (currentCount == null)
         {

@@ -3,7 +3,7 @@
  * 
  * Duplicates all map tiles in a directory at a lower resolution.
  */
-package com.centuryglass.mcmap.mapping;
+package images;
 
 import java.awt.Graphics2D;
 import java.awt.Image;
