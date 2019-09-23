@@ -272,7 +272,8 @@ public class MCMap
         for (int i = 0; i < numReaderThreads; i++)
         {
             int regionStart = i * filesPerThread;
-            int regionEnd = regionStart + filesPerThread;
+            int regionEnd = (i == (numReaderThreads - 1))
+                    ? numRegionFiles : (regionStart + filesPerThread);
             threadList.add(new ReaderThread(
                     new ArrayList(regionFiles.subList(regionStart, regionEnd)),
                     mapperThread,
