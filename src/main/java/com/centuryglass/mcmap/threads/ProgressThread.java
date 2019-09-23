@@ -36,22 +36,7 @@ public class ProgressThread extends Thread
         updateQueue = new LinkedBlockingQueue();
         shouldExit = new AtomicBoolean();
         numRegionFiles = numRegions;
-        if (numRegionFiles > 3000)
-        {
-            filesBeforeUpdate = 50;
-        }
-        else if (numRegionFiles > 1000)
-        {
-            filesBeforeUpdate = 20;
-        }
-        else if (numRegionFiles > 100)
-        {
-            filesBeforeUpdate = 5;
-        }
-        else
-        {
-            filesBeforeUpdate = 1;
-        }
+        lastPercentage = 0;
         regionCount = 0;
         chunkCount = 0;
     }
@@ -117,15 +102,19 @@ public class ProgressThread extends Thread
                 {
                     regionCount += update.addedRegions;
                     chunkCount += update.addedChunks;
-                    boolean printUpdate = update.addedRegions > 0
-                            && (regionCount % filesBeforeUpdate) == 0;
+                    int newPercentage = regionCount * 100 / numRegionFiles;
+                    boolean printUpdate = (newPercentage - (newPercentage % 10))
+                            > (lastPercentage - (lastPercentage % 10))
+                            || (regionCount == numRegionFiles);
                     if (printUpdate)
                     {
-                        System.out.println("Finished file " + regionCount + "/"
-                                + numRegionFiles + ", " + chunkCount
+                        System.out.println(String.valueOf(newPercentage)
+                                + "% complete, finished file " + regionCount
+                                + "/" + numRegionFiles + ", " + chunkCount
                                 + " chunks read.");
                         System.out.flush();
                     }
+                    lastPercentage = newPercentage;
                 }
             }
             catch (InterruptedException e)
@@ -140,7 +129,7 @@ public class ProgressThread extends Thread
     // Atomically track whether the thread should exit:
     private final AtomicBoolean shouldExit;
     private final int numRegionFiles;
-    private final int filesBeforeUpdate;
+    private int lastPercentage;
     private int regionCount;
     private int chunkCount;
     
