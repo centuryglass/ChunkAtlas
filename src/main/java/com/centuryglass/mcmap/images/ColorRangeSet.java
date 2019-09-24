@@ -21,68 +21,68 @@ public final class ColorRangeSet
      */
     public enum FadeType
     {
+        /**
+         * Range Colors are between the Range's color and black.
+         */
         TO_BLACK,
+        /**
+         * Range Colors are between the Range's color and the color of the next
+         * highest Range.
+         */
         TO_NEXT;
     }
     
-    private class Range implements Comparable<Range>
+    /**
+     * Represents a range of long values mapped over a color gradient. Ranges
+     * are immutable.
+     */
+    public class Range
     {
-        public Range(long value, Color color, FadeType fadeType, double maxFade)
+        /**
+         * @param maxValue  The largest value this range may contain.
+         * 
+         * @param minValue  The smallest value this range may contain.
+         * 
+         * @param maxColor  The color mapped to this range's largest value.
+         * 
+         * @param minColor  The color mapped to this range's smallest value.
+         */
+        protected Range(long maxValue, long minValue, Color maxColor,
+                Color minColor)
         {
-            if (maxFade > 1 || maxFade < 0)
-            {
-                throw new IllegalArgumentException("maxFade must be between "
-                        + "0 and 1.");   
-            }
-            this.value = value;
-            this.color = color;
-            this.fadeType = fadeType;
-            this.maxFade = maxFade;
-            this.rangeEndColor = null;
+            this.maxValue = maxValue;
+            this.minValue = minValue;
+            this.maxColor = maxColor;
+            this.minColor = minColor;
         }
         
-        @Override
-        public int compareTo(Range otherRange)
-        {
-            return (int) (otherRange.value - value);
-        }
+        /**
+         * The largest value contained by this Range.
+         */
+        public final long maxValue;
         
-        Color getRangeEndColor() { return rangeEndColor; }
+        /**
+         * The smallest value contained by this Range.
+         */
+        public final long minValue;
         
-        Color findRangeEndColor(Color nextColor)
-        {            
-            int minR, minG, minB;
-            if (fadeType == FadeType.TO_BLACK)
-            {
-                minR = 0;
-                minG = 0;
-                minB = 0;
-            }
-            else
-            {
-                minR = nextColor.getRed();
-                minG = nextColor.getGreen();
-                minB = nextColor.getBlue();
-            }
-            if (maxFade != 0)
-            {
-                double fadedStrength = 1.0 - maxFade;
-                minR = (int) (color.getRed() * maxFade
-                        + minR * fadedStrength);
-                minG = (int) (color.getGreen() * maxFade
-                        + minG * fadedStrength);
-                minB = (int) (color.getBlue() * maxFade
-                        + minB * fadedStrength);
-            }
-            rangeEndColor = new Color(minR, minG, minB);
-            return rangeEndColor;
-        }
+        /**
+         * The color that this Range maps to its maximum value. 
+         */
+        public final Color maxColor;
         
-        public final long value;
-        public final Color color;
-        public final FadeType fadeType;
-        public final double maxFade;
-        private Color rangeEndColor;
+        /**
+         * The color that this Range maps to its minimum value. 
+         */
+        public final Color minColor;
+    }
+    
+    /**
+     * Constructs a ColorRangeSet with no initial values.
+     */
+    public ColorRangeSet()
+    {
+        ranges = new ArrayList();
     }
     
     /**
@@ -124,7 +124,7 @@ public final class ColorRangeSet
     public void addColorRange(long maxValue, Color color, FadeType fadeType,
             double maxFade)
     {
-        ranges.add(new Range(maxValue, color, fadeType, maxFade));
+        ranges.add(new InternalRange(maxValue, color, fadeType, maxFade));
         Collections.sort(ranges);
     }
     
@@ -134,18 +134,19 @@ public final class ColorRangeSet
      * @param value  A value within the range set.
      * 
      * @return       The appropriate color in the range set, or the highest
-     *               range's color if the value exceeds the highest range value.
+     *               range's color if the value exceeds the highest range value,
+     *               or null if the RangeSet contains no ranges.
      */
     public Color getValueColor(long value)
     {
         for (int i = 0; i < ranges.size(); i++)
         {
-            final Range range = ranges.get(i);
+            final InternalRange range = ranges.get(i);
             if (value > range.value)
             {
                 return range.color;
             }
-            final Range nextRange;
+            final InternalRange nextRange;
             if (i < (ranges.size() - 1))
             {
                 nextRange = ranges.get(i + 1);
@@ -154,8 +155,8 @@ public final class ColorRangeSet
             {
                 long minValue = Math.min(0, range.value);
                 minValue = Math.min(minValue, value - 1);
-                nextRange = new Range(minValue, Color.BLACK, FadeType.TO_BLACK,
-                        0);
+                nextRange = new InternalRange(minValue, Color.BLACK,
+                        FadeType.TO_BLACK, 0);
             }
             if (value <= nextRange.value)
             {
@@ -180,5 +181,142 @@ public final class ColorRangeSet
         return null;
     }
     
-    private ArrayList<Range> ranges; 
+    /**
+     * Gets a list of ordered color ranges held by this RangeSet.
+     * 
+     * @return  A new array holding Range objects representing each color range,
+     *          or null if no ranges are set.
+     */
+    public Range[] getRanges()
+    {
+        if (ranges.isEmpty())
+        {
+            return null;
+        }
+        final Range[] rangeList = new Range[ranges.size()];
+        final int lastIdx = ranges.size() - 1;
+        for (int i = 0; i <= lastIdx; i++)
+        {
+            final InternalRange range = ranges.get(i);
+            final Color maxColor = range.color;
+            Color minColor = range.getRangeEndColor();
+            if (minColor == null)
+            {
+                final Color nextColor = ((i == lastIdx) ? Color.BLACK
+                        : ranges.get(i + 1).color);
+                minColor = range.findRangeEndColor(nextColor);
+            }
+            long minValue = Math.min(0, range.value - 1);
+            if (i != lastIdx)
+            {
+                minValue = ranges.get(i + 1).value + 1;
+            }
+            rangeList[i] = new Range(range.value, minValue, range.color,
+                    minColor);
+        }
+        return rangeList;
+    }  
+    
+    // Internal representation of color ranges:
+    private class InternalRange implements Comparable<InternalRange>
+    {
+        /**
+         * @param value     The maximum value within the range.
+         * 
+         * @param color     The color mapped to the maximum value.
+         * 
+         * @param fadeType  The method used to select the minimum Color.
+         * 
+         * @param maxFade   The fraction of the range's color that should
+         *                  remain at the range's lowest value.
+         */
+        public InternalRange
+        (long value, Color color, FadeType fadeType, double maxFade)
+        {
+            if (maxFade > 1 || maxFade < 0)
+            {
+                throw new IllegalArgumentException("maxFade must be between "
+                        + "0 and 1.");   
+            }
+            this.value = value;
+            this.color = color;
+            this.fadeType = fadeType;
+            this.maxFade = maxFade;
+            this.rangeEndColor = null;
+        }
+        
+        /**
+         * Orders ranges from highest to lowest.
+         * 
+         * @param otherRange  Another range to compare with this one.
+         * 
+         * @return            A negative value if this range comes first, a
+         *                    positive value if the otherRange comes first or
+         *                    zero if the ranges are equivalent.
+         */
+        @Override
+        public int compareTo(InternalRange otherRange)
+        {
+            return (int) (otherRange.value - value);
+        }
+        
+        /**
+         * Gets the color mapped to the lowest value in the range.
+         * 
+         * @return  The lowest value's color. If not previously calculated by
+         *          calling findRangeEndColor, this value will be null.
+         */
+        Color getRangeEndColor() { return rangeEndColor; }
+        
+        /**
+         * Calculates and returns the color mapped to the range's lowest value.
+         * This will save the calculated value internally, so that future calls
+         * to getRangeEndColor will return the same Color.
+         * 
+         * @param nextColor  The color assigned to the next range's highest
+         *                   value. If fadeType is TO_BLACK or nextColor is
+         *                   null, this value will be ignored and Color.BLACK
+         *                   will be used instead.
+         * 
+         * @return           The color used by this range's lowest value.
+         */
+        Color findRangeEndColor(Color nextColor)
+        {            
+            int minR, minG, minB;
+            if (fadeType == FadeType.TO_BLACK || nextColor == null)
+            {
+                minR = 0;
+                minG = 0;
+                minB = 0;
+            }
+            else
+            {
+                minR = nextColor.getRed();
+                minG = nextColor.getGreen();
+                minB = nextColor.getBlue();
+            }
+            if (maxFade != 0)
+            {
+                double fadedStrength = 1.0 - maxFade;
+                minR = (int) (color.getRed() * maxFade
+                        + minR * fadedStrength);
+                minG = (int) (color.getGreen() * maxFade
+                        + minG * fadedStrength);
+                minB = (int) (color.getBlue() * maxFade
+                        + minB * fadedStrength);
+            }
+            rangeEndColor = new Color(minR, minG, minB);
+            return rangeEndColor;
+        }
+        // Maximum value contained within the range:
+        public final long value;
+        // The color mapped to the maximum value:
+        public final Color color;
+        public final FadeType fadeType;
+        public final double maxFade;
+        private Color rangeEndColor;
+    }
+    
+    // Holds all internal ranges:
+    private final ArrayList<InternalRange> ranges; 
 }
