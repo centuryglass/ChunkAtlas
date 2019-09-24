@@ -122,31 +122,13 @@ public class ActivityMapper extends Mapper
         rangeFactory.setFadeType(ColorRangeSet.FadeType.TO_BLACK);
         Function <Long, Long> roundToNextUnit = tickCount -> 
         {
-            final long[] unitDurations =
-            {
-                TickDuration.fromYears(1).asTicks,
-                TickDuration.fromWeeks(1).asTicks,
-                TickDuration.fromDays(1).asTicks,
-                TickDuration.fromHours(1).asTicks,
-                TickDuration.fromMinutes(1).asTicks,
-                TickDuration.fromSeconds(1).asTicks,
-                1
-            };
-            for (long duration : unitDurations)
-            {
-                if (tickCount == duration) 
-                {
-                    return duration;
-                }
-                else if (tickCount > duration)
-                {
-                    return duration * (tickCount / duration + 1);
-                }
-            }
-            return 0L;
+            return new TickDuration(tickCount).rounded(
+                    TickDuration.Rounding.UP).asTicks;
         };
         rangeFactory.setRangeAdjuster(roundToNextUnit);
         ColorRangeSet colorRanges = rangeFactory.createColorRangeSet();
+        // Debug: print inhabited time ranges:
+        /*
         ColorRangeSet.Range[] rangeDescriptionList = colorRanges.getRanges();
         for (ColorRangeSet.Range range : rangeDescriptionList)
         {
@@ -154,6 +136,7 @@ public class ActivityMapper extends Mapper
             System.out.println(rangeMax.toString() + " or less: "
                     + range.maxColor.toString());
         }
+        */
         for (Map.Entry<Point, Long> entry : inhabitedTimes.entrySet())
         {
             final int x = entry.getKey().x;

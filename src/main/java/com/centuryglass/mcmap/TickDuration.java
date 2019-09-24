@@ -6,8 +6,6 @@
 package com.centuryglass.mcmap;
 
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class TickDuration
 {
@@ -34,6 +32,73 @@ public class TickDuration
         days = ((long) asDays) % 7;
         weeks = ((long) asWeeks) % 53;
         years = (long) asYears;
+    }
+    
+    /**
+     * Different modes to use when rounding tick durations:
+     */
+    public enum Rounding
+    {
+        /**
+         * Rounds up to the largest time unit integer.
+         */
+        UP,
+        /**
+         * Rounds down to the largest time unit integer.
+         */
+        DOWN,
+        /**
+         * Rounds to the nearest large time unit integer.
+         */
+        NEAREST
+    }
+    
+    /**
+     * Gets a copy of this TickDuration, rounded using a configurable rounding
+     * mode.
+     * 
+     * @param roundingType  The direction to round the TickDuration's largest
+     *                      unit.
+     * 
+     * @return              The new TickDuration.
+     */
+    public TickDuration rounded(Rounding roundingType)
+    {
+        final long[] unitDurations =
+        {
+            TickDuration.fromYears(1).asTicks,
+            TickDuration.fromWeeks(1).asTicks,
+            TickDuration.fromDays(1).asTicks,
+            TickDuration.fromHours(1).asTicks,
+            TickDuration.fromMinutes(1).asTicks,
+            TickDuration.fromSeconds(1).asTicks,
+            1
+        };
+        for (long unitTicks : unitDurations)
+        {
+            if ((asTicks % unitTicks) == 0) 
+            {
+                return new TickDuration(asTicks);
+            }
+            else if (asTicks > unitTicks)
+            {
+                long remainder = asTicks % unitTicks;
+                long roundedDown = asTicks - remainder;
+                switch (roundingType)
+                {
+                    case DOWN:
+                        return new TickDuration(roundedDown);
+                    case NEAREST:
+                        if (remainder < (unitTicks / 2))
+                        {
+                            return new TickDuration(roundedDown);
+                        }
+                    case UP:
+                        return new TickDuration(roundedDown + unitTicks);
+                }
+            }
+        }
+        return new TickDuration(0);
     }
     
     /**
@@ -195,6 +260,10 @@ public class TickDuration
     @Override
     public String toString()
     {
+        if (asTicks == 0)
+        {
+            return "0 ticks";
+        }
         BiFunction<Long, String, String> unitString = (value, unitName) -> 
         {
             if (value < 1) { return ""; }
