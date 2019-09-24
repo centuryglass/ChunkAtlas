@@ -177,7 +177,7 @@ public class ColorRangeFactory
         ColorRangeSet rangeSet = new ColorRangeSet();
         final int rangeCount = colors.size();
         long[] rangeMaxValues = new long[rangeCount];
-        rangeMaxValues[0] = orderedValues[0];
+        rangeMaxValues[0] = rangeAdjuster.apply(orderedValues[0]);
         
         if (divisionType == DivisionType.BY_COUNT)
         {
