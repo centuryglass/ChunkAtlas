@@ -1,0 +1,32 @@
+{
+    "regions": [
+        {
+            "regionFilePath": "~/MCRegion",
+            "name": "Test_Region"
+        }
+    ],
+    "pixelsPerChunk": 1,
+    "singleImageMaps": {
+        "generate": true,
+        "drawBackground": true,
+        "path": "maps",
+        "xMin": -1600,
+        "zMin": -1600,
+        "width": 3200,
+        "height": 3200
+    },
+    "mapTiles": {
+        "generate": true,
+        "path": "maps/tiles",
+        "tileSize": 512,
+        "createScaled": [128, 64, 32]
+    },
+    "mapTypes": {
+        "ACTIVITY": true,
+        "BASIC": false,
+        "BIOME": true,
+        "ERROR": false,
+        "RECENT": true,
+        "STRUCTURE": true
+    }
+}
