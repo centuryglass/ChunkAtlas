@@ -95,8 +95,7 @@ public class MCMap
     {
         ArrayList<File> regionFiles = new ArrayList(Arrays.asList(
                 regionDataDir.listFiles()));
-        MapCollector mappers = new MapCollector(imageDir, baseName, tileSize,
-                dirInfoFile);
+        MapCollector mappers = new MapCollector(imageDir, baseName, tileSize);
         // If more than one tile fits in a region, sort regions by tile:
         if (tileSize > 32)
         {
@@ -212,7 +211,7 @@ public class MCMap
             return;          
         }
         final MapCollector mappers = new MapCollector(imageDir, imagePrefix,
-                xMin, zMin, width, height, pxPerChunk, dirInfoFile);
+                xMin, zMin, width, height, pxPerChunk);
         final int chunksMapped = mapRegions(regionFiles, mappers);
         if (chunksMapped > 0)
         {
