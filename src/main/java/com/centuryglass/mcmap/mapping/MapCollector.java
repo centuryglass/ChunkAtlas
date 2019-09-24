@@ -61,6 +61,8 @@ public class MapCollector
                 pixelsPerChunk);
         errors = new ErrorMapper(new File(imageDir, "error_" + imageName),
                 xMin, zMin, widthInChunks, heightInChunks, pixelsPerChunk);
+        recent = new RecentMapper(new File(imageDir, "recent_" + imageName),
+                xMin, zMin, widthInChunks, heightInChunks, pixelsPerChunk);
     }
     
     /**
@@ -89,6 +91,8 @@ public class MapCollector
                 imageName, tileSize);
         errors = new ErrorMapper(new File(imageDir, "errors"), imageName,
                 tileSize);
+        recent = new RecentMapper(new File(imageDir, "recent"), imageName,
+                tileSize);
     }
 
 
@@ -101,6 +105,7 @@ public class MapCollector
         biome.saveMapFile();
         structure.saveMapFile();
         errors.saveMapFile();
+        recent.saveMapFile();
     }
 
     /**
@@ -114,10 +119,12 @@ public class MapCollector
         biome.drawChunk(chunk);
         structure.drawChunk(chunk);
         errors.drawChunk(chunk);
+        recent.drawChunk(chunk);
     }
 
     // All mapper types:
     private final ActivityMapper activity;
+    private final RecentMapper recent;
     private final BiomeMapper biome;
     private final StructureMapper structure;
     private final ErrorMapper errors;
