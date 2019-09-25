@@ -57,6 +57,7 @@ public enum Structure
         Structure namedStruct = nameToStructure.get(name);
         if (namedStruct == null)
         {
+            assert false;
             return UNKNOWN;
         }
         return namedStruct;
@@ -121,7 +122,7 @@ public enum Structure
         structureColors.put(IGLOO,            new Color(0x0d, 0xe0, 0xec));
         structureColors.put(STRONGHOLD,       new Color(0xa3, 0x0c, 0xcc));
         structureColors.put(DESERT_PYRAMID,   new Color(0xd0, 0xff, 0x00));
-        structureColors.put(JUNGLE_PYRAMID,   new Color(0x9d, 0x97, 0x09));
+        structureColors.put(JUNGLE_PYRAMID,   new Color(0x51, 0x5f, 0x49));
         structureColors.put(PILLAGER_OUTPOST, new Color(0x9d, 0x97, 0x09));
         structureColors.put(VILLAGE,          new Color(0xb1, 0xae, 0xae));
         structureColors.put(OCEAN_RUIN,       new Color(0x00, 0x0d, 0x55));
