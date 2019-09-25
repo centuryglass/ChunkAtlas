@@ -5,24 +5,22 @@
  */
 package com.centuryglass.mcmap.config;
 
+import com.centuryglass.mcmap.mapping.MapType;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiConsumer;
-import javax.json.Json;
 import javax.json.JsonArray;
-import javax.json.JsonException;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
+import javax.json.JsonValue;
 
 /**
  * Loads and shares a set of options for generating maps. These options may be
  * provided in a JSON configuration file, or loaded from default options.
  */
-public class MapGenOptions
+public class MapGenOptions extends ConfigFile
 {
     // Path to the resource holding default configuration options:
     private static final String DEFAULT_JSON_RESOURCE
@@ -39,62 +37,9 @@ public class MapGenOptions
      */
     MapGenOptions(File configFile)
     {
-        // Attempt to load JSON options:
-        if (configFile != null && configFile.isFile())
-        {
-            try (JsonReader reader 
-                    = Json.createReader(new FileInputStream(configFile)))
-            {
-                loadedOptions = reader.readObject();
-            }
-            catch (FileNotFoundException | JsonException |
-                    IllegalStateException ex) 
-            {
-                System.err.println("Failed to load " + configFile.getName()
-                        + ", using default configuration options.");
-                System.err.println("Error type encountered: "
-                        + ex.getMessage());
-                loadedOptions = null;
-            }
-        }
-        
-        // Attempt to load default options:
-        try (InputStream optionStream = MapGenOptions.class.getResourceAsStream(
-                        DEFAULT_JSON_RESOURCE))       
-        {
-            try (JsonReader reader = Json.createReader(optionStream))
-            {
-                defaultOptions = reader.readObject();
-            }
-            catch (JsonException | IllegalStateException ex)
-            {
-                System.err.println("Failed to load default config resource "
-                        + DEFAULT_JSON_RESOURCE + ": " + ex.getMessage());
-                defaultOptions = null;
-            }
-            // Copy defaults if appropriate:
-            if (configFile != null && ! configFile.exists()
-                    && configFile.canWrite() && configFile.createNewFile())
-            {
-                optionStream.reset();
-                FileOutputStream output = new FileOutputStream(configFile);
-                byte[] copyBuffer = new byte[1280];
-                int bytesRead;
-                while ((bytesRead = optionStream.read(copyBuffer)) != -1)
-                {
-                    output.write(copyBuffer, 0, bytesRead);
-                }
-                output.close();
-            }
-        }
-        catch (IOException e)
-        {
-            System.err.println("Error reading/copying default config: "
-                    + e.getMessage());
-        }
+        super(configFile, DEFAULT_JSON_RESOURCE);
     }
     
-
     /**
      * Runs an action for each valid Minecraft region data directory defined in
      * configuration.
@@ -105,15 +50,8 @@ public class MapGenOptions
      */
     public void forEachRegionPath(BiConsumer<File, String> action)
     {
-        JsonArray regions = null;
-        if (loadedOptions != null)
-        {
-            regions = loadedOptions.getJsonArray(JSONKeys.REGION_LIST);
-        }
-        if (regions == null)
-        {
-            regions = defaultOptions.getJsonArray(JSONKeys.REGION_LIST);
-        }
+        JsonArray regions = (JsonArray) getSavedOrDefaultOptions(
+                JsonKeys.REGION_LIST);
         assert (regions != null);
         regions.forEach(regionItem -> 
         {
@@ -127,9 +65,9 @@ public class MapGenOptions
             try
             {
                 String regionPath = ((JsonObject) regionItem).getString(
-                        JSONKeys.REGION_PATH);
+                        JsonKeys.REGION_PATH);
                 String regionName = ((JsonObject) regionItem).getString(
-                        JSONKeys.REGION_NAME);
+                        JsonKeys.REGION_NAME);
                 File regionDir = new File(regionPath);
                 if (! regionDir.isDirectory())
                 {
@@ -147,8 +85,179 @@ public class MapGenOptions
         });
     }
     
+    /**
+     * Holds a collection of options for generating single-image maps within an
+     * immutable data structure.
+     */
+    public class SingleImage
+    {
+        /**
+         * Set all options on construction.
+         * 
+         * @param enabled          Whether single image maps will be generated.
+         * 
+         * @param drawBackground   Whether a Minecraft map background image will
+         *                         be drawn behind the maps.
+         * 
+         * @param path             The path where map images will be saved.
+         * 
+         * @param xMin             The minimum x-coordinate in chunks drawn
+         *                         within the map bounds.
+         * 
+         * @param zMin             The minimum z-coordinate in chunks drawn
+         *                         within the map bounds.
+         * 
+         * @param width            The width in chunks of the mapped area.
+         * 
+         * @param height           The height in chunks of the mapped area. 
+         */
+        protected SingleImage(boolean enabled, boolean drawBackground,
+                String path, int xMin, int zMin, int width, int height)
+        {
+            this.enabled = enabled;
+            this.drawBackground = drawBackground;
+            this.path = path;
+            this.xMin = xMin;
+            this.zMin = zMin;
+            this.width = width;
+            this.height = height;
+        }
+        
+        public final boolean enabled;
+        public final boolean drawBackground;
+        public final String path;
+        public final int xMin;
+        public final int zMin;
+        public final int width;
+        public final int height;
+    }
+    
+    /**
+     * Gets all options specifically required for generating single-image maps.
+     * 
+     * @return  An object holding all settings that are only used in
+     *          single-image map generation.
+     */
+    public SingleImage getSingleImageOptions()
+    {
+        JsonObject imageOptions = (JsonObject) getSavedOrDefaultOptions(
+                JsonKeys.IMAGE_MAP_OPTIONS);
+        final boolean enabled = imageOptions.getBoolean(JsonKeys.GENERATE_MAPS);
+        final boolean drawBackground = imageOptions.getBoolean(
+                JsonKeys.DRAW_BACKGROUND);
+        final String path = imageOptions.getString(JsonKeys.OUTPUT_PATH);
+        final int xMin = imageOptions.getInt(JsonKeys.X_MIN);
+        final int zMin = imageOptions.getInt(JsonKeys.Z_MIN);
+        final int width = imageOptions.getInt(JsonKeys.WIDTH);
+        final int height = imageOptions.getInt(JsonKeys.HEIGHT);
+        return new SingleImage(enabled, drawBackground, path, xMin, zMin, width,
+                height);
+    }
+        
+    /**
+     * Holds a collection of options for generating map image tiles within an
+     * immutable data structure.
+     */
+    public class MapTiles
+    {
+        /**
+         * Sets all map tile options on construction.
+         * 
+         * @param enabled          Whether map tiles will be generated.
+         * 
+         * @param path             The path to the directory where map tiles
+         *                         will be saved.
+         * 
+         * @param tileSize         The width and height in pixels of each map
+         *                         tile.
+         * 
+         * @param alternateSizes   An array of alternate tile sizes to create by
+         *                         rescaling the main set of tile images.
+         */
+        protected MapTiles(boolean enabled, String path, int tileSize,
+                int[] alternateSizes)
+        {
+            this.enabled = enabled;
+            this.path = path;
+            this.tileSize = tileSize;
+            this.alternateSizes = alternateSizes;
+        }
+        
+        /**
+         * Gets the list of alternate map tile sizes that should be created.
+         * 
+         * @return  An array of alternate image resolutions, or null if no
+         *          alternate tile sizes should be generated.
+         */
+        public int[] getAlternateSizes()
+        {
+            if (alternateSizes == null) { return null; }
+            return Arrays.copyOf(alternateSizes, alternateSizes.length);
+        }
+        
+        public final boolean enabled;
+        public final String path;
+        public final int tileSize;
+        private final int[] alternateSizes;
+    }
+    
+    /**
+     * Gets all options used specifically for generating map image tiles.
+     * 
+     * @return  The set of all options that only apply to generating map tiles. 
+     */
+    public MapTiles getMapTileOptions()
+    {
+        JsonObject tileOptions = (JsonObject) getSavedOrDefaultOptions(
+                JsonKeys.TILE_MAP_OPTIONS);
+        final boolean enabled = tileOptions.getBoolean(JsonKeys.GENERATE_MAPS);
+        final String path = tileOptions.getString(JsonKeys.OUTPUT_PATH);
+        final int tileSize = tileOptions.getInt(JsonKeys.TILE_SIZE);
+        JsonArray altSizeJson = tileOptions.getJsonArray(JsonKeys.SCALED_TILES);
+        final int[] altSizes = new int[altSizeJson.size()];
+        for (int i = 0; i < altSizes.length; i++)
+        {
+            altSizes[i] = altSizeJson.getInt(i);
+        }
+        return new MapTiles(enabled, path, tileSize, altSizes);
+    }
+    
+    /**
+     * Finds the width and height in image pixels that should be used for each
+     * chunk in the map.
+     * 
+     * @return  The number of pixels per chunk defined in the configuration
+     *          file, or the default value.
+     */
+    public int getPixelsPerChunk()
+    {
+        JsonNumber pixels = (JsonNumber) getSavedOrDefaultOptions(
+                JsonKeys.CHUNK_PX);
+        return pixels.intValue();
+    }
+    
+    /**
+     * Gets the set of MapTypes that should be generated.
+     * 
+     * @return  The set of all map types to create. 
+     */
+    public Set<MapType> getEnabledMapTypes()
+    {
+        JsonObject typeSettings = (JsonObject) getSavedOrDefaultOptions(
+                JsonKeys.MAP_TYPES_USED);
+        Set<MapType> typesUsed = new TreeSet();
+        for (MapType type : MapType.values())
+        {
+            if(typeSettings.getBoolean(type.name(), false))
+            {
+                typesUsed.add(type);
+            }
+        }
+        return typesUsed;
+    }  
+
     // Defines all JSON keys used in configuration files.
-    private class JSONKeys
+    private class JsonKeys
     {
         // The array of Minecraft region file directories to map:
         public static final String REGION_LIST = "regions";
@@ -183,11 +292,5 @@ public class MapGenOptions
         public static final String SCALED_TILES = "createScaled";
         // The set of MapTypes used when generating maps:
         public static final String MAP_TYPES_USED = "mapTypes";
-    }
-    
-    // Default options, loaded from the default option resource file.
-    JsonObject defaultOptions;
-    // Custom options provided on construction, or null.
-    JsonObject loadedOptions;
-    
+    } 
 }
