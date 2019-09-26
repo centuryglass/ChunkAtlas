@@ -4,7 +4,7 @@
  * Helps with loading and drawing a Minecraft map item background used behind
  * map images.
  */
-package com.centuryglass.mcmap.images;
+package com.centuryglass.mcmap.mapping.images;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

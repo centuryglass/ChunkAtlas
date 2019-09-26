@@ -4,7 +4,7 @@
  * Assists in drawing a tiled image texture within an area.
  */
 
-package com.centuryglass.mcmap.images;
+package com.centuryglass.mcmap.mapping.images;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;

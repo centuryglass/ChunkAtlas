@@ -5,7 +5,7 @@
  */
 
 package com.centuryglass.mcmap.mapping;
-import com.centuryglass.mcmap.images.MapBackground;
+import com.centuryglass.mcmap.mapping.images.MapBackground;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;

@@ -122,6 +122,7 @@ public class StructureMapper extends Mapper
     @Override
     protected void finalProcessing(WorldMap map)
     {
+        /*
         double maxDistance = Math.sqrt(18);
         for (Map.Entry<Point, Structure> entry : structureRefs.entrySet())
         {
@@ -163,6 +164,7 @@ public class StructureMapper extends Mapper
                 map.setChunkColor(xI, zI, pointColor);  
             }
         }
+        */
         super.finalProcessing(map);
     }
     

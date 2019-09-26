@@ -3,7 +3,7 @@
  * 
  * Creates color representations of long values, using custom color ranges.
  */
-package com.centuryglass.mcmap.images;
+package com.centuryglass.mcmap.mapping.images;
 
 import java.awt.Color;
 import java.util.ArrayList;

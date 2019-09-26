@@ -4,7 +4,7 @@
  * Loads and shares textures for every Minecraft biome.
  */
 
-package com.centuryglass.mcmap.images;
+package com.centuryglass.mcmap.mapping.images;
 
 import com.centuryglass.mcmap.worldinfo.Biome;
 import java.awt.Color;

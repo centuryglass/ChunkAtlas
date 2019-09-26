@@ -6,9 +6,9 @@
 
 package com.centuryglass.mcmap.mapping;
 
-import com.centuryglass.mcmap.TickDuration;
-import com.centuryglass.mcmap.images.ColorRangeFactory;
-import com.centuryglass.mcmap.images.ColorRangeSet;
+import com.centuryglass.mcmap.util.TickDuration;
+import com.centuryglass.mcmap.mapping.images.ColorRangeFactory;
+import com.centuryglass.mcmap.mapping.images.ColorRangeSet;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
 import java.awt.Point;

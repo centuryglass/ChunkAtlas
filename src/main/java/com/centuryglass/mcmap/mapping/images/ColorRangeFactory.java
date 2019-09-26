@@ -3,7 +3,7 @@
  * 
  * Creates ColorRangeSets to represent specific collections of values.
  */
-package com.centuryglass.mcmap.images;
+package com.centuryglass.mcmap.mapping.images;
 
 import java.awt.Color;
 import java.security.InvalidParameterException;
