@@ -1,6 +1,6 @@
 build
 target
-map
+maps
 MCMap
 *test.png
 gzstream/*.o
