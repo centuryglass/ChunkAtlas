@@ -6,7 +6,6 @@
 
 package com.centuryglass.mcmap.util.args;
 
-import com.centuryglass.mcmap.util.Pair;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +24,7 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
      *                                   option type to an object that controls
      *                                   its properties.
      */
-    protected ArgParser(Map<ArgEnum, ArgOption<ArgEnum>> optionData)
+    protected ArgParser(Map<ArgEnum, OptionParams<ArgEnum>> optionData)
     {
         // Confirm data is provided for all options, map option flags, and
         // collect help text:
@@ -40,7 +39,7 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
             // All options must be defined:
             assert (optionData.containsKey(value));
             
-            ArgOption<ArgEnum> option = optionData.get(value);
+            OptionParams<ArgEnum> option = optionData.get(value);
             combinedHelpText = combinedHelpText + "  " + option.getHelpText()
                     + "\n";
             String[] flags = option.getFlags();
@@ -77,10 +76,10 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
                 throw new InvalidArgumentException("Invalid argument option "
                         + args[i]);
             }
-            ArgOption<ArgEnum> option = optionFlags.get(args[i]);
+            OptionParams<ArgEnum> option = optionFlags.get(args[i]);
             if (option.maxParamCount == 0)
             {
-                optionValues.put(option.type, null);
+                optionValues.put(option.getType(), null);
             }
             else
             {
@@ -100,14 +99,16 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
                 if (paramsFound < option.minParamCount)
                 {
                     throw new InvalidArgumentException("Option "
-                            + option.type.toString() + ": expected at least "
+                            + option.getType().toString()
+                            + ": expected at least "
                             + String.valueOf(option.minParamCount)
                             + " parameters, found "
                             + String.valueOf(paramsFound) + ".");
                 }
                 String[] params = Arrays.copyOfRange(args, i + 1,
                         i + 1 + paramsFound);
-                optionValues.put(option.type, params);
+                optionValues.put(option.getType(),
+                        new ArgOption(option.getType(), params));
                 i += paramsFound;
             }
         }
@@ -141,11 +142,10 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
      * 
      * @param optionType  A command line option type.
      * 
-     * @return            The list of arguments given for the selected option,
-     *                    or null if the option was not present in the argument
-     *                    list or does not use any parameter arguments.
+     * @return            The object holding an option and its associated
+     *                    parameters, or null if the option was not found.
      */
-    public String[] getOptionParams(ArgEnum optionType)
+    public ArgOption<ArgEnum> getOptionParams(ArgEnum optionType)
     {
         return optionValues.get(optionType);
     }
@@ -154,27 +154,15 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
      * Gets all command line options selected, paired with any required
      * parameters.
      * 
-     * @return  An array of pairs, each holding an encountered option type, and
-     *          the parameters given with that option type.
+     * @return  An array of objects holding detected options and their 
+     *          parameters.
      */
-    public Pair<ArgEnum, String[]>[] getAllOptions()
+    public ArgOption<ArgEnum>[] getAllOptions()
     {
-        Pair<ArgEnum, String[]>[] options = new Pair[optionValues.size()];
-        int i = 0;
-        for (Map.Entry<ArgEnum, String[]> entry : optionValues.entrySet())
-        {
-            String[] params = entry.getValue();
-            if (params != null)
-            {
-                params = Arrays.copyOf(params, params.length);
-            }
-            options[i] = new Pair(entry.getKey(), params);
-            i++;
-        }
-        return options;
+        return (ArgOption<ArgEnum>[]) optionValues.values().toArray();
     }
 
-    private final Map<String, ArgOption<ArgEnum>> optionFlags;
-    private final Map<ArgEnum, String[]> optionValues;
+    private final Map<String, OptionParams<ArgEnum>> optionFlags;
+    private final Map<ArgEnum, ArgOption<ArgEnum>> optionValues;
     private final String helpText;
 }

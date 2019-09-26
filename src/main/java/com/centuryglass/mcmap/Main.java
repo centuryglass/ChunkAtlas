@@ -9,6 +9,7 @@ import com.centuryglass.mcmap.config.MapGenOptions;
 import com.centuryglass.mcmap.mapping.images.Downscaler;
 import com.centuryglass.mcmap.mapping.images.ImageStitcher;
 import com.centuryglass.mcmap.mapping.MapImage;
+import com.centuryglass.mcmap.util.args.ArgOption;
 import com.centuryglass.mcmap.util.args.ArgParser;
 import com.centuryglass.mcmap.util.args.ArgParserFactory;
 import com.centuryglass.mcmap.util.args.InvalidArgumentException;
@@ -98,53 +99,72 @@ public class Main
         String configPath = DEFAULT_CONFIG_PATH;
         if (argParser.optionFound(OptionType.CONFIG_PATH))
         {
-            configPath = argParser.getOptionParams(OptionType.CONFIG_PATH)[0];
+            configPath = argParser.getOptionParams(OptionType.CONFIG_PATH)
+                    .getParameter(0);
         }
+        // Command line options:
+        final ArgOption outPathOption
+                = argParser.getOptionParams(OptionType.OUTPUT_DIR);
+        final ArgOption backgroundOption
+                = argParser.getOptionParams(OptionType.DRAW_BACKGROUND);
+        final ArgOption chunkPxOption
+                = argParser.getOptionParams(OptionType.CHUNK_PIXELS);
+        // Config options:
         MapGenOptions mapConfig = new MapGenOptions(new File(configPath));
            
         // Single map image generation:
-        MapGenOptions.SingleImage imageOptions 
+        // Command line options:
+        final ArgOption imageMapOption
+                = argParser.getOptionParams(OptionType.IMAGE_MAP);
+        final ArgOption boundsOption
+                = argParser.getOptionParams(OptionType.BOUNDS);
+        // Config options:
+        MapGenOptions.SingleImage singleImageConfig 
                 = mapConfig.getSingleImageOptions();
-        final boolean createMapImages 
-                = (argParser.optionFound(OptionType.IMAGE_MAP))
-                ? true : imageOptions.enabled;
-        final boolean drawBackgrounds 
-                = (argParser.optionFound(OptionType.DRAW_BACKGROUND))
-                ? true : imageOptions.drawBackground;
-        final String singleImagePath 
-                = (argParser.optionFound(OptionType.OUTPUT_DIR))
-                ? argParser.getOptionParams(OptionType.OUTPUT_DIR)[0]
-                : imageOptions.path;
+
+        
+        // Select command line options first, use config options as a fallback.
+        final boolean createMapImages = (imageMapOption != null)
+                ? true : singleImageConfig.enabled;
+        final boolean drawBackgrounds = (backgroundOption != null)
+                ? true : singleImageConfig.drawBackground;
+        final String singleImagePath = (outPathOption != null)
+                ? outPathOption.getParameter(0) : singleImageConfig.path;
         // Mapped region bounds and scale:
         final int xMin, zMin, width, height;
-        String[] bounds = argParser.getOptionParams(OptionType.BOUNDS);
-        if (bounds != null)
+        if (boundsOption != null)
         {
-            xMin = Integer.parseInt(bounds[0]);
-            zMin = Integer.parseInt(bounds[1]);
-            width = Integer.parseInt(bounds[2]);
-            height = Integer.parseInt(bounds[3]);
+            xMin = Integer.parseInt(boundsOption.getParameter(0));
+            zMin = Integer.parseInt(boundsOption.getParameter(1));
+            width = Integer.parseInt(boundsOption.getParameter(2));
+            height = Integer.parseInt(boundsOption.getParameter(3));
         }
         else
         {
-            xMin = imageOptions.xMin;
-            zMin = imageOptions.zMin;
-            width = imageOptions.width;
-            height = imageOptions.height;
+            xMin = singleImageConfig.xMin;
+            zMin = singleImageConfig.zMin;
+            width = singleImageConfig.width;
+            height = singleImageConfig.height;
         }
-        int chunkPx = mapConfig.getPixelsPerChunk();
+        int chunkPx = (chunkPxOption != null)
+                ? Integer.parseInt(chunkPxOption.getParameter(0))
+                : mapConfig.getPixelsPerChunk();
         
-        // Image tile options:
-        MapGenOptions.MapTiles tileOptions = mapConfig.getMapTileOptions();
-        String[] tileArgs = argParser.getOptionParams(OptionType.TILE_MAP);
-        final boolean useTiles
-                = (tileArgs == null) ? true : tileOptions.enabled;
-        final String tilePath 
-                = (argParser.optionFound(OptionType.OUTPUT_DIR))
-                ? argParser.getOptionParams(OptionType.OUTPUT_DIR)[0]
-                : tileOptions.path;
-        final int tileResolution = (tileArgs == null) ? tileOptions.tileSize
-                : Integer.parseInt(tileArgs[0]);
+        
+        // Map tile image generation:
+        // Command line options:
+        final ArgOption tileOption
+                = argParser.getOptionParams(OptionType.TILE_MAP);
+        // Config options:
+        MapGenOptions.MapTiles tileConfig = mapConfig.getMapTileOptions();
+        final boolean useTiles = (tileOption != null)
+                ? true : tileConfig.enabled;
+        final String tilePath = (outPathOption != null)
+                ? outPathOption.getParameter(0)
+                : tileConfig.path;
+        final int tileResolution = (tileOption != null)
+                ? Integer.parseInt(tileOption.getParameter(0))
+                : tileConfig.tileSize;
         
         MapImage.setDrawBackgrounds(drawBackgrounds);
         
@@ -181,7 +201,7 @@ public class Main
         if (argParser.optionFound(OptionType.REGION_DIR))
         {
             argRegionDir = new File(argParser.getOptionParams(
-                    OptionType.REGION_DIR)[0]);
+                    OptionType.REGION_DIR).getParameter(0));
         }
         if (argRegionDir != null && argRegionDir.isDirectory())
         {
@@ -189,7 +209,7 @@ public class Main
             if (argParser.optionFound(OptionType.IMAGE_NAME))
             {
                 regionName = argParser.getOptionParams(
-                        OptionType.IMAGE_NAME)[0];
+                        OptionType.IMAGE_NAME).getParameter(0);
             }
             processRegionDir.accept(argRegionDir, regionName);
         }
@@ -203,7 +223,7 @@ public class Main
         if (useTiles)
         {
             Downscaler.recursiveScale(new File(tilePath), tileResolution,
-                    tileOptions.getAlternateSizes());
+                    tileConfig.getAlternateSizes());
         }
     }
     

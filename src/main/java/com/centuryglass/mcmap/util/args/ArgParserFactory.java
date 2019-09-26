@@ -57,7 +57,7 @@ public class ArgParserFactory<ArgEnum>
             String longFlag, int minParamCount, int maxParamCount,
             String paramDescription, String description)
     {
-        optionData.put(type, new ArgOption(type, shortFlag, longFlag,
+        optionData.put(type, new OptionParams(type, shortFlag, longFlag,
                 minParamCount, maxParamCount, paramDescription, description));
     }
     
@@ -72,5 +72,5 @@ public class ArgParserFactory<ArgEnum>
         return new ArgParser(optionData);
     }
     
-    private final Map<ArgEnum, ArgOption> optionData; 
+    private final Map<ArgEnum, OptionParams> optionData; 
 }
