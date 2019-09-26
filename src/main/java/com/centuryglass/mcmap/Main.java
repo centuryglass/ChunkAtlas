@@ -28,6 +28,9 @@ public class Main
     // Command line argument option types:
     enum OptionType
     {
+        /**
+         * Print help text describing all options and exit.
+         */
         HELP,
         CONFIG_PATH,
         DRAW_BACKGROUND,
@@ -43,34 +46,34 @@ public class Main
     public static void main(String [] args)
     {
         ArgParserFactory<OptionType> parserFactory = new ArgParserFactory();
-        parserFactory.setOptionProperties(OptionType.HELP, "-h", "--help", 0,
+        parserFactory.setOptionProperties(OptionType.HELP, "-h", "--help", 0, 0,
                 "", "Print this help text.");
         parserFactory.setOptionProperties(OptionType.CONFIG_PATH, "-c",
-                "--config", 1, "jsonConfigPath",
+                "--config", 1, 1, "jsonConfigPath",
                 "Set the map generation configuration file path.");
         parserFactory.setOptionProperties(OptionType.DRAW_BACKGROUND, "-d",
-                "--draw-background", 0, "", "Draw the Minecraft map texture "
+                "--draw-background", 0, 1, "", "Draw the Minecraft map texture "
                 + "behind single-image maps.");
         parserFactory.setOptionProperties(OptionType.REGION_DIR, "-r",
-                "--regionDir", 1, "directoryPath",
-                "Set Minecraft region data directory path.");
+                "--regionDir", 1, Integer.MAX_VALUE, "regionName=RegionPath...",
+                "Set Minecraft region data directory paths.");
         parserFactory.setOptionProperties(OptionType.IMAGE_NAME, "-n",
-                "--imageName", 1, "name",
+                "--imageName", 1, 1, "name",
                 "Set the base name used for map image files.");
         parserFactory.setOptionProperties(OptionType.IMAGE_MAP, "-i",
-                "--image-map", 0, "", "Read region files to create single-image"
-                + " maps of a bounded area.");
+                "--image-map", 0, 0, "", "Read region files to create "
+                + "single-image maps of a bounded area.");
         parserFactory.setOptionProperties(OptionType.TILE_MAP, "-t",
-                "--tile-map", 1, "tileResolution",
+                "--tile-map", 1, 1, "tileResolution",
                 "Map the entire region directory within a set of image tiles.");
         parserFactory.setOptionProperties(OptionType.OUTPUT_DIR, "-o",
-                "--outDir", 1, "directoryPath",
+                "--outDir", 1, 1, "directoryPath",
                 "Set the directory where map images will be saved.");
         parserFactory.setOptionProperties(OptionType.BOUNDS, "-b", "--bounds",
-                4, "xMin zMin width height",
+                4, 4, "xMin zMin width height",
                 "Set the area in chunks that should be mapped.");
         parserFactory.setOptionProperties(OptionType.CHUNK_PIXELS, "-p",
-                "--pixels", 1, "chunkWidth&Height",
+                "--pixels", 1, 1, "chunkWidth&Height",
                 "Set the width and height in pixels to draw each map chunk.");
         ArgParser<OptionType> argParser = parserFactory.createParser();
         boolean printHelpAndExit;

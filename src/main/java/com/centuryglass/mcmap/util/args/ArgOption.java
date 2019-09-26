@@ -26,8 +26,13 @@ public class ArgOption<ArgEnum>
      *                           one or more dash-separated words) used to
      *                           select this argument option type.
      * 
-     * @param paramCount         The number of additional parameter
+     * @param minParamCount      The minimum number of additional parameter
      *                           arguments that this option will take.
+     *                           Negative values are not valid, and will be
+     *                           replaced with zero.
+     * 
+     * @param maxParamCount      The maximum number of additional parameter
+     *                           arguments that this option may take.
      *                           Negative values are not valid, and will be
      *                           replaced with zero.
      * 
@@ -39,12 +44,14 @@ public class ArgOption<ArgEnum>
      *                           option, used when printing help text.
      */
     protected ArgOption(ArgEnum type, String shortFlag, String longFlag,
-            int paramCount, String paramDescription, String description)
+            int minParamCount, int maxParamCount, String paramDescription,
+            String description)
     {
         this.type = type;
         this.shortFlag = shortFlag;
         this.longFlag = longFlag;
-        this.paramCount = Math.max(0, paramCount);
+        this.minParamCount = Math.max(0, minParamCount);
+        this.maxParamCount = Math.max(0, maxParamCount);
         this.paramDescription = paramDescription;
         this.description = description;
     }
@@ -77,9 +84,14 @@ public class ArgOption<ArgEnum>
     public final ArgEnum type;
 
     /**
-     * The number of parameter arguments that the option expects.
+     * The minimum number of parameter arguments that the option expects.
      */
-    protected final int paramCount;
+    protected final int minParamCount;
+    
+    /**
+     * The maximum number of parameter arguments that the option may take.
+     */
+    protected final int maxParamCount;
 
     private final String shortFlag;
     private final String longFlag;

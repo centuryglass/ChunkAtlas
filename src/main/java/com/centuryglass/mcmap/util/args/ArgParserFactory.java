@@ -36,8 +36,13 @@ public class ArgParserFactory<ArgEnum>
      *                           one or more dash-separated words) used to
      *                           select this argument option type.
      * 
-     * @param paramCount         The number of additional parameter
-     *                           arguments that the option will take.
+     * @param minParamCount      The minimum number of additional parameter
+     *                           arguments that the option requires.
+     *                           Negative values are not valid, and will be
+     *                           replaced with zero.
+     * 
+     * @param maxParamCount      The maximum number of additional parameter
+     *                           arguments that the option may take.
      *                           Negative values are not valid, and will be
      *                           replaced with zero.
      * 
@@ -49,11 +54,11 @@ public class ArgParserFactory<ArgEnum>
      *                           option, used when printing help text.
      */
     public void setOptionProperties(ArgEnum type, String shortFlag,
-            String longFlag, int paramCount, String paramDescription,
-            String description)
+            String longFlag, int minParamCount, int maxParamCount,
+            String paramDescription, String description)
     {
         optionData.put(type, new ArgOption(type, shortFlag, longFlag,
-                paramCount, paramDescription, description));
+                minParamCount, maxParamCount, paramDescription, description));
     }
     
     /**

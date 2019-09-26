@@ -78,7 +78,7 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
                         + args[i]);
             }
             ArgOption<ArgEnum> option = optionFlags.get(args[i]);
-            if (option.paramCount == 0)
+            if (option.maxParamCount == 0)
             {
                 optionValues.put(option.type, null);
             }
@@ -86,7 +86,7 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
             {
                 // Ensure the expected number of params was found. Option flags
                 // cannot be valid parameters.
-                int maxParamIdx = Math.min(i + option.paramCount,
+                int maxParamIdx = Math.min(i + option.maxParamCount,
                         args.length - 1);
                 for (int pI = i + 1; pI <= maxParamIdx; pI++)
                 {
@@ -97,18 +97,18 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
                     }
                 }
                 int paramsFound = maxParamIdx - i;
-                if (paramsFound != option.paramCount)
+                if (paramsFound < option.minParamCount)
                 {
                     throw new InvalidArgumentException("Option "
-                            + option.type.toString() + ": expected "
-                            + String.valueOf(option.paramCount)
+                            + option.type.toString() + ": expected at least "
+                            + String.valueOf(option.minParamCount)
                             + " parameters, found "
                             + String.valueOf(paramsFound) + ".");
                 }
                 String[] params = Arrays.copyOfRange(args, i + 1,
                         i + 1 + paramsFound);
                 optionValues.put(option.type, params);
-                i += option.paramCount;
+                i += paramsFound;
             }
         }
     }
