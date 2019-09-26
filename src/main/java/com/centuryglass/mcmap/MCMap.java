@@ -5,6 +5,8 @@
  */
 package com.centuryglass.mcmap;
 
+import com.centuryglass.mcmap.util.MapUnit;
+import com.centuryglass.mcmap.util.Pair;
 import com.centuryglass.mcmap.mapping.MapCollector;
 import com.centuryglass.mcmap.mapping.TileMap;
 import com.centuryglass.mcmap.savedata.MCAFile;
@@ -81,17 +83,11 @@ public class MCMap
      *                         save all maps. Each map tile will be saved at
      *                         baseName.X.Z.png within a subdirectory specific
      *                         to its map type.
-     * 
-     * @param dirInfoFile      A file containing notable coordinates to mark on
-     *                         the server directory map. Directory files should
-     *                         list one point per line, formatted as 
-     *                         X Z PlaceName.
      */
     public static void createTileMaps(int tileSize,
             File regionDataDir,
             File imageDir,
-            String baseName,
-            File dirInfoFile)
+            String baseName)
     {
         ArrayList<File> regionFiles = new ArrayList(Arrays.asList(
                 regionDataDir.listFiles()));
@@ -157,11 +153,6 @@ public class MCMap
      * @param imagePrefix      The start of the filename that will be used to
      *                         save all maps. Each map type will be saved at
      *                         imagePrefix + "MapType" + ".png"
-     * 
-     * @param dirInfoFile      A file containing notable coordinates to mark on
-     *                         the server directory map. Directory files should
-     *                         list one point per line, formatted as 
-     *                         X Z PlaceName.
      */
     public static void createMaps(
             int xMin,
@@ -171,14 +162,10 @@ public class MCMap
             int pxPerChunk,
             File regionDataDir,
             File imageDir,
-            String imagePrefix,
-            File dirInfoFile)
+            String imagePrefix)
     {
         ArrayList<File> regionFiles = new ArrayList();
-        int xMax = xMin + width;
-        int zMax = zMin + height;
         int regionChunks = MapUnit.convert(1, MapUnit.REGION, MapUnit.CHUNK);
-        int outOfBounds = 0;
         // Valid region files within the given bounds will all be named
         // r.X.Z.mca, where X and Z are valid region coordinates within the
         // given range. Check each of these names to see if a corresponding file
