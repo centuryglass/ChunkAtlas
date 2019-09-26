@@ -3,7 +3,7 @@
  * 
  * Divides a duration expressed in Minecraft ticks into other time units.
  */
-package com.centuryglass.mcmap;
+package com.centuryglass.mcmap.util;
 
 import java.util.function.BiFunction;
 

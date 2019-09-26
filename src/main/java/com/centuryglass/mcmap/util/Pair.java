@@ -3,7 +3,7 @@
  * 
  * Holds two objects of any two types.
  */
-package com.centuryglass.mcmap;
+package com.centuryglass.mcmap.util;
 
 /**
  * Allows any two object types to be packaged together, similar to the std::pair

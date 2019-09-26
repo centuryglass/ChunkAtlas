@@ -5,7 +5,7 @@
  * distance.
  */
 
-package com.centuryglass.mcmap;
+package com.centuryglass.mcmap.util;
 
 import java.awt.Point;
 
