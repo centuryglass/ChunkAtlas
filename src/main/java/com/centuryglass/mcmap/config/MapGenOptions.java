@@ -14,7 +14,6 @@ import java.util.function.BiConsumer;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
 
 /**
  * Loads and shares a set of options for generating maps. These options may be
@@ -24,7 +23,7 @@ public class MapGenOptions extends ConfigFile
 {
     // Path to the resource holding default configuration options:
     private static final String DEFAULT_JSON_RESOURCE
-            = "configDefaults/mapGen.json";
+            = "/configDefaults/mapGen.json";
     
     /**
      * Loads or initializes map generation options on construction.
@@ -35,7 +34,7 @@ public class MapGenOptions extends ConfigFile
      *                    will be used. If this file does not exist and can be
      *                    created, default options will be copied to this file.
      */
-    MapGenOptions(File configFile)
+    public MapGenOptions(File configFile)
     {
         super(configFile, DEFAULT_JSON_RESOURCE);
     }
@@ -272,7 +271,7 @@ public class MapGenOptions extends ConfigFile
         // The set of options to use when generating map image tiles:
         public static final String TILE_MAP_OPTIONS = "mapTiles";
         // Whether a specific Mapper type (Image or Tile) will be used:
-        public static final String GENERATE_MAPS = "true";
+        public static final String GENERATE_MAPS = "generate";
         // The path where Mappers will save images they create:
         public static final String OUTPUT_PATH = "path";
         // Whether single-image maps will be drawn over a background image:

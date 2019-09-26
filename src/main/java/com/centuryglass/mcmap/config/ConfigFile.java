@@ -62,6 +62,7 @@ public class ConfigFile
         try (InputStream optionStream = ConfigFile.class.getResourceAsStream(
                         defaultFilePath))       
         {
+            assert (optionStream != null);
             try (JsonReader reader = Json.createReader(optionStream))
             {
                 defaultOptions = reader.readObject();
