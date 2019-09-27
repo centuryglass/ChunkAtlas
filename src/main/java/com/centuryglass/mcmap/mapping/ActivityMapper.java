@@ -119,7 +119,7 @@ public class ActivityMapper extends Mapper
         ColorRangeFactory rangeFactory = new ColorRangeFactory(
                 inhabitedTimes.values(), rangeColors);
         rangeFactory.setFadeFraction(MIN_COLOR_INTENSITY);
-        rangeFactory.setFadeType(ColorRangeSet.FadeType.TO_BLACK);
+        rangeFactory.setFadeType(ColorRangeSet.FadeType.TO_NEXT);
         Function <Long, Long> roundToNextUnit = tickCount -> 
         {
             return new TickDuration(tickCount).rounded(

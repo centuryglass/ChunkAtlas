@@ -256,7 +256,7 @@ public class MapImage extends WorldMap
     }
     
     // Saved map image data:
-    private BufferedImage mapImage;
+    private final BufferedImage mapImage;
     // Whether backgrounds are drawn. This setting is shared across all maps.
     private static boolean drawBackgrounds = true;
     // Map/image dimensions, measured in chunks:
@@ -264,5 +264,5 @@ public class MapImage extends WorldMap
     private final int zMin;
     private final int mapWidth;
     private final int mapHeight;
-    private int borderWidth;
+    private final int borderWidth;
 }

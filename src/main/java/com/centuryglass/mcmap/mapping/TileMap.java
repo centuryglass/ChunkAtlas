@@ -146,8 +146,8 @@ public class TileMap extends WorldMap
                         + imageFile.getName() + " to disk: " + e.getMessage());
             } 
         }
-        System.out.println("Saved " + baseName + " to " + mapTiles.size()
-                + " image tiles.");
+        //System.out.println("Saved " + baseName + " to " + mapTiles.size()
+        //        + " image tiles.");
     }
         
     /**
