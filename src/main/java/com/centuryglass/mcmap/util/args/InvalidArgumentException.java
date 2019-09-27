@@ -17,7 +17,7 @@ public class InvalidArgumentException extends Exception
      * 
      * @param message  A short message describing the error.
      */
-    protected InvalidArgumentException(String message)
+    public InvalidArgumentException(String message)
     {
         super("Invalid command line argument value: " + message);
     }
