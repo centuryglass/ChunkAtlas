@@ -1,9 +1,11 @@
 /**
  * @file ArgOption.java
  * 
- * Holds parameters passed to a command line option.
+ * Manages parameters passed to a command line option.
  */
 package com.centuryglass.mcmap.util.args;
+
+import java.util.function.Predicate;
 
 /**
  * Represents an option found in a list of command line arguments, possibly
@@ -65,6 +67,89 @@ public class ArgOption<ArgEnum>
                     + String.valueOf(parameters.length) + " parameters.");
         }
         return parameters[index];
+    }
+    
+    /**
+     * Represents possible outcomes when checking for a boolean value in a
+     * parameter.
+     */
+    public enum BoolStatus
+    {
+        TRUE,
+        FALSE,
+        NOT_BOOLEAN; 
+    }
+    
+    /**
+     * Attempts to parse an integer value from an option parameter.
+     * 
+     * @param index                      The index of the parameter to read.
+     * 
+     * @param validator                  An optional Predicate used to add
+     *                                   additional requirements that the number
+     *                                   parameter must meet.
+     * 
+     * @return                           The numeric value of the chosen
+     *                                   parameter.
+     * 
+     * @throws InvalidArgumentException  If the index is invalid, the parameter
+     *                                   is non-numeric, or the value is
+     *                                   rejected by the validator.
+     */
+    public int parseIntParam(int index, Predicate<Integer> validator)
+            throws InvalidArgumentException
+    {
+        if (getParamCount() <= index || index < 0)
+        {
+            throw new InvalidArgumentException("Option " + getType().toString()
+                    + ": Parameter index " + String.valueOf(index)
+                    + " does not exist");
+        } 
+        String param = getParameter(index);
+        try
+        {
+            int value = Integer.parseInt(param);
+            if (validator != null && ! validator.test(value))
+            {
+                throw new NumberFormatException();
+            }
+            return value;
+        }
+        catch (NumberFormatException e)
+        {
+            throw new InvalidArgumentException("Option " + getType().toString()
+                    + ": Invalid parameter \"" + param + "\".");
+        }
+    }
+    
+    /**
+     * Checks what the value of this option is if it represents a boolean value.
+     * 
+     * Boolean options either have no arguments, in which case they are always
+     * true, or their first argument is a true/false value.
+     * 
+     * @return                           The option's boolean value.
+     * 
+     * @throws InvalidArgumentException  If the option has a first argument that
+     *                                   does not represent a boolean.
+     */
+    public boolean boolOptionStatus() throws InvalidArgumentException
+    {
+        if (parameters == null || parameters.length == 0)
+        {
+            return true;
+        }
+        String param = getParameter(0);
+        if (param.equals("1") || param.equalsIgnoreCase("true"))
+        {
+            return true;
+        }
+        if (param.equals("0") || param.equalsIgnoreCase("false"))
+        {
+            return false;
+        }
+        throw new InvalidArgumentException(optionType.toString()
+                + ": parameter \"" + param + "\" is not true/false.");
     }
     
     private final ArgEnum optionType;
