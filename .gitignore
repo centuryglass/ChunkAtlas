@@ -5,3 +5,4 @@ MCMap
 *test.png
 gzstream/*.o
 gzstream/*.a
+testMapGen.json
