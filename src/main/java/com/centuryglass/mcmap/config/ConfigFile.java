@@ -51,7 +51,7 @@ public class ConfigFile
                     IllegalStateException ex) 
             {
                 System.err.println("Failed to load " + configFile.getName()
-                        + ", using default configuration options.");
+                        + " using default configuration options.");
                 System.err.println("Error type encountered: "
                         + ex.getMessage());
                 loadedOptions = null;
@@ -73,25 +73,40 @@ public class ConfigFile
                         + defaultFilePath + ": " + ex.getMessage());
                 defaultOptions = null;
             }
-            // Copy defaults if appropriate:
-            if (configFile != null && ! configFile.exists()
-                    && configFile.canWrite() && configFile.createNewFile())
-            {
-                optionStream.reset();
-                FileOutputStream output = new FileOutputStream(configFile);
-                byte[] copyBuffer = new byte[1280];
-                int bytesRead;
-                while ((bytesRead = optionStream.read(copyBuffer)) != -1)
-                {
-                    output.write(copyBuffer, 0, bytesRead);
-                }
-                output.close();
-            }
         }
         catch (IOException e)
         {
-            System.err.println("Error reading/copying default config: "
-                    + e.getMessage());
+            System.err.println("Default config error: " + e.getMessage());
+        }
+        
+        // Copy defaults if appropriate:
+        if (defaultOptions != null && loadedOptions == null
+                && configFile != null)
+        {
+            try (InputStream optionStream
+                    = ConfigFile.class.getResourceAsStream(defaultFilePath))
+            {
+                if (! configFile.exists() && ! configFile.createNewFile())
+                {
+                    System.err.println("Failed to create config file at \""
+                            + configFile.toString() + "\".");
+                    return;
+                }
+                try (FileOutputStream output = new FileOutputStream(configFile))
+                {
+                    byte[] copyBuffer = new byte[1280];
+                    int bytesRead;
+                    while ((bytesRead = optionStream.read(copyBuffer)) != -1)
+                    {
+                        output.write(copyBuffer, 0, bytesRead);
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                System.err.println("Error copying default config: "
+                        + e.getMessage());
+            }
         }
     }
             

@@ -8,6 +8,7 @@
     "pixelsPerChunk": 1,
     "singleImageMaps": {
         "generate": true,
+        "outPath": "maps",
         "drawBackground": true,
         "path": "maps",
         "xMin": -1600,
@@ -17,7 +18,7 @@
     },
     "mapTiles": {
         "generate": true,
-        "path": "maps/tiles",
+        "outPath": "maps/tiles",
         "tileSize": 512,
         "createScaled": [128, 64, 32]
     },

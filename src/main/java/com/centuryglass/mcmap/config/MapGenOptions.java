@@ -98,7 +98,7 @@ public class MapGenOptions extends ConfigFile
          * @param drawBackground   Whether a Minecraft map background image will
          *                         be drawn behind the maps.
          * 
-         * @param path             The path where map images will be saved.
+         * @param outPath          The path where map images will be saved.
          * 
          * @param xMin             The minimum x-coordinate in chunks drawn
          *                         within the map bounds.
@@ -111,11 +111,11 @@ public class MapGenOptions extends ConfigFile
          * @param height           The height in chunks of the mapped area. 
          */
         protected SingleImage(boolean enabled, boolean drawBackground,
-                String path, int xMin, int zMin, int width, int height)
+                String outPath, int xMin, int zMin, int width, int height)
         {
             this.enabled = enabled;
             this.drawBackground = drawBackground;
-            this.path = path;
+            this.outPath = outPath;
             this.xMin = xMin;
             this.zMin = zMin;
             this.width = width;
@@ -124,7 +124,7 @@ public class MapGenOptions extends ConfigFile
         
         public final boolean enabled;
         public final boolean drawBackground;
-        public final String path;
+        public final String outPath;
         public final int xMin;
         public final int zMin;
         public final int width;
@@ -164,7 +164,7 @@ public class MapGenOptions extends ConfigFile
          * 
          * @param enabled          Whether map tiles will be generated.
          * 
-         * @param path             The path to the directory where map tiles
+         * @param outPath          The path to the directory where map tiles
          *                         will be saved.
          * 
          * @param tileSize         The width and height in pixels of each map
@@ -173,11 +173,11 @@ public class MapGenOptions extends ConfigFile
          * @param alternateSizes   An array of alternate tile sizes to create by
          *                         rescaling the main set of tile images.
          */
-        protected MapTiles(boolean enabled, String path, int tileSize,
+        protected MapTiles(boolean enabled, String outPath, int tileSize,
                 int[] alternateSizes)
         {
             this.enabled = enabled;
-            this.path = path;
+            this.outPath = outPath;
             this.tileSize = tileSize;
             this.alternateSizes = alternateSizes;
         }
@@ -195,7 +195,7 @@ public class MapGenOptions extends ConfigFile
         }
         
         public final boolean enabled;
-        public final String path;
+        public final String outPath;
         public final int tileSize;
         private final int[] alternateSizes;
     }
@@ -273,7 +273,7 @@ public class MapGenOptions extends ConfigFile
         // Whether a specific Mapper type (Image or Tile) will be used:
         public static final String GENERATE_MAPS = "generate";
         // The path where Mappers will save images they create:
-        public static final String OUTPUT_PATH = "path";
+        public static final String OUTPUT_PATH = "outPath";
         // Whether single-image maps will be drawn over a background image:
         public static final String DRAW_BACKGROUND = "drawBackground";
         // Minimum chunk x-coordinate to draw in single image maps:
