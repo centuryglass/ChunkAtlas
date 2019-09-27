@@ -50,10 +50,14 @@ public enum MapArgOptions
     
     // Tile map options:
     /**
-     * Sets whether tiled map images should be created, the directory where they
-     * should be saved, and their base size in Minecraft chunks.
+     * Sets whether tiled map images should be created, and the directory where
+     * they should be saved.
      */
     TILE_MAP,
+    /**
+     * Sets the width and height in Minecraft chunks of each image tile.
+     */
+    TILE_SIZE,
     /**
      * Sets alternate tile image sizes that should be created from the main set
      * of map tiles.
@@ -95,35 +99,40 @@ public enum MapArgOptions
     public static ArgParser<MapArgOptions> createArgParser()
     {
         ArgParserFactory<MapArgOptions> parserFactory = new ArgParserFactory();
-        final String optionalBool = "[true|1|false|0]";
+        final String optionalBool = "[<true>|<false>|<0>|<1>]";
         parserFactory.setOptionProperties(HELP, "-h", "--help", 0, 0, "",
                 "Print this help text.");
         parserFactory.setOptionProperties(CONFIG_PATH, "-c", "--config", 1, 1,
-                "jsonConfigPath",
+                "<path/to/config.json>",
                 "Set the map generation configuration file path.");
         parserFactory.setOptionProperties(REGION_DIRS, "-r", "--regionDirs",
-                1, Integer.MAX_VALUE, "regionName=RegionPath ...",
+                1, Integer.MAX_VALUE, "<regionName=RegionPath>...",
                 "Set Minecraft region data directory paths.");
         parserFactory.setOptionProperties(CHUNK_PIXELS, "-p", "--pixels", 1, 1, 
-                "chunkWidth/Height",
+                "<size>",
                 "Set the width and height in pixels to draw each map chunk.");
         
-        parserFactory.setOptionProperties(IMAGE_MAP, "-i", "--image-map", 0, 2,
-                optionalBool + " [outputPath]",
-                "Read region files to create single-image maps of a bounded "
+        parserFactory.setOptionProperties(IMAGE_MAP, "-i", "--image-map", 1, 1,
+                "(<false>|<outputPath>)",
+                "Set if and where to create single-image maps of a bounded "
                 + "area.");
         parserFactory.setOptionProperties(DRAW_BACKGROUND, "-d",
                 "--draw-background", 0, 1, optionalBool,
                 "Draw the Minecraft map texture behind single-image maps.");
         parserFactory.setOptionProperties(BOUNDS, "b", "--bounds", 4, 4,
-                "xMin zMin width height",
+                "<xMin> <zMin> <width> <height>",
                 "Set the area in chunks that should be mapped.");
         
-        parserFactory.setOptionProperties(TILE_MAP, "-t", "--tile-map", 0, 2,
-                optionalBool + " [outputPath]",
-                "Map each region directory within sets of image tiles.");
-        parserFactory.setOptionProperties(TILE_ALT_SIZES, "-s", "--tile-sizes",
-                1, Integer.MAX_VALUE, "size1 size2 ...",
+        parserFactory.setOptionProperties(TILE_MAP, "-t", "--tile-map", 1, 1,
+                "(<false>|<outputPath>)",
+                "Set if and where to save maps as multiple tile images of"
+                + "equal size");
+        parserFactory.setOptionProperties(TILE_SIZE, "-s", "--tile-size", 1, 1,
+                "<size>",
+                "Sets the size in Minecraft chunks to use when creating map"
+                 + "tiles.");
+        parserFactory.setOptionProperties(TILE_ALT_SIZES, "-a",
+                "--alt-tile-sizes", 1, Integer.MAX_VALUE, "<size>...",
                 "Sets one or more alternate sizes of tile image to create.");
         
         parserFactory.setOptionProperties(ACTIVITY_MAPS_ENABLED, "-A",
@@ -138,6 +147,9 @@ public enum MapArgOptions
         parserFactory.setOptionProperties(RECENT_MAPS_ENABLED, "-R",
                 "--recent-map", 0, 1, optionalBool,
                 "Enable or disable generation of recent activity maps.");
+        parserFactory.setOptionProperties(ERROR_MAPS_ENABLED, "-E",
+                "--error-map", 0, 1, optionalBool,
+                "Enable or disable generation of region file error maps.");
         parserFactory.setOptionProperties(STRUCTURE_MAPS_ENABLED, "-S",
                 "--structure-map", 0, 1, optionalBool,
                 "Enable or disable generation of Minecraft structure maps.");
