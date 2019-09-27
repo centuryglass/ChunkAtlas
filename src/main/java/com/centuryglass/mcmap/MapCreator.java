@@ -17,6 +17,9 @@ import com.centuryglass.mcmap.threads.MapperThread;
 import com.centuryglass.mcmap.threads.ProgressThread;
 import com.centuryglass.mcmap.threads.ReaderThread;
 import com.centuryglass.mcmap.util.MapUnit;
+import com.centuryglass.mcmap.util.args.ArgOption;
+import com.centuryglass.mcmap.util.args.ArgParser;
+import com.centuryglass.mcmap.util.args.InvalidArgumentException;
 import java.awt.Point;
 import java.io.File;
 import java.util.ArrayDeque;
@@ -82,7 +85,7 @@ public final class MapCreator
             MapGenOptions.MapTiles tileOptions
                     = mapConfig.getMapTileOptions();
             setTileMapsEnabled(tileOptions.enabled);
-            setTileOutputDir(new File(tileOptions.path));
+            setTileOutputDir(new File(tileOptions.outPath));
             setTileSize(tileOptions.tileSize);
             setAltTileSizes(tileOptions.getAlternateSizes());
             
@@ -94,6 +97,127 @@ public final class MapCreator
         }   
     }
     
+    /**
+     * Applies all map generation options defined in a set of command line
+     * arguments.
+     * 
+     * @param parsedArgs                 An ArgParser that has already parsed
+     *                                   the command line argument array.
+     * 
+     * @throws InvalidArgumentException  If any option parameters are invalid.
+     */
+    public void applyArgOptions(ArgParser<MapArgOptions> parsedArgs)
+            throws InvalidArgumentException
+    {  
+        ArgOption<MapArgOptions>[] options = parsedArgs.getAllOptions();
+        for (ArgOption<MapArgOptions> option : options)
+        {
+            switch (option.getType())
+            {
+                case REGION_DIRS:
+                    regionsToMap.clear();
+                    for (int i = 0; i < option.getParamCount(); i++)
+                    {
+                        String regionPath = option.getParameter(i);
+                        String regionName = null;
+                        File regionDir;
+                        if (regionPath.contains("="))
+                        {
+                            int divide = regionPath.indexOf("=");
+                            regionName = regionPath.substring(0, divide);
+                            regionPath = regionPath.substring(divide + 1);
+                        }
+                        regionDir = new File(regionPath);
+                        if (! regionDir.isDirectory())
+                        {
+                            throw new InvalidArgumentException("Invalid region"
+                                    + " directory " + regionDir.toString());
+                        }
+                        if (regionName == null)
+                        {
+                            regionName = regionDir.getName();
+                        }
+                        addRegion(regionName, regionDir);                
+                    }
+                    break;
+                case CHUNK_PIXELS:
+                {
+                    setPixelsPerChunk(option.parseIntParam(0, px -> px > 0));
+                    break;
+                }
+                case IMAGE_MAP:
+                {
+                    String param = option.getParameter(0);
+                    if (param.equals("0") || param.equalsIgnoreCase("false"))
+                    {
+                        setSingleImageMapsEnabled(false);
+                    }
+                    else
+                    {
+                        setSingleImageMapsEnabled(true);
+                        setImageMapOutputDir(new File(param));
+                    }
+                    break;
+                }
+                case DRAW_BACKGROUND:
+                    setDrawBackgrounds(option.boolOptionStatus());
+                    break;
+                case BOUNDS:
+                {
+                    setImageMapBounds(option.parseIntParam(0, null),
+                            option.parseIntParam(1, null),
+                            option.parseIntParam(2, w -> w > 0),
+                            option.parseIntParam(3, h -> h > 0));
+                }
+                case TILE_MAP:
+                {
+                    String param = option.getParameter(0);
+                    if (param.equals("0") || param.equalsIgnoreCase("false"))
+                    {
+                        setTileMapsEnabled(false);
+                    }
+                    else
+                    {
+                        setTileMapsEnabled(true);
+                        setTileOutputDir(new File(param));
+                    }
+                    break;
+                }
+                
+                case TILE_ALT_SIZES:
+                {
+                    int[] altSizes = new int[option.getParamCount()];
+                    for (int i = 0; i < option.getParamCount(); i++)
+                    {
+                        altSizes[i] = option.parseIntParam(i, size -> size > 0);
+                    }
+                    setAltTileSizes(altSizes);
+                    break;
+                }
+                case ACTIVITY_MAPS_ENABLED:
+                    setMapTypeEnabled(MapType.ACTIVITY,
+                            option.boolOptionStatus());
+                    break;
+                case BASIC_MAPS_ENABLED:
+                    setMapTypeEnabled(MapType.BASIC, option.boolOptionStatus());
+                    break;
+                case BIOME_MAPS_ENABLED:
+                    setMapTypeEnabled(MapType.BIOME, option.boolOptionStatus());
+                    break;
+                case ERROR_MAPS_ENABLED:
+                    setMapTypeEnabled(MapType.ERROR, option.boolOptionStatus());
+                    break;
+                case RECENT_MAPS_ENABLED:
+                    setMapTypeEnabled(MapType.RECENT,
+                            option.boolOptionStatus());
+                    break;
+                case STRUCTURE_MAPS_ENABLED:
+                    setMapTypeEnabled(MapType.STRUCTURE,
+                            option.boolOptionStatus());
+                    break;
+            }
+        }   
+    }
     
     /**
      * Applies all map generation options to create maps in every relevant type
@@ -101,6 +225,8 @@ public final class MapCreator
      */
     public void createMaps()
     {
+        System.out.println("Creating " + enabledMapTypes.size() + " map types "
+                + "for " + regionsToMap.size() + " region(s).");
         for (Region region : regionsToMap)
         {
             System.out.println("Mapping region " + region.name + ":");
@@ -113,21 +239,21 @@ public final class MapCreator
                 }
                 if (! regionOutDir.isDirectory())
                 {
-                    regionOutDir.mkdir();
+                    regionOutDir.mkdirs();
                 }
                 return regionOutDir;
             };
-            File tileImageOutDir = getRegionOutDir.apply(tileOutDir);
-            File singleImageOutDir = getRegionOutDir.apply(imageOutDir);
+            File regionTileOutDir = getRegionOutDir.apply(tileOutDir);
+            File regionImageOutDir = getRegionOutDir.apply(imageOutDir);
             // Remove old map images:
             Deque<File> toDelete = new ArrayDeque();
             if (tilesEnabled) 
             { 
-                toDelete.add(tileImageOutDir);
+                toDelete.add(regionTileOutDir);
             }
             if (imageMapsEnabled)
             {
-                toDelete.add(singleImageOutDir);
+                toDelete.add(regionImageOutDir);
             }
             while (! toDelete.isEmpty())
             {
@@ -143,15 +269,17 @@ public final class MapCreator
             }
             if (tilesEnabled)
             {
-                createTileMaps(region);
+                createTileMaps(region, regionTileOutDir);
                 // Find and store all tile map directories:
                 ArrayList<File> tileDirs = new ArrayList();
                 Deque<File> toSearch = new ArrayDeque();
-                toSearch.add(tileImageOutDir);
+                toSearch.add(regionTileOutDir);
                 while (! toSearch.isEmpty())
                 {
                     File searchDir = toSearch.pop();
                     boolean tilesFound = false;
+                    assert (searchDir != null);
+                    assert (searchDir.isDirectory());
                     for (File child : searchDir.listFiles())
                     {
                         if (child.isDirectory())
@@ -174,8 +302,10 @@ public final class MapCreator
                 {
                     tileDirs.forEach((tileDir) ->
                     {
-                        File outFile = new File(singleImageOutDir,
+                        File outFile = new File(regionImageOutDir,
                                 tileDir.getName() + ".png");
+                        System.out.println("Creating " + outFile.toString()
+                                + " from tiles at " + tileDir.toString() + ".");
                         ImageStitcher.stitch(tileDir, outFile, xMin, zMin,
                                 width, height, pixelsPerChunk, tileSize, 
                                 drawBackgrounds);
@@ -193,7 +323,7 @@ public final class MapCreator
             }
             else if (imageMapsEnabled)
             {
-                createSingleImageMaps(region);
+                createSingleImageMaps(region, regionImageOutDir);
             }  
         }
     }
@@ -366,8 +496,11 @@ public final class MapCreator
      * 
      * @param mapRegion  A Minecraft region directory path and its associated
      *                   region name.
+     * 
+     * @param outDir     A region-specific output directory where tiles will be
+     *                   saved.
      */
-    private void createTileMaps(Region mapRegion)
+    private void createTileMaps(Region mapRegion, File outDir)
     {
         if (mapRegion.directory == null)
         {
@@ -383,7 +516,7 @@ public final class MapCreator
         }
         ArrayList<File> regionFiles = new ArrayList(Arrays.asList(
                 mapRegion.directory.listFiles()));
-        MapCollector mappers = new MapCollector(tileOutDir, mapRegion.name,
+        MapCollector mappers = new MapCollector(outDir, mapRegion.name,
                 tileSize, enabledMapTypes);
         // If more than one tile fits in a region, sort regions by tile:
         if (tileSize > 32)
@@ -427,8 +560,11 @@ public final class MapCreator
      * 
      * @param mapRegion  A Minecraft region directory path and its associated
      *                   region name.
+     * 
+     * @param outDir     A region-specific directory where map images will be
+     *                   saved.
      */
-    private void createSingleImageMaps(Region mapRegion)
+    private void createSingleImageMaps(Region mapRegion, File outDir)
     {
         ArrayList<File> regionFiles = new ArrayList();
         int regionChunks = MapUnit.convert(1, MapUnit.REGION, MapUnit.CHUNK);
@@ -463,9 +599,8 @@ public final class MapCreator
             System.out.println("Region was empty, no maps were created.");
             return;          
         }
-        final MapCollector mappers = new MapCollector(imageOutDir,
-                mapRegion.name, xMin, zMin, width, height, pixelsPerChunk,
-                enabledMapTypes);
+        final MapCollector mappers = new MapCollector(outDir, mapRegion.name,
+                xMin, zMin, width, height, pixelsPerChunk, enabledMapTypes);
         final int chunksMapped = mapRegion(regionFiles, mappers);
         if (chunksMapped > 0)
         {
