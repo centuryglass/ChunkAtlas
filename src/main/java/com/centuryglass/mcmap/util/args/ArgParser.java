@@ -73,7 +73,7 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
         {
             if (! optionFlags.containsKey(args[i]))
             {
-                throw new InvalidArgumentException("Invalid argument option "
+                throw new InvalidArgumentException("Invalid option "
                         + args[i]);
             }
             OptionParams<ArgEnum> option = optionFlags.get(args[i]);
@@ -159,7 +159,14 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
      */
     public ArgOption<ArgEnum>[] getAllOptions()
     {
-        return (ArgOption<ArgEnum>[]) optionValues.values().toArray();
+        ArgOption<ArgEnum>[] options = new ArgOption[optionValues.size()];
+        int idx = 0;
+        for(Map.Entry<ArgEnum, ArgOption<ArgEnum>> e : optionValues.entrySet())
+        {
+            options[idx] = e.getValue();
+            idx++;
+        }
+        return options;
     }
 
     private final Map<String, OptionParams<ArgEnum>> optionFlags;
