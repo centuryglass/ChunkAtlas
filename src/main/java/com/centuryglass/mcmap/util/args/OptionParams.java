@@ -64,7 +64,7 @@ public class OptionParams<ArgEnum>
      */
     protected String getHelpText()
     {
-        return "[" + shortFlag + " | " + longFlag + "]" + paramDescription
+        return "(" + shortFlag + " | " + longFlag + ") " + paramDescription
                 + "\n\t" + description;
     }
 
