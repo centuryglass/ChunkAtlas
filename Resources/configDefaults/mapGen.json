@@ -1,8 +1,16 @@
 {
     "regions": [
         {
-            "regionFilePath": "~/MCRegion",
-            "name": "Test_Region"
+            "regionFilePath": "world/region",
+            "name": "Overworld"
+        },
+        {
+            "regionFilePath": "world_nether/DIM-1/region",
+            "name": "Nether"
+        },
+        {
+            "regionFilePath": "world_the_end/DIM1/region",
+            "name": "End"
         }
     ],
     "pixelsPerChunk": 1,
@@ -10,7 +18,6 @@
         "generate": true,
         "outPath": "maps",
         "drawBackground": true,
-        "path": "maps",
         "xMin": -1600,
         "zMin": -1600,
         "width": 3200,
