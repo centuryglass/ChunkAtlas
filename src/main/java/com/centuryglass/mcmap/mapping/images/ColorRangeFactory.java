@@ -186,9 +186,12 @@ public class ColorRangeFactory
                 final int valueIdx = orderedValues.length / rangeCount * i;
                 rangeMaxValues[i]
                         = rangeAdjuster.apply(orderedValues[valueIdx]);
-                assert rangeMaxValues[i] < rangeMaxValues[i - 1];
-            }
-            
+                // Discard adjustments if they would put ranges out of order:
+                if (rangeMaxValues[i] >= rangeMaxValues[i - 1])
+                {
+                    rangeMaxValues[i] = orderedValues[valueIdx];
+                }
+            }      
         }
         else // divisionType == BY_VALUE
         {
