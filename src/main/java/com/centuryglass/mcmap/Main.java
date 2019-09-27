@@ -6,16 +6,9 @@
 package com.centuryglass.mcmap;
 
 import com.centuryglass.mcmap.config.MapGenOptions;
-import com.centuryglass.mcmap.mapping.images.Downscaler;
-import com.centuryglass.mcmap.mapping.images.ImageStitcher;
-import com.centuryglass.mcmap.mapping.MapImage;
-import com.centuryglass.mcmap.util.args.ArgOption;
 import com.centuryglass.mcmap.util.args.ArgParser;
-import com.centuryglass.mcmap.util.args.ArgParserFactory;
 import com.centuryglass.mcmap.util.args.InvalidArgumentException;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.function.BiConsumer;
 
 /**
  * Starts map generation, using command line options, options read from a
@@ -26,232 +19,51 @@ public class Main
     // Default values:
     private static final String DEFAULT_CONFIG_PATH = "mapGen.json";
     
-    // Command line argument option types:
-    enum OptionType
-    {
-        /**
-         * Print help text describing all options and exit.
-         */
-        HELP,
-        CONFIG_PATH,
-        DRAW_BACKGROUND,
-        REGION_DIR,
-        OUTPUT_DIR,
-        IMAGE_NAME,
-        IMAGE_MAP,
-        TILE_MAP,
-        BOUNDS,
-        CHUNK_PIXELS;
-    }
-    
     public static void main(String [] args)
     {
-        ArgParserFactory<OptionType> parserFactory = new ArgParserFactory();
-        parserFactory.setOptionProperties(OptionType.HELP, "-h", "--help", 0, 0,
-                "", "Print this help text.");
-        parserFactory.setOptionProperties(OptionType.CONFIG_PATH, "-c",
-                "--config", 1, 1, "jsonConfigPath",
-                "Set the map generation configuration file path.");
-        parserFactory.setOptionProperties(OptionType.DRAW_BACKGROUND, "-d",
-                "--draw-background", 0, 1, "", "Draw the Minecraft map texture "
-                + "behind single-image maps.");
-        parserFactory.setOptionProperties(OptionType.REGION_DIR, "-r",
-                "--regionDir", 1, Integer.MAX_VALUE, "regionName=RegionPath...",
-                "Set Minecraft region data directory paths.");
-        parserFactory.setOptionProperties(OptionType.IMAGE_NAME, "-n",
-                "--imageName", 1, 1, "name",
-                "Set the base name used for map image files.");
-        parserFactory.setOptionProperties(OptionType.IMAGE_MAP, "-i",
-                "--image-map", 0, 0, "", "Read region files to create "
-                + "single-image maps of a bounded area.");
-        parserFactory.setOptionProperties(OptionType.TILE_MAP, "-t",
-                "--tile-map", 1, 1, "tileResolution",
-                "Map the entire region directory within a set of image tiles.");
-        parserFactory.setOptionProperties(OptionType.OUTPUT_DIR, "-o",
-                "--outDir", 1, 1, "directoryPath",
-                "Set the directory where map images will be saved.");
-        parserFactory.setOptionProperties(OptionType.BOUNDS, "-b", "--bounds",
-                4, 4, "xMin zMin width height",
-                "Set the area in chunks that should be mapped.");
-        parserFactory.setOptionProperties(OptionType.CHUNK_PIXELS, "-p",
-                "--pixels", 1, 1, "chunkWidth&Height",
-                "Set the width and height in pixels to draw each map chunk.");
-        ArgParser<OptionType> argParser = parserFactory.createParser();
-        boolean printHelpAndExit;
+        final ArgParser<MapArgOptions> argParser
+                = MapArgOptions.createArgParser();
+        final Runnable printHelpAndExit = () ->
+        {
+            System.out.println("Usage: ./MCMap [options]\nOptions:");
+            System.out.print(argParser.getHelpText());
+            System.exit(0);
+        };
         try
         {
             argParser.parseArguments(args);
-            printHelpAndExit = argParser.optionFound(OptionType.HELP);
+            if (argParser.optionFound(MapArgOptions.HELP))
+            {
+                printHelpAndExit.run();
+                
+            }
         }
         catch (InvalidArgumentException e)
         {
             System.err.println(e.getMessage());
-            printHelpAndExit = true;
-        }
-        if (printHelpAndExit)
-        {
-            System.out.println("Usage: ./MCMap [options]\nOptions:");
-            System.out.print(argParser.getHelpText());
-            return;   
+            printHelpAndExit.run();
         }
         
         // Load options from arguments, a configuration file, or default values:
         String configPath = DEFAULT_CONFIG_PATH;
-        if (argParser.optionFound(OptionType.CONFIG_PATH))
+        if (argParser.optionFound(MapArgOptions.CONFIG_PATH))
         {
-            configPath = argParser.getOptionParams(OptionType.CONFIG_PATH)
+            configPath = argParser.getOptionParams(MapArgOptions.CONFIG_PATH)
                     .getParameter(0);
         }
-        // Command line options:
-        final ArgOption outPathOption
-                = argParser.getOptionParams(OptionType.OUTPUT_DIR);
-        final ArgOption backgroundOption
-                = argParser.getOptionParams(OptionType.DRAW_BACKGROUND);
-        final ArgOption chunkPxOption
-                = argParser.getOptionParams(OptionType.CHUNK_PIXELS);
-        // Config options:
         MapGenOptions mapConfig = new MapGenOptions(new File(configPath));
-           
-        // Single map image generation:
-        // Command line options:
-        final ArgOption imageMapOption
-                = argParser.getOptionParams(OptionType.IMAGE_MAP);
-        final ArgOption boundsOption
-                = argParser.getOptionParams(OptionType.BOUNDS);
-        // Config options:
-        MapGenOptions.SingleImage singleImageConfig 
-                = mapConfig.getSingleImageOptions();
-
-        
-        // Select command line options first, use config options as a fallback.
-        final boolean createMapImages = (imageMapOption != null)
-                ? true : singleImageConfig.enabled;
-        final boolean drawBackgrounds = (backgroundOption != null)
-                ? true : singleImageConfig.drawBackground;
-        final String singleImagePath = (outPathOption != null)
-                ? outPathOption.getParameter(0) : singleImageConfig.path;
-        // Mapped region bounds and scale:
-        final int xMin, zMin, width, height;
-        if (boundsOption != null)
+        MapCreator mapCreator = new MapCreator(mapConfig);
+        try
         {
-            xMin = Integer.parseInt(boundsOption.getParameter(0));
-            zMin = Integer.parseInt(boundsOption.getParameter(1));
-            width = Integer.parseInt(boundsOption.getParameter(2));
-            height = Integer.parseInt(boundsOption.getParameter(3));
+            mapCreator.applyArgOptions(argParser);
         }
-        else
+        catch (InvalidArgumentException e)
         {
-            xMin = singleImageConfig.xMin;
-            zMin = singleImageConfig.zMin;
-            width = singleImageConfig.width;
-            height = singleImageConfig.height;
-        }
-        int chunkPx = (chunkPxOption != null)
-                ? Integer.parseInt(chunkPxOption.getParameter(0))
-                : mapConfig.getPixelsPerChunk();
-        
-        
-        // Map tile image generation:
-        // Command line options:
-        final ArgOption tileOption
-                = argParser.getOptionParams(OptionType.TILE_MAP);
-        // Config options:
-        MapGenOptions.MapTiles tileConfig = mapConfig.getMapTileOptions();
-        final boolean useTiles = (tileOption != null)
-                ? true : tileConfig.enabled;
-        final String tilePath = (outPathOption != null)
-                ? outPathOption.getParameter(0)
-                : tileConfig.path;
-        final int tileResolution = (tileOption != null)
-                ? Integer.parseInt(tileOption.getParameter(0))
-                : tileConfig.tileSize;
-        
-        MapImage.setDrawBackgrounds(drawBackgrounds);
-        
-        // Define how maps will be created for each region directory:
-        BiConsumer<File, String> processRegionDir = (regionDir, name)->
-        {
-            if (useTiles)
-            {
-                File tileOutputDir = new File(tilePath);
-                MCMap.createTileMaps(tileResolution, regionDir, tileOutputDir,
-                        name);
-                if (createMapImages) // Stitch together tiles to make maps
-                {
-                    ArrayList<File> dirList = getTileDirs(tileOutputDir);
-                    for (File tileDir : dirList)
-                    {
-                        File outFile = new File(tileOutputDir,
-                                tileDir.getName() + ".png");
-                        ImageStitcher.stitch(tileDir, outFile, xMin, zMin,
-                                width, height, chunkPx, tileResolution, true);
-                    }
-                }
-            }
-            else if (createMapImages)
-            {
-                MCMap.createMaps(xMin, zMin, width, height, chunkPx,
-                        regionDir, new File(singleImagePath), name);
-            }  
-        };
-        
-        // If a valid command line argument region file is provided, use it to
-        // create maps:
-        File argRegionDir = null;
-        if (argParser.optionFound(OptionType.REGION_DIR))
-        {
-            argRegionDir = new File(argParser.getOptionParams(
-                    OptionType.REGION_DIR).getParameter(0));
-        }
-        if (argRegionDir != null && argRegionDir.isDirectory())
-        {
-            String regionName = argRegionDir.getName();
-            if (argParser.optionFound(OptionType.IMAGE_NAME))
-            {
-                regionName = argParser.getOptionParams(
-                        OptionType.IMAGE_NAME).getParameter(0);
-            }
-            processRegionDir.accept(argRegionDir, regionName);
-        }
-        // Otherwise use the region directory or directories defined in map
-        // config:
-        else
-        {
-            mapConfig.forEachRegionPath(processRegionDir);
+            System.err.println(e.getMessage());
+            printHelpAndExit.run();
         }
         
-        if (useTiles)
-        {
-            Downscaler.recursiveScale(new File(tilePath), tileResolution,
-                    tileConfig.getAlternateSizes());
-        }
-    }
-    
-    // TODO: find a better place than Main to put this function:
-    public static ArrayList<File> getTileDirs(File mainImageDir)
-    {
-        ArrayList<File> dirList = new ArrayList();
-        if (! mainImageDir.isDirectory())
-        {
-            return dirList;
-        }
-        File [] files = mainImageDir.listFiles();
-        boolean imagesFound = false;
-        for (File child : files)
-        {
-            if (child.isDirectory())
-            {
-                dirList.addAll(getTileDirs(child));
-            }
-            else if (! imagesFound)
-            {
-                imagesFound = (child.getPath().endsWith(".png"));
-            }
-        }
-        if (imagesFound)
-        {
-            dirList.add(mainImageDir);
-        }
-        return dirList;
+        // Apply settings to create maps:
+        mapCreator.createMaps();
     }
 }
