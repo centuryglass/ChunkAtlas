@@ -290,11 +290,36 @@ public enum Biome
                 new Color(0xff, 0x00, 0x66));
     }
     
+    /**
+     * Gets a biome's display name.
+     * 
+     * @return  The formatted display name. 
+     */
+    @Override
+    public String toString()
+    {
+        String biome = name();
+        String modified = "MODIFIED_";
+        if (biome.startsWith(modified))
+        {
+            biome = biome.substring(modified.length()) + "+";
+        }
+        biome = biome.replace('_', ' ').toLowerCase();
+        char[] biomeChars = biome.toCharArray();
+        for (int i = 0; i < biomeChars.length; i++)
+        {
+            if (i == 0 || biomeChars[i - 1] == ' ')
+            {
+                biomeChars[i] = Character.toUpperCase(biomeChars[i]);
+            }
+        }
+        return new String(biomeChars);
+    }
+    
     private Biome(int code)
     {
         biomeCode = code;
     }
     
     private final int biomeCode;
-    private static int biomeCount = 0;
 }
