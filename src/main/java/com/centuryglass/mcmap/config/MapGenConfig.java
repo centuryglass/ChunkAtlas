@@ -1,40 +1,42 @@
 /**
- * @file MapGenOptions.java
+ * @file MapGenConfig.java
  * 
  * Loads and shares a set of options for generating maps.
  */
 package com.centuryglass.mcmap.config;
 
-import com.centuryglass.mcmap.mapping.MapType;
+import com.centuryglass.mcmap.mapping.maptype.MapType;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import javax.json.JsonArray;
-import javax.json.JsonNumber;
 import javax.json.JsonObject;
 
 /**
  * Loads and shares a set of options for generating maps. These options may be
  * provided in a JSON configuration file, or loaded from default options.
  */
-public class MapGenOptions extends ConfigFile
+public class MapGenConfig extends ConfigFile
 {
     // Path to the resource holding default configuration options:
     private static final String DEFAULT_JSON_RESOURCE
             = "/configDefaults/mapGen.json";
+    // String to print when invalid option types are found:
+    private static final String INVALID_OPTION_MSG = " options are invalid,"
+                    + " check the map generation configuration file.";
     
     /**
      * Loads or initializes map generation options on construction.
      * 
-     * @param configFile  A JSON configuration file where options should be
-     *                    loaded. If this parameter is null or is not a valid
-     *                    JSON file, it will be ignored, and default options
-     *                    will be used. If this file does not exist and can be
-     *                    created, default options will be copied to this file.
+     * @param configFile  A JSON configuration file holding options to load.
+     *                    If this parameter is null or is not a valid JSON file,
+     *                    it will be ignored, and default options will be used.
+     *                    If this file does not exist and can be created,
+     *                    default options will be copied to this file.
      */
-    public MapGenOptions(File configFile)
+    public MapGenConfig(File configFile)
     {
         super(configFile, DEFAULT_JSON_RESOURCE);
     }
@@ -139,8 +141,14 @@ public class MapGenOptions extends ConfigFile
      */
     public SingleImage getSingleImageOptions()
     {
-        JsonObject imageOptions = (JsonObject) getSavedOrDefaultOptions(
-                JsonKeys.IMAGE_MAP_OPTIONS);
+        JsonObject imageOptions = (JsonObject) getObjectOption(
+                JsonKeys.IMAGE_MAP_OPTIONS, null);
+        if (imageOptions == null)
+        {
+            System.err.println("Single-image map generation"
+                    + INVALID_OPTION_MSG);
+            return null;
+        }
         final boolean enabled = imageOptions.getBoolean(JsonKeys.GENERATE_MAPS);
         final boolean drawBackground = imageOptions.getBoolean(
                 JsonKeys.DRAW_BACKGROUND);
@@ -207,8 +215,13 @@ public class MapGenOptions extends ConfigFile
      */
     public MapTiles getMapTileOptions()
     {
-        JsonObject tileOptions = (JsonObject) getSavedOrDefaultOptions(
-                JsonKeys.TILE_MAP_OPTIONS);
+        JsonObject tileOptions = getObjectOption(JsonKeys.TILE_MAP_OPTIONS,
+                null);
+        if (tileOptions == null)
+        {
+            System.err.println("Tiled map generation" + INVALID_OPTION_MSG);
+            return null;
+        }
         final boolean enabled = tileOptions.getBoolean(JsonKeys.GENERATE_MAPS);
         final String path = tileOptions.getString(JsonKeys.OUTPUT_PATH);
         final int tileSize = tileOptions.getInt(JsonKeys.TILE_SIZE);
@@ -230,9 +243,13 @@ public class MapGenOptions extends ConfigFile
      */
     public int getPixelsPerChunk()
     {
-        JsonNumber pixels = (JsonNumber) getSavedOrDefaultOptions(
-                JsonKeys.CHUNK_PX);
-        return pixels.intValue();
+        int px = getIntOption(JsonKeys.CHUNK_PX, -1);
+        if (px <= 0)
+        {
+            System.err.println("Invalid pixels per chunk" + INVALID_OPTION_MSG);
+            return 1;
+        }
+        return px;
     }
     
     /**
@@ -242,9 +259,15 @@ public class MapGenOptions extends ConfigFile
      */
     public Set<MapType> getEnabledMapTypes()
     {
-        JsonObject typeSettings = (JsonObject) getSavedOrDefaultOptions(
-                JsonKeys.MAP_TYPES_USED);
         Set<MapType> typesUsed = new TreeSet();
+        JsonObject typeSettings = getObjectOption(JsonKeys.MAP_TYPES_USED,
+                null);
+        if (typeSettings == null)
+        {
+            System.err.println("Invalid MapType selection"
+                    + INVALID_OPTION_MSG);
+            return typesUsed;
+        }
         for (MapType type : MapType.values())
         {
             if(typeSettings.getBoolean(type.name(), false))

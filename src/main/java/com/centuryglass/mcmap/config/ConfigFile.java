@@ -13,10 +13,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonException;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
+import org.apache.commons.lang.Validate;
 
 /**
  * Manages a set of configurable options stored in JSON data, loaded from a
@@ -141,6 +146,209 @@ public class ConfigFile
                     + configValue.getValueType().toString() + ".");
             System.err.println("Invalid value: " + configValue.toString());
             return defaultValue; 
+        }
+        return configValue;
+    }
+    
+    /**
+     * Loads a JSON object value from the configuration file or default options.
+     * 
+     * @param jsonKey       The object value's key string.
+     * 
+     * @param defaultValue  A default value to return if the requested value is
+     *                      missing or is not an object.
+     * 
+     * @return              The requested object if possible, the defaultValue
+     *                      otherwise.
+     */
+    protected JsonObject getObjectOption
+    (String jsonKey, JsonObject defaultValue)
+    {
+        return (JsonObject) getTypedOption(jsonKey, ValueType.OBJECT,
+                (JsonValue) defaultValue);
+    }
+        
+    /**
+     * Loads a JSON array value from the configuration file or default options.
+     * 
+     * @param jsonKey       The array value's key string.
+     * 
+     * @param defaultValue  A default value to return if the requested value is
+     *                      missing or is not an array.
+     * 
+     * @return              The requested array if possible, the defaultValue
+     *                      otherwise.
+     */
+    protected JsonArray getArrayOption(String jsonKey, JsonArray defaultValue)
+    {
+        return (JsonArray) getTypedOption(jsonKey, ValueType.ARRAY,
+                (JsonValue) defaultValue);
+    }
+            
+    /**
+     * Loads a JSON string value from the configuration file or default options.
+     * 
+     * @param jsonKey       The string value's key string.
+     * 
+     * @param defaultValue  A default value to return if the requested value is
+     *                      missing or is not a string.
+     * 
+     * @return              The requested string if possible, the defaultValue
+     *                      otherwise.
+     */
+    protected String getStringOption
+    (String jsonKey, String defaultValue)
+    {
+        JsonValue option = getTypedOption(jsonKey, ValueType.STRING, null);
+        if (option == null)
+        {
+            return defaultValue;
+        }
+        return ((JsonString) option).getString();
+    }
+                
+    /**
+     * Loads an integer JSON value from the configuration file or default
+     * options.
+     * 
+     * @param jsonKey       The integer value's key string.
+     * 
+     * @param defaultValue  A default value to return if the requested value is
+     *                      missing or is not integral.
+     * 
+     * @return              The requested integer if possible, the defaultValue
+     *                      otherwise.
+     */
+    protected int getIntOption
+    (String jsonKey, int defaultValue)
+    {
+        JsonNumber option
+                = (JsonNumber) getTypedOption(jsonKey, ValueType.NUMBER, null);
+        if (option == null || ! option.isIntegral())
+        {
+            return defaultValue;
+        }
+        try
+        {
+            return option.intValueExact();
+        }
+        catch (ArithmeticException e)
+        {
+            return defaultValue;
+        }
+    }
+             
+    /**
+     * Loads a long integer JSON value from the configuration file or default
+     * options.
+     * 
+     * @param jsonKey       The long integer value's key string.
+     * 
+     * @param defaultValue  A default value to return if the requested value is
+     *                      missing or is not integral.
+     * 
+     * @return              The requested long if possible, the defaultValue
+     *                      otherwise.
+     */
+    protected long getLongOption
+    (String jsonKey, long defaultValue)
+    {
+        JsonNumber option
+                = (JsonNumber) getTypedOption(jsonKey, ValueType.NUMBER, null);
+        if (option == null || ! option.isIntegral())
+        {
+            return defaultValue;
+        }
+        try
+        {
+            return option.longValueExact();
+        }
+        catch(ArithmeticException e)
+        {
+            return defaultValue;
+        }
+    }
+    
+                 
+    /**
+     * Loads a double JSON value from the configuration file or default options.
+     * 
+     * @param jsonKey       The double value's key string.
+     * 
+     * @param defaultValue  A default value to return if the requested value is
+     *                      missing or non-numeric.
+     * 
+     * @return              The requested double if possible, the defaultValue
+     *                      otherwise.
+     */
+    protected double getDoubleOption
+    (String jsonKey, double defaultValue)
+    {
+        JsonNumber option
+                = (JsonNumber) getTypedOption(jsonKey, ValueType.NUMBER, null);
+        if (option == null)
+        {
+            return defaultValue;
+        }
+        return option.doubleValue();
+    }
+                    
+    /**
+     * Loads a boolean JSON value from the configuration file or default
+     * options.
+     * 
+     * @param jsonKey       The boolean value's key string.
+     * 
+     * @param defaultValue  A default value to return if the requested value is
+     *                      missing or is not boolean.
+     * 
+     * @return              The requested boolean value if possible, the
+     *                      defaultValue otherwise.
+     */
+    protected boolean getBoolOption(String jsonKey, boolean defaultValue)
+    {
+        JsonValue configValue = getSavedOrDefaultOptions(jsonKey);
+        if (configValue == null)
+        {
+            return defaultValue;
+        }
+        switch (configValue.getValueType())
+        {
+            case FALSE:
+                return false;
+            case TRUE:
+                return true;
+            default:
+                return defaultValue;
+        }
+    }
+    
+    /**
+     * Returns a value from the configuration file or default options with a
+     * specific JSON data type,  or returns an alternate default value if the
+     * option is missing or not the expected type.
+     * 
+     * @param jsonKey       The key of a configurable value to find.
+     * 
+     * @param expectedType  The JSON data type the value should hold.
+     * 
+     * @param defaultValue  An alternate value to return if the value is
+     *                      missing or not the right type. Behavior is undefined
+     *                      if this value is not of the expected type or null. 
+     * 
+     * @return              The requested value if possible, the defaultValue
+     *                      otherwise.
+     */
+    private JsonValue getTypedOption
+    (String jsonKey, ValueType expectedType, JsonValue defaultValue)
+    {
+        assert (defaultValue == null || defaultValue.getValueType()
+                == expectedType);
+        JsonValue configValue = getSavedOrDefaultOptions(jsonKey);
+        if (configValue == null
+                || configValue.getValueType() != expectedType)
+        {
+            return defaultValue;
         }
         return configValue;
     }
