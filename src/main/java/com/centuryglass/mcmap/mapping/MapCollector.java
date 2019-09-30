@@ -5,6 +5,13 @@
  */
 package com.centuryglass.mcmap.mapping;
 
+import com.centuryglass.mcmap.mapping.maptype.MapType;
+import com.centuryglass.mcmap.mapping.maptype.StructureMapper;
+import com.centuryglass.mcmap.mapping.maptype.ErrorMapper;
+import com.centuryglass.mcmap.mapping.maptype.BiomeMapper;
+import com.centuryglass.mcmap.mapping.maptype.RecentMapper;
+import com.centuryglass.mcmap.mapping.maptype.BasicMapper;
+import com.centuryglass.mcmap.mapping.maptype.ActivityMapper;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.io.File;
 import java.util.ArrayList;
@@ -178,37 +185,12 @@ public class MapCollector
             int pixelsPerChunk,
             Set<MapType> mapTypes)
     {
-        for (MapType type : mapTypes)
+        createMappers(mapTypes);
+        mappers.forEach((mapper) ->
         {
-            switch (type)
-            {
-                case ACTIVITY:
-                    mappers.add(new ActivityMapper(new File(imageDir,
-                            "activity_" + imageName), xMin, zMin, widthInChunks,
-                            heightInChunks, pixelsPerChunk));
-                    break;
-                case BIOME:
-                    mappers.add(new BiomeMapper(new File(imageDir,
-                            "biome_" + imageName), xMin, zMin, widthInChunks,
-                            heightInChunks, pixelsPerChunk));
-                    break;
-                case STRUCTURE:
-                    mappers.add(new StructureMapper(new File(imageDir,
-                            "structure_" + imageName), xMin, zMin,
-                            widthInChunks, heightInChunks, pixelsPerChunk));
-                    break;
-                case ERROR:
-                    mappers.add(new ErrorMapper(new File(imageDir,
-                            "error_" + imageName), xMin, zMin,
-                            widthInChunks, heightInChunks, pixelsPerChunk));
-                    break;
-                case RECENT:
-                    mappers.add(new RecentMapper(new File(imageDir,
-                            "recent_" + imageName), xMin, zMin,
-                            widthInChunks, heightInChunks, pixelsPerChunk));
-                    break;
-            }
-        }
+            mapper.initImageMap(imageDir, imageName, xMin, zMin, widthInChunks,
+                    heightInChunks, pixelsPerChunk);
+        });
     }
     
     /**
@@ -216,7 +198,7 @@ public class MapCollector
      * 
      * @param imageDir   The directory where map images will be saved.
      * 
-     * @param imageName  The start of the filename that will be used to
+     * @param imageName  The filename prefix used when naming tile images.
      * 
      * @param tileSize   The width of each tile, measured in chunks.
      * 
@@ -225,29 +207,41 @@ public class MapCollector
     private void initTileMappers(File imageDir, String imageName, int tileSize,
             Set<MapType> mapTypes)
     {
+        createMappers(mapTypes);
+        mappers.forEach((mapper) ->
+        {
+            mapper.initTileMap(imageDir, imageName, tileSize);
+        });
+    }
+    
+    /**
+     * Create all selected Mapper types.
+     * 
+     * @param mapTypes  The set of MapType values indicating which mappers
+     *                  should be created.
+     */
+    private void createMappers(Set<MapType> mapTypes)
+    {
         for (MapType type : mapTypes)
         {
             switch (type)
             {
                 case ACTIVITY:
-                    mappers.add(new ActivityMapper(new File(imageDir,
-                            "activity"), imageName, tileSize));
+                    mappers.add(new ActivityMapper());
                     break;
+                case BASIC:
+                    mappers.add(new BasicMapper());
                 case BIOME:
-                    mappers.add(new BiomeMapper(new File(imageDir, "biome"),
-                            imageName, tileSize));
+                    mappers.add(new BiomeMapper());
                     break;
                 case STRUCTURE:
-                    mappers.add(new StructureMapper(new File(imageDir,
-                            "structure"), imageName, tileSize));
+                    mappers.add(new StructureMapper());
                     break;
                 case ERROR:
-                    mappers.add(new ErrorMapper(new File(imageDir, "errors"),
-                            imageName, tileSize));
+                    mappers.add(new ErrorMapper());
                     break;
                 case RECENT:
-                    mappers.add(new RecentMapper(new File(imageDir, "recent"),
-                            imageName, tileSize));
+                    mappers.add(new RecentMapper());
                     break;
             }   
         }

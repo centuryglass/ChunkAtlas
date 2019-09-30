@@ -1,0 +1,88 @@
+/**
+ * @file  BasicMapper.java
+ *
+ * Creates the basic loaded chunk map.
+ */
+
+package com.centuryglass.mcmap.mapping.maptype;
+
+import com.centuryglass.mcmap.mapping.Mapper;
+import com.centuryglass.mcmap.worldinfo.ChunkData;
+import java.awt.Color;
+import java.awt.Point;
+import java.io.File;
+
+/**
+ *  BasicMapper creates a simple map that only displays which Minecraft map
+ * chunks have been generated.
+ */
+public class BasicMapper extends Mapper
+{
+    private static final String TYPE_NAME = "basic";
+    private static final String DISPLAY_NAME = "Basic Map";
+    
+
+    public BasicMapper()
+    {
+        super();
+    }
+        
+    /**
+     * Gets the base Mapper type name used when naming image files.
+     * 
+     * @return  An appropriate type name for use in naming image files.
+     */
+    @Override
+    public final String getTypeName()
+    {
+        return TYPE_NAME;
+    }
+    
+    /**
+     * Gets the Mapper display name used to identify the mapper's maps to users.
+     * 
+     * @return  The MapType's display name. 
+     */
+    @Override
+    public String getDisplayName()
+    {
+        return DISPLAY_NAME;
+    }
+    
+    /**
+     * Gets the type of map a mapper creates.
+     *
+     * @return  The Mapper's MapType.
+     */
+    @Override
+    public MapType getMapType()
+    {
+        return MapType.BASIC;
+    }
+    
+    /**
+     * Provides a color for any valid chunk, using a green and white
+     * checkerboard pattern.
+     *
+     * @param chunk  The chunk that may be drawn.
+     *
+     * @return       The chunk color.
+     */
+    @Override
+    public Color getChunkColor(ChunkData chunk)
+    {
+        if (chunk.getErrorType() != ChunkData.ErrorFlag.NONE)
+        {
+            return null;
+        }
+        Color white = new Color(255, 255, 255, 255);
+        Color green = new Color(0, 255, 0, 255);
+        Point chunkPoint = chunk.getPos();
+        boolean greenTile = ((chunkPoint.y % 2) == 0);
+        if ((chunkPoint.x % 2) == 0)
+        {
+            greenTile = ! greenTile;
+        }
+        return greenTile? green : white;
+    }    
+}

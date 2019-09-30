@@ -5,6 +5,7 @@
  */
 package com.centuryglass.mcmap.mapping;
 
+import com.centuryglass.mcmap.mapping.maptype.MapType;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
 import java.awt.Point;
@@ -18,10 +19,16 @@ import java.io.File;
  */
 public abstract class Mapper
 {
+
+    public Mapper() { }
+    
     /**
-     * Initializes a mapper that creates a single image map.
+     * Initializes an empty map that will save its data within a single image.
      *
-     * @param imageFile       The file where the map image will be saved.
+     * @param imageDir        The directory where the map image will be saved.
+     * 
+     * @param baseName        The string combined with the map type name when
+     *                        selecting the map image name.
      * 
      * @param xMin            The lowest x-coordinate within the mapped area,
      *                        measured in chunks.
@@ -36,15 +43,16 @@ public abstract class Mapper
      * @param pixelsPerChunk  The width and height in pixels of each mapped
      *                        chunk.
      */
-    public Mapper(File imageFile, int xMin, int zMin, int widthInChunks,
-            int heightInChunks, int pixelsPerChunk)
+    public void initImageMap(File imageDir, String baseName, int xMin, int zMin,
+            int widthInChunks, int heightInChunks, int pixelsPerChunk)
     {
-        map = new MapImage(imageFile, xMin, zMin, widthInChunks, heightInChunks,
-                pixelsPerChunk);  
+        map = new MapImage(new File(imageDir, getTypeName() + "_" + baseName),
+                xMin, zMin, widthInChunks, heightInChunks, pixelsPerChunk);
     }
     
     /**
-     * Initializes a mapper that creates a set of map tiles. 
+     * Initializes an empty map that will save its data within a set of tile
+     * images.
      * 
      * @param imageDir         The directory where map tiles will be saved.
      * 
@@ -54,27 +62,57 @@ public abstract class Mapper
      * @param tileSize         The width and height in chunks of each map tile
      *                         image.
      */
-    public Mapper(File imageDir, String baseName, int tileSize)
+    public void initTileMap(File imageDir, String baseName, int tileSize)
     {
-        map = new TileMap(imageDir, baseName, tileSize);
+        map = new TileMap(new File(imageDir, getTypeName()), baseName,
+                tileSize);
     }
     
     /**
-     *  Writes map image data to the image path.
+     * Gets the base Mapper type name used when naming image files.
+     * 
+     * @return  An appropriate type name for use in naming image files.
+     */
+    public abstract String getTypeName();
+    
+    /**
+     * Gets the Mapper display name used to identify the mapper's maps to users.
+     * 
+     * @return  The MapType's display name. 
+     */
+    public abstract String getDisplayName();
+    
+    /**
+     * Gets the type of map a mapper creates.
+     *
+     * @return  The Mapper's MapType.
+     */
+    public abstract MapType getMapType();
+    
+    /**
+     * Writes map image data to the image path.
      */
     public final void saveMapFile()
     {
+        if (map == null)
+        {
+            return;
+        }
         finalProcessing(map);
         map.saveToDisk();
     }
     
     /**
-     *  Updates the map with data from a single chunk.
+     * Updates the map with data from a single chunk.
      *
      * @param chunk  The world chunk to add to the map.
      */
     public void drawChunk(ChunkData chunk)
     {
+        if (map == null)
+        {
+            return;
+        }
         Color color = getChunkColor(chunk);
         if (color != null)
         {
@@ -84,10 +122,10 @@ public abstract class Mapper
     }
     
     /**
-     *  Gets what color, if any, that should be drawn to the map for a
-     *         specific chunk. 
+     * Gets what color, if any, that should be drawn to the map for a specific
+     * chunk. 
      *
-     *  Mapper subclasses will implement this function to control the type of
+     * Mapper subclasses will implement this function to control the type of
      * map that they draw.
      *
      * @param chunk  The chunk that may be drawn.
@@ -97,10 +135,10 @@ public abstract class Mapper
     protected abstract Color getChunkColor(ChunkData chunk);
     
     /**
-     *  Handles any final tasks that need to be done before the map can
-     *         be exported as an image.
+     * Handles any final tasks that need to be done before the map can
+     * be exported as an image.
      *
-     *  The default implementation of this method just draws the x and z axis.
+     * The default implementation of this method just draws the x and z axis.
      * Mapper subclasses should extend this method if there's anything they need
      * to do after processing chunks to complete the map.
      *
@@ -131,5 +169,5 @@ public abstract class Mapper
     }
     
     // All map image data:
-    WorldMap map;
+    WorldMap map = null;
 }

@@ -4,7 +4,7 @@
  * Defines available map types.
  */
 
-package com.centuryglass.mcmap.mapping;
+package com.centuryglass.mcmap.mapping.maptype;
 
 /**
  * Lists all types of map that may be generated

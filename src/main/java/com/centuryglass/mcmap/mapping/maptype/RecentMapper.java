@@ -4,8 +4,10 @@
  * Maps which chunks have been updated most recently.
  */
 
-package com.centuryglass.mcmap.mapping;
+package com.centuryglass.mcmap.mapping.maptype;
 
+import com.centuryglass.mcmap.mapping.Mapper;
+import com.centuryglass.mcmap.mapping.WorldMap;
 import com.centuryglass.mcmap.util.TickDuration;
 import com.centuryglass.mcmap.mapping.images.ColorRangeFactory;
 import com.centuryglass.mcmap.mapping.images.ColorRangeSet;
@@ -20,54 +22,49 @@ import java.util.function.Function;
 
 public class RecentMapper extends Mapper
 {
+    private static final String TYPE_NAME = "recent";
+    private static final String DISPLAY_NAME = "Recent Activity Map";
     private static final double MIN_COLOR_INTENSITY = 0.2;
     
-    static
+    public RecentMapper()
     {
-    }
-    
-    /**
-     * Initializes a mapper that creates a single recent activity map.
-     *
-     * @param imageFile       The file where the map image will be saved.
-     * 
-     * @param xMin            The lowest x-coordinate within the mapped area,
-     *                        measured in chunks.
-     * 
-     * @param zMin            The lowest z-coordinate within the mapped area,
-     *                        measured in chunks.
-     * 
-     * @param widthInChunks   The width of the mapped region in chunks.
-     *
-     * @param heightInChunks  The height of the mapped image in chunks.
-     *
-     * @param pixelsPerChunk  The width and height in pixels of each mapped
-     *                        chunk.
-     */
-    public RecentMapper(File imageFile, int xMin, int zMin, int widthInChunks,
-            int heightInChunks, int pixelsPerChunk)
-    {
-        super(imageFile, xMin, zMin, widthInChunks, heightInChunks,
-                pixelsPerChunk);
+        super();
         updateTimes = new HashMap();
     }
     
     /**
-     * Initializes a mapper that creates a set of recent activity map tiles. 
+     * Gets the base Mapper type name used when naming image files.
      * 
-     * @param imageDir         The directory where map tiles will be saved.
-     * 
-     * @param baseName         The base name to use when selecting map image
-     *                         names.
-     * 
-     * @param tileSize         The width and height in chunks of each map tile
-     *                         image.
+     * @return  An appropriate type name for use in naming image files.
      */
-    public RecentMapper(File imageDir, String baseName, int tileSize)
+    @Override
+    public String getTypeName()
     {
-        super(imageDir, baseName, tileSize);
-        updateTimes = new HashMap();
+        return TYPE_NAME;
     }
+    
+    /**
+     * Gets the Mapper display name used to identify the mapper's maps to users.
+     * 
+     * @return  The MapType's display name. 
+     */
+    @Override
+    public String getDisplayName()
+    {
+        return DISPLAY_NAME;
+    }
+    
+    /**
+     * Gets the type of map a mapper creates.
+     *
+     * @return  The Mapper's MapType.
+     */
+    @Override
+    public MapType getMapType()
+    {
+        return MapType.RECENT;
+    }
+
     
     @Override
     public Color getChunkColor(ChunkData chunk)

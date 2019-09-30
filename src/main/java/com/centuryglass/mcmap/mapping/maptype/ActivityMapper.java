@@ -4,8 +4,10 @@
  * Creates the Minecraft player activity map.
  */
 
-package com.centuryglass.mcmap.mapping;
+package com.centuryglass.mcmap.mapping.maptype;
 
+import com.centuryglass.mcmap.mapping.Mapper;
+import com.centuryglass.mcmap.mapping.WorldMap;
 import com.centuryglass.mcmap.util.TickDuration;
 import com.centuryglass.mcmap.mapping.images.ColorRangeFactory;
 import com.centuryglass.mcmap.mapping.images.ColorRangeSet;
@@ -26,48 +28,46 @@ import java.util.function.Function;
 public class ActivityMapper extends Mapper
 {
     private static final double MIN_COLOR_INTENSITY = 0.25;
+    private static final String TYPE_NAME = "activity";
+    private static final String DISPLAY_NAME = "Total Activity Map";
+    
+    public ActivityMapper()
+    {
+        super();
+        inhabitedTimes = new HashMap();
+    } 
     
     /**
-     * Initializes a mapper that creates a single activity map.
-     *
-     * @param imageFile       The file where the map image will be saved.
+     * Gets the base Mapper type name used when naming image files.
      * 
-     * @param xMin            The lowest x-coordinate within the mapped area,
-     *                        measured in chunks.
-     * 
-     * @param zMin            The lowest z-coordinate within the mapped area,
-     *                        measured in chunks.
-     * 
-     * @param widthInChunks   The width of the mapped region in chunks.
-     *
-     * @param heightInChunks  The height of the mapped image in chunks.
-     *
-     * @param pixelsPerChunk  The width and height in pixels of each mapped
-     *                        chunk.
+     * @return  An appropriate type name for use in naming image files.
      */
-    public ActivityMapper(File imageFile, int xMin, int zMin, int widthInChunks,
-            int heightInChunks, int pixelsPerChunk)
+    @Override
+    public String getTypeName()
     {
-        super(imageFile, xMin, zMin, widthInChunks, heightInChunks,
-                pixelsPerChunk);
-        inhabitedTimes = new HashMap();
+        return TYPE_NAME;
     }
     
     /**
-     * Initializes a mapper that creates a set of activity map tiles. 
+     * Gets the Mapper display name used to identify the mapper's maps to users.
      * 
-     * @param imageDir         The directory where map tiles will be saved.
-     * 
-     * @param baseName         The base name to use when selecting map image
-     *                         names.
-     * 
-     * @param tileSize         The width and height in chunks of each map tile
-     *                         image.
+     * @return  The MapType's display name. 
      */
-    public ActivityMapper(File imageDir, String baseName, int tileSize)
+    @Override
+    public String getDisplayName()
     {
-        super(imageDir, baseName, tileSize);
-        inhabitedTimes = new HashMap();
+        return DISPLAY_NAME;
+    }
+    
+    /**
+     * Gets the type of map a mapper creates.
+     *
+     * @return  The Mapper's MapType.
+     */
+    @Override
+    public MapType getMapType()
+    {
+        return MapType.ACTIVITY;
     }
 
     /**

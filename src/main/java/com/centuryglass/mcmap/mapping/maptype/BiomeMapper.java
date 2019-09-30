@@ -4,8 +4,9 @@
  * Creates the Minecraft region biome map.
  */
 
-package com.centuryglass.mcmap.mapping;
+package com.centuryglass.mcmap.mapping.maptype;
 
+import com.centuryglass.mcmap.mapping.Mapper;
 import com.centuryglass.mcmap.worldinfo.Biome;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import com.centuryglass.mcmap.mapping.images.BiomeTextures;
@@ -20,47 +21,46 @@ import java.util.Map;
  */
 public class BiomeMapper extends Mapper
 {
-    /**
-     * Initializes a mapper that creates a single biome image map.
-     *
-     * @param imageFile       The file where the map image will be saved.
-     * 
-     * @param xMin            The lowest x-coordinate within the mapped area,
-     *                        measured in chunks.
-     * 
-     * @param zMin            The lowest z-coordinate within the mapped area,
-     *                        measured in chunks.
-     * 
-     * @param widthInChunks   The width of the mapped region in chunks.
-     *
-     * @param heightInChunks  The height of the mapped image in chunks.
-     *
-     * @param pixelsPerChunk  The width and height in pixels of each mapped
-     *                        chunk.
-     */
-    public BiomeMapper(File imageFile, int xMin, int zMin, int widthInChunks,
-            int heightInChunks, int pixelsPerChunk)
+    private static final String TYPE_NAME = "biome";
+    private static final String DISPLAY_NAME = "Biome Map";
+    
+    public BiomeMapper()
     {
-        super(imageFile, xMin, zMin, widthInChunks, heightInChunks,
-                pixelsPerChunk);
+        super();
         textureData = new BiomeTextures();
+    }
+        
+    /**
+     * Gets the base Mapper type name used when naming image files.
+     * 
+     * @return  An appropriate type name for use in naming image files.
+     */
+    @Override
+    public String getTypeName()
+    {
+        return TYPE_NAME;
     }
     
     /**
-     * Initializes a mapper that creates a set of biome map tiles. 
+     * Gets the Mapper display name used to identify the mapper's maps to users.
      * 
-     * @param imageDir         The directory where map tiles will be saved.
-     * 
-     * @param baseName         The base name to use when selecting map image
-     *                         names.
-     * 
-     * @param tileSize         The width and height in chunks of each map tile
-     *                         image.
+     * @return  The MapType's display name. 
      */
-    public BiomeMapper(File imageDir, String baseName, int tileSize)
+    @Override
+    public String getDisplayName()
     {
-        super(imageDir, baseName, tileSize);
-        textureData = new BiomeTextures();
+        return DISPLAY_NAME;
+    }
+    
+    /**
+     * Gets the type of map a mapper creates.
+     *
+     * @return  The Mapper's MapType.
+     */
+    @Override
+    public MapType getMapType()
+    {
+        return MapType.BIOME;
     }
     
     /**
