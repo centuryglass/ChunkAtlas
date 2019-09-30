@@ -6,7 +6,7 @@
 
 package com.centuryglass.mcmap.mapping.maptype;
 
-import com.centuryglass.mcmap.mapping.Mapper;
+import com.centuryglass.mcmap.mapping.KeyItem;
 import com.centuryglass.mcmap.mapping.WorldMap;
 import com.centuryglass.mcmap.util.TickDuration;
 import com.centuryglass.mcmap.mapping.images.ColorRangeFactory;
@@ -17,7 +17,9 @@ import java.awt.Point;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 public class RecentMapper extends Mapper
@@ -26,10 +28,19 @@ public class RecentMapper extends Mapper
     private static final String DISPLAY_NAME = "Recent Activity Map";
     private static final double MIN_COLOR_INTENSITY = 0.2;
     
-    public RecentMapper()
+    /**
+     * Sets the mapper's base output directory and mapped region name on
+     * construction.
+     *
+     * @param imageDir    The directory where the map image will be saved.
+     * 
+     * @param regionName  The name of the region this Mapper is mapping.
+     */
+    public RecentMapper(File imageDir, String regionName)
     {
-        super();
+        super(imageDir, regionName);
         updateTimes = new HashMap();
+        key = new LinkedHashSet();
     }
     
     /**
@@ -64,7 +75,17 @@ public class RecentMapper extends Mapper
     {
         return MapType.RECENT;
     }
-
+    
+    /**
+     * Gets all items in this mapper's map key.
+     * 
+     * @return  All KeyItems for this map type and region. 
+     */
+    @Override
+    public Set<KeyItem> getMapKey()
+    {
+        return key;
+    }
     
     @Override
     public Color getChunkColor(ChunkData chunk)
@@ -121,19 +142,24 @@ public class RecentMapper extends Mapper
         System.out.println("Latest update time: " + max.toString());
         System.out.println("Update time range: " + difference.toString());
         
-        // Debug: print update time ranges:
-        /*
-        ColorRangeSet.Range[] ranges = colorRanges.getRanges();
-        for (ColorRangeSet.Range range : ranges)
+        // Initialize map key from ranges:
+        if (key.isEmpty())
         {
-            TickDuration offset = new TickDuration(latestTime - range.maxValue);
-            System.out.println(offset.toString() + " ago: "
-                    + range.maxColor.toString());
+            ColorRangeSet.Range[] rangeDescriptionList
+                    = colorRanges.getRanges();
+            for (ColorRangeSet.Range range : rangeDescriptionList)
+            {
+                TickDuration offset = new TickDuration(latestTime
+                        - range.maxValue);
+                String description = offset.toString() + " ago or more";
+                key.add(new KeyItem(description, getMapType(), getRegionName(),
+                        range.maxColor));
+            }
         }
-        */
     }
     
     private long earliestTime = Long.MAX_VALUE;
     private long latestTime = Long.MIN_VALUE;
-    final Map<Point, Long> updateTimes;
+    private final Map<Point, Long> updateTimes;
+    private final Set<KeyItem> key;
 }

@@ -3,13 +3,18 @@
  *
  *  A basis for classes that use chunk data to draw map images.
  */
-package com.centuryglass.mcmap.mapping;
+package com.centuryglass.mcmap.mapping.maptype;
 
+import com.centuryglass.mcmap.mapping.KeyItem;
+import com.centuryglass.mcmap.mapping.MapImage;
+import com.centuryglass.mcmap.mapping.TileMap;
+import com.centuryglass.mcmap.mapping.WorldMap;
 import com.centuryglass.mcmap.mapping.maptype.MapType;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
 import java.awt.Point;
 import java.io.File;
+import java.util.Set;
 
 /**
  *  Mapper classes are responsible for determining which color to apply to the
@@ -20,15 +25,22 @@ import java.io.File;
 public abstract class Mapper
 {
 
-    public Mapper() { }
+    /**
+     * Sets the mapper's base output directory and mapped region name on
+     * construction.
+     *
+     * @param imageDir    The directory where the map image will be saved.
+     * 
+     * @param regionName  The name of the region this Mapper is mapping.
+     */
+    public Mapper(File imageDir, String regionName)
+    {
+        this.imageDir = imageDir;
+        this.regionName = regionName;
+    }
     
     /**
      * Initializes an empty map that will save its data within a single image.
-     *
-     * @param imageDir        The directory where the map image will be saved.
-     * 
-     * @param baseName        The string combined with the map type name when
-     *                        selecting the map image name.
      * 
      * @param xMin            The lowest x-coordinate within the mapped area,
      *                        measured in chunks.
@@ -43,10 +55,10 @@ public abstract class Mapper
      * @param pixelsPerChunk  The width and height in pixels of each mapped
      *                        chunk.
      */
-    public void initImageMap(File imageDir, String baseName, int xMin, int zMin,
-            int widthInChunks, int heightInChunks, int pixelsPerChunk)
+    public void initImageMap(int xMin, int zMin, int widthInChunks,
+            int heightInChunks, int pixelsPerChunk)
     {
-        map = new MapImage(new File(imageDir, getTypeName() + "_" + baseName),
+        map = new MapImage(new File(imageDir, getTypeName() + "_" + regionName),
                 xMin, zMin, widthInChunks, heightInChunks, pixelsPerChunk);
     }
     
@@ -54,17 +66,12 @@ public abstract class Mapper
      * Initializes an empty map that will save its data within a set of tile
      * images.
      * 
-     * @param imageDir         The directory where map tiles will be saved.
-     * 
-     * @param baseName         The base name to use when selecting map image
-     *                         names.
-     * 
      * @param tileSize         The width and height in chunks of each map tile
      *                         image.
      */
-    public void initTileMap(File imageDir, String baseName, int tileSize)
+    public void initTileMap(int tileSize)
     {
-        map = new TileMap(new File(imageDir, getTypeName()), baseName,
+        map = new TileMap(new File(imageDir, getTypeName()), regionName,
                 tileSize);
     }
     
@@ -73,7 +80,20 @@ public abstract class Mapper
      * 
      * @return  An appropriate type name for use in naming image files.
      */
-    public abstract String getTypeName();
+    public String getTypeName()
+    {
+        return getMapType().toString();
+    }
+    
+    /**
+     * Gets the name of the mapped region.
+     * 
+     * @return  The mapped region name.
+     */
+    public String getRegionName()
+    {
+        return regionName;
+    }
     
     /**
      * Gets the Mapper display name used to identify the mapper's maps to users.
@@ -88,6 +108,13 @@ public abstract class Mapper
      * @return  The Mapper's MapType.
      */
     public abstract MapType getMapType();
+    
+    /**
+     * Gets all items in this mapper's map key.
+     * 
+     * @return  All KeyItems for this map type and region. 
+     */
+    public abstract Set<KeyItem> getMapKey();
     
     /**
      * Writes map image data to the image path.
@@ -170,4 +197,8 @@ public abstract class Mapper
     
     // All map image data:
     WorldMap map = null;
+    // Base directory where images will be saved:
+    File imageDir;
+    // The mapped region name:
+    String regionName;
 }

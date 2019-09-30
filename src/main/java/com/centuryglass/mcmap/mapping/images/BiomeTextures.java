@@ -24,9 +24,21 @@ public class BiomeTextures
         textures = new HashMap();
         for (Biome biome : Biome.values())
         {
-            final String texturePath = TEXTURE_DIR + biome.toString() + ".png";
+            final String texturePath = getTexturePath(biome);
             textures.put(biome, new Texture(texturePath));
         }
+    }
+    
+    /**
+     * Gets the path to a particular biome's texture resource file.
+     * 
+     * @param biome  The biome used to select the texture.
+     * 
+     * @return       The biome's texture image path. 
+     */
+    public static String getTexturePath(Biome biome)
+    {
+        return TEXTURE_DIR + biome.name() + ".png";
     }
     
     /**

@@ -6,7 +6,7 @@
 
 package com.centuryglass.mcmap.mapping.maptype;
 
-import com.centuryglass.mcmap.mapping.Mapper;
+import com.centuryglass.mcmap.mapping.KeyItem;
 import com.centuryglass.mcmap.mapping.WorldMap;
 import com.centuryglass.mcmap.util.TickDuration;
 import com.centuryglass.mcmap.mapping.images.ColorRangeFactory;
@@ -17,7 +17,9 @@ import java.awt.Point;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -30,11 +32,20 @@ public class ActivityMapper extends Mapper
     private static final double MIN_COLOR_INTENSITY = 0.25;
     private static final String TYPE_NAME = "activity";
     private static final String DISPLAY_NAME = "Total Activity Map";
-    
-    public ActivityMapper()
+        
+    /**
+     * Sets the mapper's base output directory and mapped region name on
+     * construction.
+     *
+     * @param imageDir    The directory where the map image will be saved.
+     * 
+     * @param regionName  The name of the region this Mapper is mapping.
+     */
+    public ActivityMapper(File imageDir, String regionName)
     {
-        super();
+        super(imageDir, regionName);
         inhabitedTimes = new HashMap();
+        key = new LinkedHashSet();
     } 
     
     /**
@@ -68,6 +79,17 @@ public class ActivityMapper extends Mapper
     public MapType getMapType()
     {
         return MapType.ACTIVITY;
+    }
+           
+    /**
+     * Gets all items in this mapper's map key.
+     * 
+     * @return  All KeyItems for this map type and region. 
+     */
+    @Override
+    public Set<KeyItem> getMapKey()
+    {
+        return key;
     }
 
     /**
@@ -127,23 +149,27 @@ public class ActivityMapper extends Mapper
         };
         rangeFactory.setRangeAdjuster(roundToNextUnit);
         ColorRangeSet colorRanges = rangeFactory.createColorRangeSet();
-        // Debug: print inhabited time ranges:
-        /*
-        ColorRangeSet.Range[] rangeDescriptionList = colorRanges.getRanges();
-        for (ColorRangeSet.Range range : rangeDescriptionList)
+        
+        // Initialize map key from ranges:
+        if (key.isEmpty())
         {
-            TickDuration rangeMax = new TickDuration(range.maxValue);
-            System.out.println(rangeMax.toString() + " or less: "
-                    + range.maxColor.toString());
+            ColorRangeSet.Range[] rangeDescriptionList
+                    = colorRanges.getRanges();
+            for (ColorRangeSet.Range range : rangeDescriptionList)
+            {
+                TickDuration rangeMax = new TickDuration(range.maxValue);
+                String description = rangeMax.toString() + " or less";
+                key.add(new KeyItem(description, getMapType(), getRegionName(),
+                        range.maxColor));
+            }
         }
-        */
-        for (Map.Entry<Point, Long> entry : inhabitedTimes.entrySet())
+        inhabitedTimes.entrySet().forEach((Map.Entry<Point, Long> entry) ->
         {
             final int x = entry.getKey().x;
             final int z = entry.getKey().y;
             final long mapValue = entry.getValue();
             map.setChunkColor(x, z, colorRanges.getValueColor(mapValue));
-        }
+        });
         super.finalProcessing(map);
         TickDuration maxDuration = new TickDuration(maxTime);
         System.out.println("The highest inhabited time of all chunks is "
@@ -152,6 +178,8 @@ public class ActivityMapper extends Mapper
 
     // Inhabited times for all map chunks:
     final Map<Point, Long> inhabitedTimes;
+    // Map color key:
+    final Set<KeyItem> key;
     // Longest inhabited time:
     long maxTime;
 }

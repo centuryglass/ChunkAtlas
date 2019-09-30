@@ -5,7 +5,7 @@
  */
 package com.centuryglass.mcmap.mapping.maptype;
 
-import com.centuryglass.mcmap.mapping.Mapper;
+import com.centuryglass.mcmap.mapping.KeyItem;
 import com.centuryglass.mcmap.mapping.WorldMap;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import com.centuryglass.mcmap.worldinfo.Structure;
@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,9 +28,17 @@ public class StructureMapper extends Mapper
     private static final String TYPE_NAME = "structure";
     private static final String DISPLAY_NAME = "Structure Map";
     
-    public StructureMapper()
+    /**
+     * Sets the mapper's base output directory and mapped region name on
+     * construction.
+     *
+     * @param imageDir    The directory where the map image will be saved.
+     * 
+     * @param regionName  The name of the region this Mapper is mapping.
+     */
+    public StructureMapper(File imageDir, String regionName)
     {
-        super();
+        super(imageDir, regionName);
         structureRefs = new HashMap();
     }
         
@@ -65,6 +74,25 @@ public class StructureMapper extends Mapper
     {
         return MapType.STRUCTURE;
     }
+    
+                     
+    /**
+     * Gets all items in this mapper's map key.
+     * 
+     * @return  All KeyItems for this map type and region. 
+     */
+    @Override
+    public Set<KeyItem> getMapKey()
+    {
+        Set<KeyItem> key = new LinkedHashSet();
+        for (Structure structure : Structure.values())
+        {
+            key.add(new KeyItem(structure.toString(), getMapType(),
+                    getRegionName(),
+                    Structure.getStructureColor(structure)));
+        }
+        return key;
+    }
 
     /**
      *  Provides a color for any valid chunk based on the structure or
@@ -83,9 +111,6 @@ public class StructureMapper extends Mapper
         }
         final Color emptyChunkColor = new Color(0);
         Color color = emptyChunkColor;
-        long red = 0;
-        long green = 0;
-        long blue = 0;
         Set<Structure> chunkStructures = chunk.getStructures();
         Structure highestPriority = Structure.UNKNOWN;
         for (Structure structure : chunkStructures)
@@ -99,19 +124,19 @@ public class StructureMapper extends Mapper
         {
             color = Structure.getStructureColor(highestPriority);
         }
-        for (Map.Entry<Point, Structure> entry : chunk.getStructureRefs()
-                .entrySet())
+        Map<Point, Structure> chunkStructureRefs = chunk.getStructureRefs();
+        chunkStructureRefs.entrySet().forEach((entry) ->
         {
             if (structureRefs.containsKey(entry.getKey()))
             {
                 if (structureRefs.get(entry.getKey()).getPriority()
                         >= entry.getValue().getPriority())
                 {
-                    continue;
+                    return;
                 }
             }
             structureRefs.put(entry.getKey(), entry.getValue());
-        }
+        });
         return color;
     }
     

@@ -5,6 +5,7 @@
  */
 package com.centuryglass.mcmap.mapping;
 
+import com.centuryglass.mcmap.mapping.maptype.Mapper;
 import com.centuryglass.mcmap.mapping.maptype.MapType;
 import com.centuryglass.mcmap.mapping.maptype.StructureMapper;
 import com.centuryglass.mcmap.mapping.maptype.ErrorMapper;
@@ -18,6 +19,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 
 /**
  *  MapCollector creates and manages a set of Mapper subclasses through a single
@@ -31,8 +35,7 @@ public class MapCollector
      * 
      * @param imageDir        The directory where map images will be saved.
      * 
-     * @param imageName       The start of the filename that will be used to
-     *                        save all maps.
+     * @param regionName      The name of the mapped region.
      * 
      * @param xMin            Lowest x-coordinate within the mapped area,
      *                        measured in chunks.
@@ -48,7 +51,7 @@ public class MapCollector
      */
     public MapCollector(
             File imageDir,
-            String imageName,
+            String regionName,
             int xMin,
             int zMin,
             int widthInChunks,
@@ -56,7 +59,7 @@ public class MapCollector
             int pixelsPerChunk)
     {
         mappers = new ArrayList();
-        initImageMappers(imageDir, imageName, xMin, zMin, widthInChunks,
+        initImageMappers(imageDir, regionName, xMin, zMin, widthInChunks,
                 heightInChunks, pixelsPerChunk, getFullTypeSet());
     }
     
@@ -66,8 +69,7 @@ public class MapCollector
      * 
      * @param imageDir        The directory where map images will be saved.
      * 
-     * @param imageName       The start of the filename that will be used to
-     *                        save all maps.
+     * @param regionName      The name of the mapped region.
      * 
      * @param xMin            Lowest x-coordinate within the mapped area,
      *                        measured in chunks.
@@ -85,7 +87,7 @@ public class MapCollector
      */
     public MapCollector(
             File imageDir,
-            String imageName,
+            String regionName,
             int xMin,
             int zMin,
             int widthInChunks,
@@ -94,41 +96,41 @@ public class MapCollector
             Set<MapType> mapTypes)
     {
         mappers = new ArrayList();
-        initImageMappers(imageDir, imageName, xMin, zMin, widthInChunks,
+        initImageMappers(imageDir, regionName, xMin, zMin, widthInChunks,
                 heightInChunks, pixelsPerChunk, mapTypes);
     }
     
     /**
      * Initializes all mappers to create tiled image map folders.
      * 
-     * @param imageDir   The directory where map images will be saved.
+     * @param imageDir    The directory where map images will be saved.
      * 
-     * @param imageName  The start of the filename that will be used to
+     * @param regionName  The name of the mapped region.
      * 
-     * @param tileSize   The width of each tile, measured in chunks.
+     * @param tileSize    The width of each tile, measured in chunks.
      */
-    public MapCollector(File imageDir, String imageName, int tileSize)
+    public MapCollector(File imageDir, String regionName, int tileSize)
     {
         mappers = new ArrayList();
-        initTileMappers(imageDir, imageName, tileSize, getFullTypeSet());
+        initTileMappers(imageDir, regionName, tileSize, getFullTypeSet());
     }
         
     /**
      * Initializes a specific set of mappers to create tiled image map folders.
      * 
-     * @param imageDir   The directory where map images will be saved.
+     * @param imageDir    The directory where map images will be saved.
      * 
-     * @param imageName  The start of the filename that will be used to
+     * @param regionName  The name of the mapped region.
      * 
-     * @param tileSize   The width of each tile, measured in chunks.
+     * @param tileSize    The width of each tile, measured in chunks.
      * 
-     * @param mapTypes   The set of Mapper types that should be used.
+     * @param mapTypes    The set of Mapper types that should be used.
      */
-    public MapCollector(File imageDir, String imageName, int tileSize,
+    public MapCollector(File imageDir, String regionName, int tileSize,
             Set<MapType> mapTypes)
     {
         mappers = new ArrayList();
-        initTileMappers(imageDir, imageName, tileSize, mapTypes);
+        initTileMappers(imageDir, regionName, tileSize, mapTypes);
     }
     
     /**
@@ -148,9 +150,24 @@ public class MapCollector
      */
     public void drawChunk(ChunkData chunk)
     {
-        mappers.forEach((mapper) -> {
+        mappers.forEach((mapper) ->
+        {
             mapper.drawChunk(chunk);
         });
+    }
+    
+    public JsonArray getMapKeys()
+    {
+        JsonArrayBuilder builder = Json.createArrayBuilder();
+        mappers.forEach((mapper) ->
+        {
+            Set<KeyItem> key = mapper.getMapKey();
+            key.forEach((keyItem) ->
+            {
+                builder.add(keyItem.toJson());
+            });
+        });
+        return builder.build();
     }
     
     /**
@@ -158,8 +175,7 @@ public class MapCollector
      * 
      * @param imageDir        The directory where map images will be saved.
      * 
-     * @param imageName       The start of the filename that will be used to
-     *                        save all maps.
+     * @param regionName      The name of the mapped region.
      * 
      * @param xMin            Lowest x-coordinate within the mapped area,
      *                        measured in chunks.
@@ -177,7 +193,7 @@ public class MapCollector
      */
     private void initImageMappers(
             File imageDir,
-            String imageName,
+            String regionName,
             int xMin,
             int zMin,
             int widthInChunks,
@@ -185,63 +201,68 @@ public class MapCollector
             int pixelsPerChunk,
             Set<MapType> mapTypes)
     {
-        createMappers(mapTypes);
+        createMappers(imageDir, regionName, mapTypes);
         mappers.forEach((mapper) ->
         {
-            mapper.initImageMap(imageDir, imageName, xMin, zMin, widthInChunks,
-                    heightInChunks, pixelsPerChunk);
+            mapper.initImageMap(xMin, zMin, widthInChunks, heightInChunks,
+                    pixelsPerChunk);
         });
     }
     
     /**
      * Creates tile mappers for a set of map types.
      * 
-     * @param imageDir   The directory where map images will be saved.
+     * @param imageDir    The directory where map images will be saved.
      * 
-     * @param imageName  The filename prefix used when naming tile images.
+     * @param regionName  The name of the mapped region.
      * 
-     * @param tileSize   The width of each tile, measured in chunks.
+     * @param tileSize    The width of each tile, measured in chunks.
      * 
-     * @param mapTypes   The set of Mapper types that will be used.
+     * @param mapTypes    The set of Mapper types that will be used.
      */
-    private void initTileMappers(File imageDir, String imageName, int tileSize,
+    private void initTileMappers(File imageDir, String regionName, int tileSize,
             Set<MapType> mapTypes)
     {
-        createMappers(mapTypes);
+        createMappers(imageDir, regionName, mapTypes);
         mappers.forEach((mapper) ->
         {
-            mapper.initTileMap(imageDir, imageName, tileSize);
+            mapper.initTileMap(tileSize);
         });
     }
     
     /**
      * Create all selected Mapper types.
      * 
-     * @param mapTypes  The set of MapType values indicating which mappers
-     *                  should be created.
+     * @param imageDir    The directory where map images will be saved.
+     * 
+     * @param regionName  The name of the mapped region.
+     * 
+     * @param mapTypes    The set of MapType values indicating which mappers
+     *                    should be created.
      */
-    private void createMappers(Set<MapType> mapTypes)
+    private void createMappers(File imageDir, String regionName,
+            Set<MapType> mapTypes)
     {
         for (MapType type : mapTypes)
         {
             switch (type)
             {
                 case ACTIVITY:
-                    mappers.add(new ActivityMapper());
+                    mappers.add(new ActivityMapper(imageDir, regionName));
                     break;
                 case BASIC:
-                    mappers.add(new BasicMapper());
+                    mappers.add(new BasicMapper(imageDir, regionName));
                 case BIOME:
-                    mappers.add(new BiomeMapper());
+                    mappers.add(new BiomeMapper(imageDir, regionName));
                     break;
                 case STRUCTURE:
-                    mappers.add(new StructureMapper());
+                    mappers.add(new StructureMapper(imageDir, regionName));
                     break;
                 case ERROR:
-                    mappers.add(new ErrorMapper());
+                    mappers.add(new ErrorMapper(imageDir, regionName));
                     break;
                 case RECENT:
-                    mappers.add(new RecentMapper());
+                    mappers.add(new RecentMapper(imageDir, regionName));
                     break;
             }   
         }

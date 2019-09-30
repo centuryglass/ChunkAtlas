@@ -35,4 +35,15 @@ public enum MapType
      * Maps Minecraft structure generation using the StructureMapper class.
      */
     STRUCTURE;
+    
+    /**
+     * Gets the string used to represent a map type.
+     * 
+     * @return  The type's name, in lowercase letters. 
+     */
+    @Override
+    public String toString()
+    {
+        return super.toString().toLowerCase();
+    }
 }

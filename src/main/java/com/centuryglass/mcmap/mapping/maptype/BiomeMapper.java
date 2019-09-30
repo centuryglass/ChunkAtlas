@@ -6,13 +6,15 @@
 
 package com.centuryglass.mcmap.mapping.maptype;
 
-import com.centuryglass.mcmap.mapping.Mapper;
+import com.centuryglass.mcmap.mapping.KeyItem;
 import com.centuryglass.mcmap.worldinfo.Biome;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import com.centuryglass.mcmap.mapping.images.BiomeTextures;
 import java.awt.Color;
 import java.io.File;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * BiomeMapper draws a map showing the biomes of all generated chunks within
@@ -23,10 +25,18 @@ public class BiomeMapper extends Mapper
 {
     private static final String TYPE_NAME = "biome";
     private static final String DISPLAY_NAME = "Biome Map";
-    
-    public BiomeMapper()
+        
+    /**
+     * Sets the mapper's base output directory and mapped region name on
+     * construction.
+     *
+     * @param imageDir    The directory where the map image will be saved.
+     * 
+     * @param regionName  The name of the region this Mapper is mapping.
+     */
+    public BiomeMapper(File imageDir, String regionName)
     {
-        super();
+        super(imageDir, regionName);
         textureData = new BiomeTextures();
     }
         
@@ -61,6 +71,24 @@ public class BiomeMapper extends Mapper
     public MapType getMapType()
     {
         return MapType.BIOME;
+    }
+                 
+    /**
+     * Gets all items in this mapper's map key.
+     * 
+     * @return  All KeyItems for this map type and region. 
+     */
+    @Override
+    public Set<KeyItem> getMapKey()
+    {
+        Set<KeyItem> key = new LinkedHashSet();
+        for (Biome biome : Biome.values())
+        {
+            key.add(new KeyItem(biome.toString(), getMapType(), getRegionName(),
+                    BiomeTextures.getTexturePath(biome),
+                    Biome.getBiomeColor(biome))); 
+        }
+        return key;
     }
     
     /**

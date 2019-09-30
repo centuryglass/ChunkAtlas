@@ -6,12 +6,16 @@
 
 package com.centuryglass.mcmap.mapping.maptype;
 
-import com.centuryglass.mcmap.mapping.Mapper;
+import com.centuryglass.mcmap.mapping.KeyItem;
+import com.centuryglass.mcmap.mapping.images.BiomeTextures;
+import com.centuryglass.mcmap.worldinfo.Biome;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
 import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *  ErrorMapper shows all chunks with missing or invalid data, color coded by
@@ -37,9 +41,17 @@ public class ErrorMapper extends Mapper
                 new Color(255, 0, 0, 255));
     }
     
-    public ErrorMapper()
+    /**
+     * Sets the mapper's base output directory and mapped region name on
+     * construction.
+     *
+     * @param imageDir    The directory where the map image will be saved.
+     * 
+     * @param regionName  The name of the region this Mapper is mapping.
+     */
+    public ErrorMapper(File imageDir, String regionName)
     {
-        super();
+        super(imageDir, regionName);
     }
         
     /**
@@ -73,6 +85,23 @@ public class ErrorMapper extends Mapper
     public MapType getMapType()
     {
         return MapType.ERROR;
+    }
+    
+    /**
+     * Gets all items in this mapper's map key.
+     * 
+     * @return  All KeyItems for this map type and region. 
+     */
+    @Override
+    public Set<KeyItem> getMapKey()
+    {
+        Set<KeyItem> key = new LinkedHashSet();
+        ERROR_COLORS.entrySet().forEach((entry) ->
+        {
+            key.add(new KeyItem(entry.getKey().toString(), getMapType(),
+                    getRegionName(), entry.getValue()));
+        });
+        return key;
     }
     
     /**
