@@ -512,6 +512,21 @@ public final class MapCreator
     }
     
     /**
+     * Gets map keys from all generated maps.
+     * 
+     * @return  A JSON array of map key data, or null if maps have not been
+     *          generated yet.
+     */
+    public JsonArray getMapKeys()
+    {
+        if (mappers == null)
+        {
+            return null;
+        }
+        return mappers.getMapKeys();
+    }
+    
+    /**
      * Apply the current settings to create tile maps for a region directory.
      * 
      * @param mapRegion  A Minecraft region directory path and its associated
@@ -526,8 +541,8 @@ public final class MapCreator
         ExtendedValidate.couldBeDirectory(outDir, "Tile output directory");
         ArrayList<File> regionFiles = new ArrayList(Arrays.asList(
                 mapRegion.directory.listFiles()));
-        MapCollector mappers = new MapCollector(outDir, mapRegion.name,
-                tileSize, enabledMapTypes);
+        mappers = new MapCollector(outDir, mapRegion.name, tileSize,
+                enabledMapTypes);
         // If more than one tile fits in a region, sort regions by tile:
         if (tileSize > 32)
         {
@@ -555,26 +570,13 @@ public final class MapCreator
             }
             Collections.sort(regionFiles, new RegionSort());
         }
-        final int chunksMapped = mapRegion(regionFiles, mappers);
+        final int chunksMapped = mapRegion(regionFiles);
         if (chunksMapped > 0)
         {
             int mapKM = MapUnit.convert(chunksMapped, MapUnit.CHUNK,
                     MapUnit.BLOCK) / 1000000;
             System.out.println("Mapped " + chunksMapped
                     + " chunks, an area of " + mapKM + " km^2.");        
-        }
-        
-        JsonArray keys = mappers.getMapKeys();
-        try (BufferedWriter out = new BufferedWriter(
-                new FileWriter("key.json")))
-        {
-            out.write(keys.toString());
-            out.flush();
-            out.close();
-        }
-        catch (IOException e)
-        {
-            System.err.println("Failed to write keys.json");
         }
     }
             
@@ -624,9 +626,9 @@ public final class MapCreator
             System.out.println("Region was empty, no maps were created.");
             return;          
         }
-        final MapCollector mappers = new MapCollector(outDir, mapRegion.name,
-                xMin, zMin, width, height, pixelsPerChunk, enabledMapTypes);
-        final int chunksMapped = mapRegion(regionFiles, mappers);
+        mappers = new MapCollector(outDir, mapRegion.name, xMin, zMin, width,
+                height, pixelsPerChunk, enabledMapTypes);
+        final int chunksMapped = mapRegion(regionFiles);
         if (chunksMapped > 0)
         {
             int numChunks = width * height;
@@ -647,22 +649,18 @@ public final class MapCreator
      * 
      * @param regionFiles  The set of Minecraft region files to map.
      * 
-     * @param mapper       The object responsible for copying world data into
-     *                     map images.
-     * 
      * @return             The total number of region chunks mapped.
      */
-    private static int mapRegion
-    (ArrayList<File> regionFiles, MapCollector mapper)
+    private int mapRegion(ArrayList<File> regionFiles)
     {
         Validate.notNull(regionFiles, "Region files cannot be null.");
-        Validate.notNull(mapper, "MapCollector cannot be null.");
+        Validate.notNull(mappers, "MapCollector cannot be null.");
         int numRegionFiles = regionFiles.size();
         // Provide threadsafe tracking of processed region and chunk counts:
         ProgressThread progressThread = new ProgressThread(numRegionFiles);
         progressThread.start();
         // Handle all map updates within a single thread:
-        MapperThread mapperThread = new MapperThread(mapper);
+        MapperThread mapperThread = new MapperThread(mappers);
         mapperThread.start();
         // Divide region file updates between multiple threads:
         int numReaderThreads;
@@ -726,7 +724,7 @@ public final class MapCreator
             }
             catch (InterruptedException e) { }
         }
-        mapper.saveMapFile();
+        mappers.saveMapFile();
         return progressThread.getChunkCount();
     }
 
@@ -746,6 +744,7 @@ public final class MapCreator
     private int tileSize = 0;
     private int[] altTileSizes = null;
     
+    private MapCollector mappers = null;
     private final ArrayList<Region> regionsToMap;
     private Set<MapType> enabledMapTypes;
     private int pixelsPerChunk = 0;  

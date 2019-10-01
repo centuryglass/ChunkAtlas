@@ -178,6 +178,11 @@ public class MapCollector
         });
     }
     
+    /**
+     * Gets map keys for all initialized Mappers.
+     * 
+     * @return  All combined map key items from each Mapper.
+     */
     public JsonArray getMapKeys()
     {
         JsonArrayBuilder builder = Json.createArrayBuilder();
