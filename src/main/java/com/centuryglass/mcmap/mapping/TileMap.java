@@ -6,6 +6,7 @@
 
 package com.centuryglass.mcmap.mapping;
 
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -17,12 +18,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.imageio.ImageIO;
+import org.apache.commons.lang.Validate;
 
 /**
  * Maps all world data within a set of evenly placed image tiles, all sharing
  * the same size.
  * 
- *  This format allows maps to waste much less time and space generating empty
+ * This format allows maps to waste much less time and space generating empty
  * image data, at the cost of requiring more image initializations, and
  * requiring post-processing to knit images into a single map.
  */
@@ -47,6 +49,9 @@ public class TileMap extends WorldMap
     public TileMap(File mapDir, String baseName, int tileSize)
     {
         super(mapDir, baseName, 1);
+        ExtendedValidate.couldBeDirectory(mapDir, "Tile output directory");
+        ExtendedValidate.notNullOrEmpty(baseName, "Base tile name");
+        ExtendedValidate.isPositive(tileSize, "Tile size");
         initTime = System.currentTimeMillis();
         mapTiles = new HashMap();
         recentTiles = new ArrayDeque();
@@ -93,6 +98,7 @@ public class TileMap extends WorldMap
     @Override
     public void setChunkColor(int xPos, int zPos, Color color)
     {
+        Validate.notNull(color, "Color cannot be null.");
         Point tilePt = getTilePoint(xPos, zPos);
         BufferedImage tile = getTileImage(tilePt);
         final int chunkPx = getChunkSize();       
@@ -129,6 +135,14 @@ public class TileMap extends WorldMap
     @Override
     protected void saveMapData(File mapDir, String baseName)
     {
+        ExtendedValidate.couldBeDirectory(mapDir, "Map tile output directory");
+        Validate.notNull(baseName, "Base tile image name cannot be null.");
+        Validate.notEmpty(baseName, "Base image name cannot be empty.");
+        if (! mapDir.exists())
+        {
+            Validate.isTrue(mapDir.mkdirs(),
+                    "Couldn't create map tile output directory");
+        }
         for (Map.Entry<Point, BufferedImage> entry : mapTiles.entrySet())
         {
             if (entry.getValue() == null)
@@ -146,8 +160,6 @@ public class TileMap extends WorldMap
                         + imageFile.getName() + " to disk: " + e.getMessage());
             } 
         }
-        //System.out.println("Saved " + baseName + " to " + mapTiles.size()
-        //        + " image tiles.");
     }
         
     /**
@@ -163,6 +175,7 @@ public class TileMap extends WorldMap
      */
     public static Point getTilePoint(int xPos, int zPos, int tileSize)
     {
+        ExtendedValidate.isPositive(tileSize, "Tile size");
         int [] offsets = { xPos, zPos };
         for (int i = 0; i < 2; i++)
         {
@@ -189,8 +202,17 @@ public class TileMap extends WorldMap
         return getTilePoint(xPos, zPos, tileSize);
     }
     
+    /**
+     * Gets the image where a specific map chunk is saved, creating or loading
+     * a new image if necessary.
+     * 
+     * @param tilePt  A Minecraft chunk coordinate.
+     * 
+     * @return        An image where the given point should be drawn.
+     */
     private BufferedImage getTileImage(Point tilePt)
     {
+        Validate.notNull(tilePt, "Chunk coordinate cannot be null.");
         BufferedImage tileImage = mapTiles.get(tilePt);
         if (tileImage != null)
         {
@@ -252,6 +274,7 @@ public class TileMap extends WorldMap
      */
     private File getTileFile(Point tilePt)
     {
+        Validate.notNull(tilePt, "Chunk coordinate cannot be null.");
         String filename = getFileName() + "." + String.valueOf(tilePt.x)
                 + "." + String.valueOf(tilePt.y) + ".png";
         return new File(getMapDir(), filename);
@@ -266,6 +289,7 @@ public class TileMap extends WorldMap
     @Override
     protected void foreachChunk(Consumer<Point> chunkAction)
     {
+        Validate.notNull(chunkAction, "Chunk action cannot be null.");
         Point chunkPt = new Point();
         for (Map.Entry<Point, BufferedImage> entry : mapTiles.entrySet())
         {

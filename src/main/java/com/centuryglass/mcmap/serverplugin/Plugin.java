@@ -8,8 +8,14 @@ package com.centuryglass.mcmap.serverplugin;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+/**
+ * Initializes MCMaps as a Minecraft server plugin.
+ */
 public class Plugin extends JavaPlugin 
 {
+    /**
+     * Starts asynchronous server mapping when the plugin is enabled.
+     */
     @Override
     public void onEnable()
     {
@@ -19,7 +25,5 @@ public class Plugin extends JavaPlugin
     }
     
     @Override
-    public void onDisable()
-    {
-    }
+    public void onDisable() { }
 }

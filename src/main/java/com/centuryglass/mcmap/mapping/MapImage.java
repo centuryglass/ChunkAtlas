@@ -6,6 +6,7 @@
 
 package com.centuryglass.mcmap.mapping;
 import com.centuryglass.mcmap.mapping.images.MapBackground;
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -14,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.function.Consumer;
 import javax.imageio.ImageIO;
+import org.apache.commons.lang.Validate;
 
 /**
  * MapImage is a wrapper for a PNG image object, providing functions useful for
@@ -51,6 +53,10 @@ public class MapImage extends WorldMap
             int pixelsPerChunk)
     {
         super(imageFile.getParentFile(), imageFile.getName(), pixelsPerChunk);
+        ExtendedValidate.couldBeFile(imageFile, "Image file");
+        ExtendedValidate.isPositive(widthInChunks, "Width in chunks");
+        ExtendedValidate.isPositive(heightInChunks, "Height in chunks");
+        ExtendedValidate.isPositive(pixelsPerChunk, "Pixels per chunk");
         
         this.xMin = xMin;
         this.zMin = zMin;
@@ -79,8 +85,7 @@ public class MapImage extends WorldMap
                         null);
             }
         }
-    }
-    
+    }  
     
     /**
      * Enables or disables map backgrounds for all maps created by the
@@ -91,6 +96,21 @@ public class MapImage extends WorldMap
     public static void setDrawBackgrounds(boolean shouldDraw)
     {
         drawBackgrounds = shouldDraw;
+    }
+    
+    /**
+     * Validates an image pixel coordinate.
+     * 
+     * @param xPos  The pixel's x-coordinate.
+     * 
+     * @param yPos  The pixel's y-coordinate. 
+     */
+    private void validatePixelCoords(int xPos, int yPos)
+    {
+        ExtendedValidate.inInclusiveBounds(xPos, 0, mapImage.getWidth() - 1,
+                "Pixel x-coordinate");
+        ExtendedValidate.inInclusiveBounds(yPos, 0, mapImage.getHeight() - 1,
+                "Pixel y-coordinate");
     }
     
     /**
@@ -105,11 +125,7 @@ public class MapImage extends WorldMap
      */
     public Color getPixelColor(int xPos, int yPos)
     {
-        if (xPos >= mapImage.getWidth() || yPos >= mapImage.getHeight()
-                || xPos < 0 || yPos < 0)
-        {
-            return null;
-        }
+        validatePixelCoords(xPos, yPos);
         return new Color(mapImage.getRGB(xPos, yPos));
     }
     
@@ -145,6 +161,8 @@ public class MapImage extends WorldMap
      */
     public void setPixelColor(int xPos, int yPos, Color color)
     {
+        validatePixelCoords(xPos, yPos);
+        Validate.notNull(color, "Pixel color cannot be null.");
         if(xPos < mapImage.getWidth() && yPos < mapImage.getHeight()
                 && xPos >= 0 && yPos >=0)
         {
@@ -164,6 +182,7 @@ public class MapImage extends WorldMap
     @Override
     public void setChunkColor(int xPos, int zPos, Color color)
     {
+        Validate.notNull(color, "Chunk color cannot be null.");
         final Point pixelPos = chunkToPixel(xPos, zPos);
         if (pixelPos == null || pixelPos.x < 0 || pixelPos.y < 0)
         {
@@ -196,6 +215,8 @@ public class MapImage extends WorldMap
     @Override
     protected void saveMapData(File mapDir, String baseName)
     {
+        ExtendedValidate.couldBeDirectory(mapDir, "Image output directory");
+        ExtendedValidate.notNullOrEmpty(baseName, "Map image name");
         try
         {
             File imageFile = new File(mapDir, baseName + ".png");
@@ -212,12 +233,12 @@ public class MapImage extends WorldMap
     /**
      * Get the upper left pixel used to represent a chunk.
      *
-     * @param xPos      The x-coordinate of a map chunk.
+     * @param xPos  The x-coordinate of a map chunk.
      * 
-     * @param zPos      The z-coordinate of a map chunk.
+     * @param zPos  The z-coordinate of a map chunk.
      *
-     * @return          The image coordinates of that chunk, or null if the
-     *                  chunk was out of bounds.
+     * @return      The image coordinates of that chunk, or null if the chunk
+     *              was out of bounds.
      */
     private Point chunkToPixel(int xPos, int zPos)
     {
@@ -241,6 +262,7 @@ public class MapImage extends WorldMap
     @Override
     protected void foreachChunk(Consumer<Point> chunkAction)
     {
+        Validate.notNull(chunkAction, "Chunk action cannot be null.");
         final int x0 = xMin;
         final int z0 = zMin;
         final int w = mapWidth;

@@ -6,9 +6,9 @@
  */
 package com.centuryglass.mcmap;
 
-import com.centuryglass.mcmap.config.MapGenOptions;
+import com.centuryglass.mcmap.config.MapGenConfig;
 import com.centuryglass.mcmap.mapping.MapCollector;
-import com.centuryglass.mcmap.mapping.MapType;
+import com.centuryglass.mcmap.mapping.maptype.MapType;
 import com.centuryglass.mcmap.mapping.TileMap;
 import com.centuryglass.mcmap.mapping.images.Downscaler;
 import com.centuryglass.mcmap.mapping.images.ImageStitcher;
@@ -16,12 +16,16 @@ import com.centuryglass.mcmap.savedata.MCAFile;
 import com.centuryglass.mcmap.threads.MapperThread;
 import com.centuryglass.mcmap.threads.ProgressThread;
 import com.centuryglass.mcmap.threads.ReaderThread;
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import com.centuryglass.mcmap.util.MapUnit;
 import com.centuryglass.mcmap.util.args.ArgOption;
 import com.centuryglass.mcmap.util.args.ArgParser;
 import com.centuryglass.mcmap.util.args.InvalidArgumentException;
 import java.awt.Point;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +35,8 @@ import java.util.Deque;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
+import javax.json.JsonArray;
+import org.apache.commons.lang.Validate;
 
 /**
  * Stores map creation options, and applies them to generate Minecraft map
@@ -55,8 +61,9 @@ public final class MapCreator
      * 
      * @param mapConfig  A map generation configuration file object.
      */
-    public MapCreator(MapGenOptions mapConfig)
+    public MapCreator(MapGenConfig mapConfig)
     {
+        Validate.notNull(mapConfig, "Map configuration object cannot be null.");
         regionsToMap = new ArrayList();
         enabledMapTypes = new TreeSet();
         applyConfigOptions(mapConfig);
@@ -67,12 +74,13 @@ public final class MapCreator
      * 
      * @param mapConfig  A map generation configuration file object.
      */
-    public void applyConfigOptions(MapGenOptions mapConfig)
+    public void applyConfigOptions(MapGenConfig mapConfig)
     {
+        Validate.notNull(mapConfig, "Map configuration object cannot be null.");
         if (mapConfig != null)
         {
             setPixelsPerChunk(mapConfig.getPixelsPerChunk());
-            MapGenOptions.SingleImage imageMapOptions
+            MapGenConfig.SingleImage imageMapOptions
                     = mapConfig.getSingleImageOptions();
             setSingleImageMapsEnabled(imageMapOptions.enabled);
             setImageMapOutputDir(new File(imageMapOptions.outPath));
@@ -82,7 +90,7 @@ public final class MapCreator
                     imageMapOptions.width,
                     imageMapOptions.height);
             
-            MapGenOptions.MapTiles tileOptions
+            MapGenConfig.MapTiles tileOptions
                     = mapConfig.getMapTileOptions();
             setTileMapsEnabled(tileOptions.enabled);
             setTileOutputDir(new File(tileOptions.outPath));
@@ -108,7 +116,8 @@ public final class MapCreator
      */
     public void applyArgOptions(ArgParser<MapArgOptions> parsedArgs)
             throws InvalidArgumentException
-    {  
+    {
+        Validate.notNull(parsedArgs, "Parsed argument object cannot be null");
         ArgOption<MapArgOptions>[] options = parsedArgs.getAllOptions();
         for (ArgOption<MapArgOptions> option : options)
         {
@@ -128,11 +137,8 @@ public final class MapCreator
                             regionPath = regionPath.substring(divide + 1);
                         }
                         regionDir = new File(regionPath);
-                        if (! regionDir.isDirectory())
-                        {
-                            throw new InvalidArgumentException("Invalid region"
-                                    + " directory " + regionDir.toString());
-                        }
+                        ExtendedValidate.isDirectory(regionDir,
+                                "Region file directory ");
                         if (regionName == null)
                         {
                             regionName = regionDir.getName();
@@ -347,6 +353,7 @@ public final class MapCreator
      */
     public void setTileOutputDir(File outDir)
     {
+        ExtendedValidate.couldBeDirectory(outDir, "Tile output directory");
         tileOutDir = outDir;
     }
     
@@ -357,6 +364,7 @@ public final class MapCreator
      */
     public void setTileSize(int size)
     {
+        ExtendedValidate.isPositive(size, "Tile size");
         tileSize = size;
     }
     
@@ -370,6 +378,11 @@ public final class MapCreator
      */
     public void setAltTileSizes(int[] altSizes)
     {
+        Validate.notNull(altSizes, "Alternate tile sizes cannot be null.");
+        for (int size : altSizes)
+        {
+            ExtendedValidate.isPositive(size, "Alt. tile size");
+        }
         altTileSizes = altSizes;
     }
     
@@ -392,6 +405,7 @@ public final class MapCreator
      */
     public void setImageMapOutputDir(File outDir)
     {
+        ExtendedValidate.couldBeDirectory(outDir, "Image output directory");
         imageOutDir = outDir;
     }
     
@@ -420,6 +434,8 @@ public final class MapCreator
      */
     public void setImageMapBounds(int xMin, int zMin, int width, int height)
     {
+        ExtendedValidate.isPositive(width, "Map width");
+        ExtendedValidate.isPositive(height, "Map height");
         this.xMin = xMin;
         this.zMin = zMin;
         this.width = width;
@@ -434,6 +450,7 @@ public final class MapCreator
      */
     public void setPixelsPerChunk(int pixelsPerChunk)
     {
+        ExtendedValidate.isPositive(pixelsPerChunk, "Pixels per chunk");
         this.pixelsPerChunk = pixelsPerChunk;
     }
     
@@ -448,6 +465,8 @@ public final class MapCreator
      */
     public void addRegion(String regionName, File regionDirectory)
     {
+        ExtendedValidate.notNullOrEmpty(regionName, "Region name");
+        ExtendedValidate.isDirectory(regionDirectory, "Region directory");
         Region region = new Region(regionName, regionDirectory);
         regionsToMap.add(region);
     }
@@ -481,6 +500,7 @@ public final class MapCreator
      */
     public void setMapTypeEnabled(MapType type, boolean isEnabled)
     {
+        Validate.notNull(type, "Map type cannot be null.");
         if (isEnabled)
         {
             enabledMapTypes.add(type);
@@ -502,18 +522,8 @@ public final class MapCreator
      */
     private void createTileMaps(Region mapRegion, File outDir)
     {
-        if (mapRegion.directory == null)
-        {
-            System.err.println("Can't create tile maps, region directory is"
-                    + " null.");
-            return;
-        }
-        else if (! mapRegion.directory.isDirectory())
-        {
-            System.err.println("Can't create tile maps, region directory \""
-                    + mapRegion.directory.toString() + "\" is invalid.");
-            return;
-        }
+        Validate.notNull(mapRegion, "Mapped region cannot be null.");
+        ExtendedValidate.couldBeDirectory(outDir, "Tile output directory");
         ArrayList<File> regionFiles = new ArrayList(Arrays.asList(
                 mapRegion.directory.listFiles()));
         MapCollector mappers = new MapCollector(outDir, mapRegion.name,
@@ -553,6 +563,19 @@ public final class MapCreator
             System.out.println("Mapped " + chunksMapped
                     + " chunks, an area of " + mapKM + " km^2.");        
         }
+        
+        JsonArray keys = mappers.getMapKeys();
+        try (BufferedWriter out = new BufferedWriter(
+                new FileWriter("key.json")))
+        {
+            out.write(keys.toString());
+            out.flush();
+            out.close();
+        }
+        catch (IOException e)
+        {
+            System.err.println("Failed to write keys.json");
+        }
     }
             
     /**
@@ -566,6 +589,8 @@ public final class MapCreator
      */
     private void createSingleImageMaps(Region mapRegion, File outDir)
     {
+        Validate.notNull(mapRegion, "Mapped region cannot be null.");
+        ExtendedValidate.couldBeDirectory(outDir, "Image output directory");
         ArrayList<File> regionFiles = new ArrayList();
         int regionChunks = MapUnit.convert(1, MapUnit.REGION, MapUnit.CHUNK);
         // Valid region files within the given bounds will all be named
@@ -629,7 +654,9 @@ public final class MapCreator
      */
     private static int mapRegion
     (ArrayList<File> regionFiles, MapCollector mapper)
-    {   
+    {
+        Validate.notNull(regionFiles, "Region files cannot be null.");
+        Validate.notNull(mapper, "MapCollector cannot be null.");
         int numRegionFiles = regionFiles.size();
         // Provide threadsafe tracking of processed region and chunk counts:
         ProgressThread progressThread = new ProgressThread(numRegionFiles);
@@ -667,7 +694,7 @@ public final class MapCreator
                     progressThread));
             threadList.get(i).start();
         }
-        for (ReaderThread thread : threadList)
+        threadList.forEach((thread) ->
         {
             while (thread.isAlive())
             {
@@ -680,7 +707,7 @@ public final class MapCreator
                     // Just try again.
                 }
             }
-        }
+        });
         mapperThread.requestStop();
         while (mapperThread.isAlive())
         {

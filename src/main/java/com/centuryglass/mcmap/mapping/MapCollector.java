@@ -13,6 +13,7 @@ import com.centuryglass.mcmap.mapping.maptype.BiomeMapper;
 import com.centuryglass.mcmap.mapping.maptype.RecentMapper;
 import com.centuryglass.mcmap.mapping.maptype.BasicMapper;
 import com.centuryglass.mcmap.mapping.maptype.ActivityMapper;
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.io.File;
 import java.util.ArrayList;
@@ -22,9 +23,10 @@ import java.util.TreeSet;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import org.apache.commons.lang.Validate;
 
 /**
- *  MapCollector creates and manages a set of Mapper subclasses through a single
+ * MapCollector creates and manages a set of Mapper subclasses through a single
  * interface. Since map data is applied identically to each Mapper, MapCollector
  * takes care of the process of repeating each action for each map type.
  */
@@ -58,6 +60,7 @@ public class MapCollector
             int heightInChunks,
             int pixelsPerChunk)
     {
+        validateInitParams(imageDir, regionName);
         mappers = new ArrayList();
         initImageMappers(imageDir, regionName, xMin, zMin, widthInChunks,
                 heightInChunks, pixelsPerChunk, getFullTypeSet());
@@ -95,6 +98,7 @@ public class MapCollector
             int pixelsPerChunk,
             Set<MapType> mapTypes)
     {
+        validateInitParams(imageDir, regionName);
         mappers = new ArrayList();
         initImageMappers(imageDir, regionName, xMin, zMin, widthInChunks,
                 heightInChunks, pixelsPerChunk, mapTypes);
@@ -111,6 +115,7 @@ public class MapCollector
      */
     public MapCollector(File imageDir, String regionName, int tileSize)
     {
+        validateInitParams(imageDir, regionName);
         mappers = new ArrayList();
         initTileMappers(imageDir, regionName, tileSize, getFullTypeSet());
     }
@@ -129,8 +134,24 @@ public class MapCollector
     public MapCollector(File imageDir, String regionName, int tileSize,
             Set<MapType> mapTypes)
     {
+        validateInitParams(imageDir, regionName);
         mappers = new ArrayList();
         initTileMappers(imageDir, regionName, tileSize, mapTypes);
+    }
+    
+    /**
+     * Ensures MapCollector construction parameters are valid.
+     * 
+     * @param imageDir    The image output directory. This cannot be null, and
+     *                    cannot be a regular file.
+     * 
+     * @param regionName  The name of the mapped region. This cannot be null or
+     *                    empty.
+     */
+    private void validateInitParams(File imageDir, String regionName)
+    {
+        ExtendedValidate.couldBeDirectory(imageDir, "Image output directory");
+        ExtendedValidate.notNullOrEmpty(regionName, "Region name");
     }
     
     /**
@@ -150,6 +171,7 @@ public class MapCollector
      */
     public void drawChunk(ChunkData chunk)
     {
+        Validate.notNull("Chunk data cannot be null.");
         mappers.forEach((mapper) ->
         {
             mapper.drawChunk(chunk);

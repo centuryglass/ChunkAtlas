@@ -6,11 +6,13 @@
 
 package com.centuryglass.mcmap.mapping.images;
 
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import javax.imageio.ImageIO;
+import org.apache.commons.lang.Validate;
 
 public class Texture 
 {
@@ -22,12 +24,10 @@ public class Texture
      */
     public Texture(String texturePath)
     {
+        ExtendedValidate.notNullOrEmpty(texturePath, "Texture path");
         final URL textureURL = Texture.class.getResource(texturePath);
-        if (textureURL == null)
-        {
-            System.err.println("Texture: invalid path " + texturePath);
-            System.exit(1);
-        }
+        Validate.notNull(textureURL, "Texture \"" + texturePath
+                + "\" was not found in resources.");
         final BufferedImage textureImage;
         try
         {
@@ -68,19 +68,38 @@ public class Texture
      */
     public Color getPixel(int x, int y, int scale)
     {
+        ExtendedValidate.isPositive(scale, "Texture scale");
         if (textureData == null) { return null; }
         return textureData[texturePos(x, width, scale)][texturePos(y, height,
                 scale)];
     }
     
-    private int texturePos(int coordinate, int max, int scale)
+    /**
+     * Find the texture coordinate value mapped to an image coordinate.
+     * 
+     * @param coordinate  The x or y coordinate of an image pixel.
+     * 
+     * @param size        The size in pixels of the texture along the given
+     *                    coordinate's axis.
+     * 
+     * @param scale       A scale multiplier to apply to the texture size.
+     * 
+     * @return            The appropriate x or y coordinate value of the texture
+     *                    pixel to use.
+     */
+    private int texturePos(int coordinate, int size, int scale)
     {
-        int pos = (coordinate / scale) % max;
-        if (pos < 0) { pos += max; }
+        ExtendedValidate.isPositive(size, "Texture size");
+        ExtendedValidate.isPositive(scale, "Texture scale");
+        int pos = (coordinate / scale) % size;
+        if (pos < 0) { pos += size; }
         return pos;
     }
     
+    // Texture width in pixels:
     final int width;
+    // Texture height in pixels:
     final int height;
+    // Indexed color of each pixel in the texture:
     final Color[][] textureData;
 }

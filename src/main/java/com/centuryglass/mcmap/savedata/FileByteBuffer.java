@@ -6,6 +6,7 @@
  */
 package com.centuryglass.mcmap.savedata;
 
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -83,16 +84,7 @@ public class FileByteBuffer
     public void setPos(int newPos) throws IllegalArgumentException,
             IndexOutOfBoundsException
     {
-        if (newPos < 0)
-        {
-            throw new IllegalArgumentException("FileByteBuffer: Tried to seek "
-                    + "to invalid index " + newPos);      
-        }
-        if (newPos >= buffer.limit())
-        {
-            throw new IndexOutOfBoundsException("FileByteBuffer: Tried to seek "
-                    + "past end of file to " + newPos);
-        }
+        ExtendedValidate.validIndex(newPos, buffer.limit(), "Buffer index");
         buffer.position(newPos);
     }
     

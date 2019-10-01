@@ -6,10 +6,12 @@
 package com.centuryglass.mcmap.serverplugin;
 
 import com.centuryglass.mcmap.MapCreator;
-import com.centuryglass.mcmap.config.MapGenOptions;
+import com.centuryglass.mcmap.config.MapGenConfig;
 import java.io.File;
 
-
+/**
+ * Generates map tiles within its own thread when running as a server plugin.
+ */
 public class ServerThread extends Thread
 {   
     private static final String DEFAULT_SERVER_CONFIG
@@ -18,8 +20,8 @@ public class ServerThread extends Thread
     @Override
     public void run()
     {
-        MapGenOptions mapConfig
-                = new MapGenOptions(new File(DEFAULT_SERVER_CONFIG));
+        MapGenConfig mapConfig
+                = new MapGenConfig(new File(DEFAULT_SERVER_CONFIG));
         MapCreator mapCreator = new MapCreator(mapConfig);
         mapCreator.createMaps(); 
     }

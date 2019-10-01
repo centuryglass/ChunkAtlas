@@ -9,6 +9,7 @@ package com.centuryglass.mcmap.worldinfo;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang.Validate;
 
 
 // Structure values are assigned so that smaller structure types have higher
@@ -72,7 +73,11 @@ public enum Structure
      */
     public static Color getStructureColor(Structure structure)
     {
-        return structureColors.get(structure);
+        Validate.notNull(structure, "Structure cannot be null.");
+        Color color = structureColors.get(structure);
+        Validate.notNull(color, "No color found for structure "
+                + structure.toString());
+        return color;
     }
     
     /**

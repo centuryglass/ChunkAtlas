@@ -5,13 +5,14 @@
  */
 package com.centuryglass.mcmap.mapping.images;
 
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.awt.Color;
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
+import org.apache.commons.lang.Validate;
 
 /**
  * Creates ColorRangeSet objects for a specific collection of long integer
@@ -54,6 +55,8 @@ public class ColorRangeFactory
      */
     public ColorRangeFactory(Collection<Long> values, ArrayList<Color> colors)
     {
+        validateCollection(values, "Value list");
+        validateCollection(colors, "Color list");
         orderedValues = values.toArray(new Long[values.size()]);
         Arrays.sort(orderedValues, Collections.reverseOrder());
         this.colors = colors;
@@ -69,12 +72,30 @@ public class ColorRangeFactory
     }
     
     /**
+     * Validates that a collection is not null or empty, and contains no null
+     * values.
+     * 
+     * @param collection  The collection to validate.
+     * 
+     * @param name        The collection name to print on error messages.
+     */
+    private void validateCollection(Collection collection, String name)
+    {
+        assert (name != null && ! name.isEmpty());
+        Validate.notNull(collection, name + " cannot be null.");
+        Validate.notEmpty(collection, name + " cannot be empty.");
+        Validate.noNullElements(collection, name
+                + " cannot contain null elements.");
+    }
+    
+    /**
      * Sets the method used to divide the value list into ranges.
      * 
      * @param newType  The DivisionType that will be used.
      */
     public void setDivisionType(DivisionType newType)
     {
+        Validate.notNull(newType, "Division type cannot be null.");
         divisionType = newType;
     }
     
@@ -88,6 +109,7 @@ public class ColorRangeFactory
      */
     public void setRangeAdjuster(Function<Long, Long> adjuster)
     {
+        Validate.notNull(adjuster, "Range adjuster cannot be null.");
         rangeAdjuster = adjuster;
     }
     
@@ -102,6 +124,7 @@ public class ColorRangeFactory
      */
     public void setFadeFraction(double fraction)
     {
+        ExtendedValidate.inInclusiveBounds(fraction, 0.0, 1.0, "Fade fraction");
         for (int i = 0; i < rangeFadeFractions.length; i++)
         {
             setFadeFraction(fraction, i);
@@ -120,16 +143,9 @@ public class ColorRangeFactory
      */
     public void setFadeFraction(double fraction, int rangeIndex)
     {
-        if (rangeIndex < 0 || rangeIndex >= rangeFadeFractions.length)
-        {
-            throw new InvalidParameterException("Invalid range index "
-                    + String.valueOf(rangeIndex));
-        }
-        if (fraction < 0 || fraction > 1)
-        {
-            throw new InvalidParameterException("Invalid fade fraction "
-                    + String.valueOf(fraction));
-        }
+        ExtendedValidate.inInclusiveBounds(fraction, 0.0, 1.0, "Fade fraction");
+        ExtendedValidate.validIndex(rangeIndex, rangeFadeFractions.length,
+                "Range index");
         rangeFadeFractions[rangeIndex] = fraction;
     }
     
@@ -141,6 +157,7 @@ public class ColorRangeFactory
      */
     public void setFadeType(ColorRangeSet.FadeType fadeType)
     {
+        Validate.notNull(fadeType, "Fade type cannot be null.");
         for (int i = 0; i < rangeFadeTypes.length; i++)
         {
             setFadeType(fadeType, i);
@@ -158,11 +175,9 @@ public class ColorRangeFactory
      */
     public void setFadeType(ColorRangeSet.FadeType fadeType, int rangeIndex)
     {
-        if (rangeIndex < 0 || rangeIndex >= rangeFadeTypes.length)
-        {
-            throw new InvalidParameterException("Invalid range index "
-                    + String.valueOf(rangeIndex));
-        }
+        Validate.notNull(fadeType, "Fade type cannot be null.");
+        ExtendedValidate.validIndex(rangeIndex, rangeFadeTypes.length,
+                "Range index");
         rangeFadeTypes[rangeIndex] = fadeType;
     }
     
@@ -175,7 +190,8 @@ public class ColorRangeFactory
     public ColorRangeSet createColorRangeSet()
     {
         ColorRangeSet rangeSet = new ColorRangeSet();
-        final int rangeCount = colors.size();
+        int rangeCount = colors.size();
+        ExtendedValidate.isPositive(rangeCount, "Color range count");
         long[] rangeMaxValues = new long[rangeCount];
         rangeMaxValues[0] = rangeAdjuster.apply(orderedValues[0]);
         
@@ -183,9 +199,23 @@ public class ColorRangeFactory
         {
             for (int i = 1; i < rangeCount; i++)
             {
-                final int valueIdx = orderedValues.length / rangeCount * i;
+                int valueIdx = orderedValues.length / rangeCount * i;
                 rangeMaxValues[i]
                         = rangeAdjuster.apply(orderedValues[valueIdx]);
+                // If the value set is particularly small or uniform, it might
+                // be necessary to use a greater value index, or even to not
+                // create ranges for all provided colors.
+                while (valueIdx < orderedValues.length
+                        && orderedValues[valueIdx] >= rangeMaxValues[i - 1])
+                {
+                    valueIdx++;
+                }
+                if (valueIdx == orderedValues.length)
+                {
+                    rangeCount = i - 1;
+                    break;
+                }
+                    
                 // Discard adjustments if they would put ranges out of order:
                 if (rangeMaxValues[i] >= rangeMaxValues[i - 1])
                 {
@@ -199,9 +229,13 @@ public class ColorRangeFactory
                     - orderedValues[orderedValues.length - 1];
             for (int i = 1; i < rangeCount; i++)
             {
-                rangeMaxValues[i] = rangeAdjuster.apply(orderedValues[0]
-                        - fullRange / rangeCount * i);
-                assert rangeMaxValues[i] < rangeMaxValues[i - 1];
+                long maxValue = orderedValues[0] - fullRange / rangeCount * i;
+                rangeMaxValues[i] = rangeAdjuster.apply(maxValue);
+                // Discard adjustments if they would put ranges out of order:
+                if (rangeMaxValues[i] >= rangeMaxValues[i - 1])
+                {
+                    rangeMaxValues[i] = maxValue;
+                }
             }
         }
         

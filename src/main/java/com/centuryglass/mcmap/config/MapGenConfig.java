@@ -6,6 +6,7 @@
 package com.centuryglass.mcmap.config;
 
 import com.centuryglass.mcmap.mapping.maptype.MapType;
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Set;
@@ -13,6 +14,7 @@ import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import org.apache.commons.lang.Validate;
 
 /**
  * Loads and shares a set of options for generating maps. These options may be
@@ -51,6 +53,7 @@ public class MapGenConfig extends ConfigFile
      */
     public void forEachRegionPath(BiConsumer<File, String> action)
     {
+        Validate.notNull(action, "Region path action must not be null.");
         JsonArray regions = (JsonArray) getSavedOrDefaultOptions(
                 JsonKeys.REGION_LIST);
         assert (regions != null);
@@ -115,6 +118,8 @@ public class MapGenConfig extends ConfigFile
         protected SingleImage(boolean enabled, boolean drawBackground,
                 String outPath, int xMin, int zMin, int width, int height)
         {
+            ExtendedValidate.couldBeDirectory(new File(outPath),
+                    " Image output path");
             this.enabled = enabled;
             this.drawBackground = drawBackground;
             this.outPath = outPath;
@@ -137,7 +142,7 @@ public class MapGenConfig extends ConfigFile
      * Gets all options specifically required for generating single-image maps.
      * 
      * @return  An object holding all settings that are only used in
-     *          single-image map generation.
+     *          single-image map generation, or null if options were not found.
      */
     public SingleImage getSingleImageOptions()
     {
@@ -184,6 +189,8 @@ public class MapGenConfig extends ConfigFile
         protected MapTiles(boolean enabled, String outPath, int tileSize,
                 int[] alternateSizes)
         {
+            ExtendedValidate.couldBeDirectory(new File(outPath),
+                    "Tile output path");
             this.enabled = enabled;
             this.outPath = outPath;
             this.tileSize = tileSize;
@@ -211,7 +218,8 @@ public class MapGenConfig extends ConfigFile
     /**
      * Gets all options used specifically for generating map image tiles.
      * 
-     * @return  The set of all options that only apply to generating map tiles. 
+     * @return  The set of all options that only apply to generating map tiles,
+     *          or null if tile options could not be loaded.
      */
     public MapTiles getMapTileOptions()
     {

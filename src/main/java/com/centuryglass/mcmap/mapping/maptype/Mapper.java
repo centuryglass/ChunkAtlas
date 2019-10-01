@@ -9,12 +9,13 @@ import com.centuryglass.mcmap.mapping.KeyItem;
 import com.centuryglass.mcmap.mapping.MapImage;
 import com.centuryglass.mcmap.mapping.TileMap;
 import com.centuryglass.mcmap.mapping.WorldMap;
-import com.centuryglass.mcmap.mapping.maptype.MapType;
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
 import java.awt.Point;
 import java.io.File;
 import java.util.Set;
+import org.apache.commons.lang.Validate;
 
 /**
  *  Mapper classes are responsible for determining which color to apply to the
@@ -35,6 +36,8 @@ public abstract class Mapper
      */
     public Mapper(File imageDir, String regionName)
     {
+        ExtendedValidate.couldBeDirectory(imageDir, "Image output directory");
+        ExtendedValidate.notNullOrEmpty(regionName, "Region name");
         this.imageDir = imageDir;
         this.regionName = regionName;
     }
@@ -58,6 +61,9 @@ public abstract class Mapper
     public void initImageMap(int xMin, int zMin, int widthInChunks,
             int heightInChunks, int pixelsPerChunk)
     {
+        ExtendedValidate.isPositive(widthInChunks, "Width in chunks");
+        ExtendedValidate.isPositive(heightInChunks, "Height in chunks");
+        ExtendedValidate.isPositive(pixelsPerChunk, "Pixels per chunk");
         map = new MapImage(new File(imageDir, getTypeName() + "_" + regionName),
                 xMin, zMin, widthInChunks, heightInChunks, pixelsPerChunk);
     }
@@ -71,6 +77,7 @@ public abstract class Mapper
      */
     public void initTileMap(int tileSize)
     {
+        ExtendedValidate.isPositive(tileSize, "Tile size");
         map = new TileMap(new File(imageDir, getTypeName()), regionName,
                 tileSize);
     }
@@ -136,6 +143,7 @@ public abstract class Mapper
      */
     public void drawChunk(ChunkData chunk)
     {
+        Validate.notNull(chunk, "Chunk cannot be null.");
         if (map == null)
         {
             return;
@@ -165,35 +173,13 @@ public abstract class Mapper
      * Handles any final tasks that need to be done before the map can
      * be exported as an image.
      *
-     * The default implementation of this method just draws the x and z axis.
+     * The default implementation of this method does nothing.
      * Mapper subclasses should extend this method if there's anything they need
      * to do after processing chunks to complete the map.
      *
      * @param map  The mapper's Map, passed in so final changes can be made.
      */
-    protected void finalProcessing(WorldMap map) 
-    {
-        /*
-        final Color lineColor = new Color(255, 0, 0);
-        final int xMin = map.getXMin();
-        final int xMax = xMin + map.getWidth();
-        final int zMin = map.getZMin();
-        final int zMax = zMin + map.getHeight();
-        // Draw x and z axis to make it easier to find coordinates:
-        for (int z = zMin; z < zMax; z++)
-        {
-            map.setChunkColor(0, z - 1, lineColor);
-            map.setChunkColor(0, z, lineColor);
-            map.setChunkColor(0, z + 1, lineColor);
-        }
-        for (int x = xMin; x < xMax; x++)
-        {
-            map.setChunkColor(x - 1, 0, lineColor);
-            map.setChunkColor(x, 0, lineColor);
-            map.setChunkColor(x + 1, 0, lineColor);
-        }
-        */
-    }
+    protected void finalProcessing(WorldMap map) { }
     
     // All map image data:
     WorldMap map = null;

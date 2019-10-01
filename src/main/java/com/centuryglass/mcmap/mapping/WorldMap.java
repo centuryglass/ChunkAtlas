@@ -6,10 +6,12 @@
 
 package com.centuryglass.mcmap.mapping;
 
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.awt.Color;
 import java.awt.Point;
 import java.io.File;
 import java.util.function.Consumer;
+import org.apache.commons.lang.Validate;
 
 public abstract class WorldMap 
 {
@@ -24,6 +26,9 @@ public abstract class WorldMap
      */
     public WorldMap(File mapDir, String fileName, int pixelsPerChunk)
     {
+        ExtendedValidate.couldBeDirectory(mapDir, "Map output directory");
+        ExtendedValidate.notNullOrEmpty(fileName, "Map name");
+        ExtendedValidate.isPositive(pixelsPerChunk, "Pixels per chunk");
         this.mapDir = mapDir;
         this.fileName = fileName;
         chunkSize = pixelsPerChunk;
@@ -36,7 +41,9 @@ public abstract class WorldMap
     {
         if (! mapDir.exists())
         {
-            mapDir.mkdirs();
+            Validate.isTrue(mapDir.mkdirs(),
+                    "Couldn't create map directory at \""
+                    + mapDir.toString() + "\".");
         }
         saveMapData(mapDir, fileName);
     }

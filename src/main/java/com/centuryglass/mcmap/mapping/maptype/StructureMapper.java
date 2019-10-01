@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import org.apache.commons.lang.Validate;
 
 /**
  *  StructureMapper creates maps showing where different generated structures
@@ -87,6 +88,10 @@ public class StructureMapper extends Mapper
         Set<KeyItem> key = new LinkedHashSet();
         for (Structure structure : Structure.values())
         {
+            if (structure.equals(Structure.UNKNOWN))
+            {
+                continue;
+            }
             key.add(new KeyItem(structure.toString(), getMapType(),
                     getRegionName(),
                     Structure.getStructureColor(structure)));
@@ -105,6 +110,7 @@ public class StructureMapper extends Mapper
     @Override
     protected Color getChunkColor(ChunkData chunk)
     {
+        Validate.notNull(chunk, "Chunk cannot be null.");
         if (chunk.getErrorType() != ChunkData.ErrorFlag.NONE)
         {
             return null;
@@ -148,7 +154,6 @@ public class StructureMapper extends Mapper
     @Override
     protected void finalProcessing(WorldMap map)
     {
-        /*
         double maxDistance = Math.sqrt(18);
         for (Map.Entry<Point, Structure> entry : structureRefs.entrySet())
         {
@@ -190,7 +195,6 @@ public class StructureMapper extends Mapper
                 map.setChunkColor(xI, zI, pointColor);  
             }
         }
-        */
         super.finalProcessing(map);
     }
     

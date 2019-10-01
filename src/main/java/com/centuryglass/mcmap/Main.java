@@ -5,7 +5,7 @@
  */
 package com.centuryglass.mcmap;
 
-import com.centuryglass.mcmap.config.MapGenOptions;
+import com.centuryglass.mcmap.config.MapGenConfig;
 import com.centuryglass.mcmap.util.args.ArgParser;
 import com.centuryglass.mcmap.util.args.InvalidArgumentException;
 import java.io.File;
@@ -19,6 +19,12 @@ public class Main
     // Default values:
     private static final String DEFAULT_CONFIG_PATH = "mapGen.json";
     
+    /**
+     * Starts map generation when the program is launched as an executable.
+     * 
+     * @param args  The list of arguments provided when launching the
+     *              application.
+     */
     public static void main(String [] args)
     {
         final ArgParser<MapArgOptions> argParser
@@ -51,7 +57,7 @@ public class Main
             configPath = argParser.getOptionParams(MapArgOptions.CONFIG_PATH)
                     .getParameter(0);
         }
-        MapGenOptions mapConfig = new MapGenOptions(new File(configPath));
+        MapGenConfig mapConfig = new MapGenConfig(new File(configPath));
         MapCreator mapCreator = new MapCreator(mapConfig);
         try
         {

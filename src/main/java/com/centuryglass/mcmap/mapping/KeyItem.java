@@ -7,12 +7,13 @@
 package com.centuryglass.mcmap.mapping;
 
 import com.centuryglass.mcmap.mapping.maptype.MapType;
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.awt.Color;
-import java.math.BigDecimal;
 import java.util.function.Function;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import org.apache.commons.lang.Validate;
 
 /**
  * An entry within a map key for a specific map type and region. Each KeyItem
@@ -38,6 +39,7 @@ public class KeyItem
     public KeyItem(String description, MapType type, String region,
             String imagePath, Color color)
     {
+        checkParams(description, type, region, imagePath, color);
         this.description = description;
         this.type = type;
         this.region = region;
@@ -60,6 +62,7 @@ public class KeyItem
     public KeyItem(String description, MapType type, String region,
             String imagePath)
     {
+        checkParams(description, type, region, imagePath, null);
         this.description = description;
         this.type = type;
         this.region = region;
@@ -80,11 +83,48 @@ public class KeyItem
      */
     public KeyItem(String description, MapType type, String region, Color color)
     {
+        checkParams(description, type, region, null, color);
         this.description = description;
         this.type = type;
         this.region = region;
         imagePath = null;
         this.color = color;
+    }
+    
+    /**
+     * Ensures all KeyItem construction parameters are valid.
+     * 
+     * @param description  The item description, which may not be null or
+     *                     empty.
+     * 
+     * @param type         The item's map type, which may not be null.
+     * 
+     * @param region       The item's region, which may not be null or empty.
+     * 
+     * @param imagePath    The item's image path, which may only be null if the
+     *                     color is not null.
+     * 
+     * @param color        The item's display color, which may only be null if
+     *                     the imagePath is not null or empty.
+     */
+    private void checkParams(String description, MapType type, String region,
+            String imagePath, Color color)
+    {
+        ExtendedValidate.notNullOrEmpty(description, "Key description");
+        Validate.notNull(type, "Map type cannot be null.");
+        ExtendedValidate.notNullOrEmpty(region, "Region name");
+        if (color == null)
+        {
+            Validate.notNull(imagePath, "Image path cannot be null unless a "
+                    + "color is provided.");
+            Validate.notEmpty(imagePath, "Image path cannot be null unless a "
+                    + "color is provided.");
+        }
+        else if (imagePath == null)
+        {
+            Validate.notNull(color, "Color cannot be null unles an image path"
+                    + " is provided.");
+        }
     }
     
     // Keys used when exporting KeyItems as JSON data:
@@ -130,7 +170,7 @@ public class KeyItem
         }
         return builder.build();
     }
- 
+    
     private final String description;
     private final MapType type;
     private final String region;

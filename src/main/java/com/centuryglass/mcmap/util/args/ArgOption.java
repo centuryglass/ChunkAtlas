@@ -6,6 +6,7 @@
 package com.centuryglass.mcmap.util.args;
 
 import java.util.function.Predicate;
+import org.apache.commons.lang.Validate;
 
 /**
  * Represents an option found in a list of command line arguments, possibly
@@ -22,6 +23,7 @@ public class ArgOption<ArgEnum>
      */
     protected ArgOption(ArgEnum optionType, String[] parameters)
     {
+        Validate.notNull(optionType, "Option type cannot be null.");
         this.optionType = optionType;
         this.parameters = parameters;
     }

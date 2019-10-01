@@ -1,5 +1,12 @@
+/**
+ * @file MCAFile.java
+ * 
+ * Reads data from a Minecraft region file.
+ */
+
 package com.centuryglass.mcmap.savedata;
 
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Point;
 import java.io.File;
@@ -7,20 +14,24 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.function.Function;
+import org.apache.commons.lang.Validate;
 
+/**
+ * Reads data from a Minecraft region file.
+ */
 public class MCAFile 
 {
     // width/height in chunks of a region file:
     private static final int DIM_IN_CHUNKS = 32;
     
-    
     /**
-     *  Loads data from a .mca file on construction.
+     * Loads data from a .mca file on construction.
      *
      * @param mcaFile  The Minecraft anvil region file to load.
      */
     public MCAFile(File mcaFile)
     {
+        ExtendedValidate.isFile(mcaFile, "Minecraft region file");
         loadedChunks = new ArrayList();
         // read the region file's base coordinates from the file name:
         Point regionPt = getChunkCoords(mcaFile);
@@ -98,7 +109,11 @@ public class MCAFile
                 regionBuffer.reset();
                 continue;
             }
-            int chunkByteSize = regionBuffer.readInt();
+            final int chunkByteSize = regionBuffer.readInt();
+            if (chunkByteSize == 0)
+            {
+                continue;
+            }
             regionBuffer.skipByte(); // compression type isn't needed
             byte[] chunkBytes = regionBuffer.readBytes(chunkByteSize);
             if (chunkBytes.length != chunkByteSize)
@@ -132,11 +147,12 @@ public class MCAFile
      *
      * @param regionFile  A Minecraft region file.
      *
-     * @return            The chunk coordinates, or { -1, -1 } if the file name
-     *                    was not properly constructed.
+     * @return            The chunk coordinates, or null if the file name was
+     *                    not properly constructed.
      */
     public static Point getChunkCoords(File regionFile)
     {
+        Validate.notNull(regionFile, "Region file cannot be null.");
         final String name = regionFile.getName();
         final int xStart = 2;
         final int xEnd = name.indexOf(".", xStart);
@@ -144,9 +160,8 @@ public class MCAFile
         final int zEnd = name.indexOf(".", zStart);
         if (xEnd < 0 || zEnd < 0)
         {
-            return new Point(-1, -1);
-        }
-        
+            return null;
+        }       
         return new Point(
                 DIM_IN_CHUNKS * Integer.parseInt(name.substring(xStart, xEnd)),
                 DIM_IN_CHUNKS * Integer.parseInt(name.substring(zStart, zEnd)));

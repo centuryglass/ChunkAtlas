@@ -21,6 +21,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import org.apache.commons.lang.Validate;
 
 public class RecentMapper extends Mapper
 {
@@ -87,9 +88,18 @@ public class RecentMapper extends Mapper
         return key;
     }
     
+    /**
+     * Saves the chunk's last update time, so it can be mapped later.
+     * 
+     * @param chunk  The Minecraft chunk data object.
+     * 
+     * @return       Null, as chunk colors cannot be set until the full range
+     *               of update times has been found.
+     */
     @Override
     public Color getChunkColor(ChunkData chunk)
     {
+        Validate.notNull(chunk, "Chunk cannot be null.");
         long lastUpdate = chunk.getLastUpdate();
         if (lastUpdate == 0)
         {
@@ -107,6 +117,12 @@ public class RecentMapper extends Mapper
         return new Color(0);
     }
     
+    /**
+     * Calculates color ranges from the full set of update times, and applies
+     * them to draw the map.
+     * 
+     * @param map  The map this mapper is creating. 
+     */
     @Override
     protected void finalProcessing(WorldMap map)
     {

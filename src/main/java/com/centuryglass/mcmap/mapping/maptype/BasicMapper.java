@@ -13,6 +13,7 @@ import java.awt.Point;
 import java.io.File;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.apache.commons.lang.Validate;
 
 /**
  *  BasicMapper creates a simple map that only displays which Minecraft map
@@ -91,6 +92,7 @@ public class BasicMapper extends Mapper
     @Override
     public Color getChunkColor(ChunkData chunk)
     {
+        Validate.notNull(chunk, "Chunk cannot be null.");
         if (chunk.getErrorType() != ChunkData.ErrorFlag.NONE)
         {
             return null;

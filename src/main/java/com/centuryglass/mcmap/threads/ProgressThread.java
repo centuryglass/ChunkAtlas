@@ -6,6 +6,7 @@
  */
 package com.centuryglass.mcmap.threads;
 
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -79,6 +80,8 @@ public class ProgressThread extends Thread
      */
     public void addToCounts(int regions, int chunks)
     {
+        ExtendedValidate.isNotNegative(regions, "Added region count");
+        ExtendedValidate.isNotNegative(chunks, "Added chunk count");
         Update update = new Update();
         update.addedRegions = regions;
         update.addedChunks = chunks;

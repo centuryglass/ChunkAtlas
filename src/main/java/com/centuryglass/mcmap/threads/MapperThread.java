@@ -11,6 +11,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.commons.lang.Validate;
 
 public class MapperThread extends Thread 
 {
@@ -25,6 +26,7 @@ public class MapperThread extends Thread
      */
     public MapperThread(MapCollector mapCollector)
     {
+        Validate.notNull(mapCollector, "Map collector cannot be null.");
         this.mapCollector = mapCollector;
         chunkQueue = new LinkedBlockingQueue();
         shouldExit = new AtomicBoolean();
@@ -46,6 +48,7 @@ public class MapperThread extends Thread
      */
     public void updateMaps(ChunkData chunk)
     {
+        Validate.notNull(chunk, "Chunk data cannot be null.");
         chunkQueue.add(chunk);
     }
 

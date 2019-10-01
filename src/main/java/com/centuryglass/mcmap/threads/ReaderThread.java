@@ -6,9 +6,11 @@
 package com.centuryglass.mcmap.threads;
 
 import com.centuryglass.mcmap.savedata.MCAFile;
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.io.File;
 import java.util.ArrayList;
+import org.apache.commons.lang.Validate;
 
 public class ReaderThread extends Thread
 {
@@ -28,6 +30,10 @@ public class ReaderThread extends Thread
     public ReaderThread(ArrayList<File> regionFiles, MapperThread regionMapper,
             ProgressThread threadProgress)
     {
+        Validate.notNull(regionFiles, "Region file list cannot be null.");
+        Validate.notEmpty(regionFiles, "Region file list cannot be empty.");
+        Validate.notNull(regionMapper, "Region mapper cannot be null.");
+        Validate.notNull(threadProgress, "Progress thread cannot be null.");
         this.regionFiles = regionFiles;
         this.regionMapper = regionMapper;
         this.threadProgress = threadProgress;
@@ -41,6 +47,7 @@ public class ReaderThread extends Thread
     {
         for (File file : regionFiles)
         {
+            ExtendedValidate.isFile(file, "Region file");
             MCAFile regionFile = new MCAFile(file);
             ArrayList<ChunkData> regionChunks = regionFile.getLoadedChunks();
             int chunkCount = 0;

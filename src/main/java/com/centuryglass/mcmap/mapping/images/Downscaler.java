@@ -5,15 +5,17 @@
  */
 package com.centuryglass.mcmap.mapping.images;
 
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
+import org.apache.commons.lang.Validate;
 
 /**
- *  Scales down all map tiles in a directory. These low-res copies of map tiles
+ * Scales down all map tiles in a directory. These low-res copies of map tiles
  * make it easier for map drawing applications to quickly draw all tiles when
  * the map is zoomed out.
  */
@@ -31,35 +33,14 @@ public class Downscaler
      * 
      * @param newSizes                   The list of new tile resolutions to
      *                                   create.
-     * 
-     * @throws IllegalArgumentException  If tileDir or outDir exist as files,
-     *                                   if tileDir does not exist, or if
-     *                                   newResolution is empty, null or
-     *                                   contains any negative or zero values.
-     * 
-     * @throws SecurityException         If unable to read from the input
-     *                                   directory or write to the output
-     *                                   directory.
      */
     public static void scaleTiles(File tileDir, int initialSize, int[] newSizes)
-            throws IllegalArgumentException, SecurityException
     {
-        if (! tileDir.exists())
-        {
-            throw new IllegalArgumentException("Tile source directory \""
-                    + tileDir.getAbsolutePath() + "\" does not exist.");
-        }
-        if (tileDir.isFile())
-        {
-            throw new IllegalArgumentException("Looked for tile source"
-                    + " directory at \'" + tileDir.getAbsolutePath()
-                    + "\" but found a file.");
-        }
-        if (! tileDir.canRead())
-        {
-            throw new SecurityException("Tile source directory \""
-                    + tileDir.getAbsolutePath() + "\" cannot be read.");
-        }
+        ExtendedValidate.isDirectory(tileDir, "Tile source directory");
+        ExtendedValidate.isPositive(initialSize, "Initial tile size");
+        Validate.notNull(newSizes, "Size list cannot be null.");
+        Validate.isTrue(newSizes.length > 0,
+                "Size list cannot be zero-length.");
         File [] mapTiles = tileDir.listFiles();
         
         // Load images from files, and store them with their file objects:
@@ -123,11 +104,7 @@ public class Downscaler
         // Create and populate scaled tile directories:
         for (int size : newSizes)
         {
-            if (size <= 0)
-            {
-                throw new IllegalArgumentException("Invalid tile resolution "
-                        + String.valueOf(size));
-            }
+            ExtendedValidate.isPositive(size, "Alternate tile size");
             File scaledDir = new File(parentDir, String.valueOf(size));
             if (! scaledDir.exists())
             {
@@ -153,51 +130,5 @@ public class Downscaler
                 }
             });
         }    
-    }
-    
-    /**
-     * Applies Downscaler.scaleTiles recursively to a set of nested source 
-     * directories.
-     * 
-     * @param tileDir                    Main map tile source directory.
-     * 
-     * @param initialSize                The initial width and height in pixels
-     *                                   of all map tiles.
-     * 
-     * @param newSizes                   The width and height in pixels to save
-     *                                   all copied files.
-     * 
-     * @throws IllegalArgumentException  If tileDir or outDir exist as files,
-     *                                   if tileDir does not exist, or if
-     *                                   newResolution is not a positive number.
-     * 
-     * @throws SecurityException         If unable to read from the input
-     *                                   directory or write to the output
-     *                                   directory.
-     */
-    public static void recursiveScale(File tileDir, int initialSize,
-            int[] newSizes) throws IllegalArgumentException, SecurityException
-    {
-        boolean imagesFound = false;
-        File [] directoryFiles = tileDir.listFiles();
-        for (File file : directoryFiles)
-        {
-            if (file.isDirectory())
-            {
-                String dirName = file.getName();
-                if (! dirName.matches("^\\d+$"))
-                {
-                    recursiveScale(file, initialSize, newSizes);
-                }
-            }
-            else if (! imagesFound)
-            {
-                imagesFound = (file.getPath().endsWith(".png"));
-            }
-        }
-        if (imagesFound)
-        {
-            scaleTiles(tileDir, initialSize, newSizes);
-        }
     }
 }

@@ -44,6 +44,7 @@ public class ConfigFile
      */
     protected ConfigFile(File configFile, String defaultFilePath)
     {
+        Validate.notNull(defaultFilePath, "Default path must not be null.");
         // Attempt to load JSON options:
         if (configFile != null && configFile.isFile())
         {
@@ -127,6 +128,7 @@ public class ConfigFile
      */
     protected JsonValue getSavedOrDefaultOptions(String jsonKey)
     {
+        Validate.notNull(jsonKey, "JSONKey must not be null.");
         JsonValue defaultValue = defaultOptions.get(jsonKey);
         if (loadedOptions == null)
         {
@@ -164,6 +166,7 @@ public class ConfigFile
     protected JsonObject getObjectOption
     (String jsonKey, JsonObject defaultValue)
     {
+        Validate.notNull(jsonKey, "JSONKey must not be null.");
         return (JsonObject) getTypedOption(jsonKey, ValueType.OBJECT,
                 (JsonValue) defaultValue);
     }
@@ -181,6 +184,7 @@ public class ConfigFile
      */
     protected JsonArray getArrayOption(String jsonKey, JsonArray defaultValue)
     {
+        Validate.notNull(jsonKey, "JSONKey must not be null.");
         return (JsonArray) getTypedOption(jsonKey, ValueType.ARRAY,
                 (JsonValue) defaultValue);
     }
@@ -199,6 +203,7 @@ public class ConfigFile
     protected String getStringOption
     (String jsonKey, String defaultValue)
     {
+        Validate.notNull(jsonKey, "JSONKey must not be null.");
         JsonValue option = getTypedOption(jsonKey, ValueType.STRING, null);
         if (option == null)
         {
@@ -222,6 +227,7 @@ public class ConfigFile
     protected int getIntOption
     (String jsonKey, int defaultValue)
     {
+        Validate.notNull(jsonKey, "JSONKey must not be null.");
         JsonNumber option
                 = (JsonNumber) getTypedOption(jsonKey, ValueType.NUMBER, null);
         if (option == null || ! option.isIntegral())
@@ -253,6 +259,7 @@ public class ConfigFile
     protected long getLongOption
     (String jsonKey, long defaultValue)
     {
+        Validate.notNull(jsonKey, "JSONKey must not be null.");
         JsonNumber option
                 = (JsonNumber) getTypedOption(jsonKey, ValueType.NUMBER, null);
         if (option == null || ! option.isIntegral())
@@ -284,6 +291,7 @@ public class ConfigFile
     protected double getDoubleOption
     (String jsonKey, double defaultValue)
     {
+        Validate.notNull(jsonKey, "JSONKey must not be null.");
         JsonNumber option
                 = (JsonNumber) getTypedOption(jsonKey, ValueType.NUMBER, null);
         if (option == null)
@@ -307,6 +315,7 @@ public class ConfigFile
      */
     protected boolean getBoolOption(String jsonKey, boolean defaultValue)
     {
+        Validate.notNull(jsonKey, "JSONKey must not be null.");
         JsonValue configValue = getSavedOrDefaultOptions(jsonKey);
         if (configValue == null)
         {
@@ -342,6 +351,7 @@ public class ConfigFile
     private JsonValue getTypedOption
     (String jsonKey, ValueType expectedType, JsonValue defaultValue)
     {
+        Validate.notNull(jsonKey, "JSONKey must not be null.");
         assert (defaultValue == null || defaultValue.getValueType()
                 == expectedType);
         JsonValue configValue = getSavedOrDefaultOptions(jsonKey);

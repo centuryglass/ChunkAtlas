@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.BiFunction;
+import org.apache.commons.lang.Validate;
 
 /**
  * Assigns color values over a range of long integer values.
@@ -50,6 +51,11 @@ public final class ColorRangeSet
         protected Range(long maxValue, long minValue, Color maxColor,
                 Color minColor)
         {
+            Validate.isTrue(maxValue > minValue, "Maximum must exceed minimum,"
+                    + "but maximum = " + String.valueOf(maxValue)
+                    + " and minimum = " + String.valueOf(minValue) + ".");
+            Validate.notNull(maxColor, "Max. color cannot be null.");
+            Validate.notNull(minColor, "Min. color cannot be null.");
             this.maxValue = maxValue;
             this.minValue = minValue;
             this.maxColor = maxColor;
@@ -102,6 +108,11 @@ public final class ColorRangeSet
     public ColorRangeSet(long maxValue, Color color, FadeType fadeType,
             double maxFade)
     {
+        Validate.notNull(color, "Range color cannot be null.");
+        Validate.notNull(fadeType, "Fade type cannot be null.");
+        Validate.isTrue(maxFade >= 0 && maxFade <= 1,
+                "Minimum color intensity must be between zero and one"
+                + " inclusive, but maxFade = " + String.valueOf(maxFade));
         ranges = new ArrayList();
         addColorRange(maxValue, color, fadeType, maxFade);
     }
@@ -124,6 +135,18 @@ public final class ColorRangeSet
     public void addColorRange(long maxValue, Color color, FadeType fadeType,
             double maxFade)
     {
+        ranges.forEach((internalRange) ->
+        {
+            Validate.isTrue(internalRange.value != maxValue,
+                    "The range with max value " + String.valueOf(maxValue)
+                    + " has already been added.");
+            
+        });
+        Validate.notNull(color, "Range color cannot be null.");
+        Validate.notNull(fadeType, "Fade type cannot be null.");
+        Validate.isTrue(maxFade >= 0 && maxFade <= 1,
+                "Minimum color intensity must be between zero and one"
+                + " inclusive, but maxFade = " + String.valueOf(maxFade));
         ranges.add(new InternalRange(maxValue, color, fadeType, maxFade));
         Collections.sort(ranges);
     }
@@ -178,6 +201,9 @@ public final class ColorRangeSet
                     getComp.apply(range.color.getGreen(), endColor.getGreen()),
                     getComp.apply(range.color.getBlue(), endColor.getBlue()));
         }
+        System.err.println("Failed to find color for value "
+                + String.valueOf(value)
+                + " within " + String.valueOf(ranges.size()) + " ranges.");
         return null;
     }
     
@@ -185,13 +211,13 @@ public final class ColorRangeSet
      * Gets a list of ordered color ranges held by this RangeSet.
      * 
      * @return  A new array holding Range objects representing each color range,
-     *          or null if no ranges are set.
+     *          or an empty array if no ranges are set.
      */
     public Range[] getRanges()
     {
         if (ranges.isEmpty())
         {
-            return null;
+            return new Range[0];
         }
         final Range[] rangeList = new Range[ranges.size()];
         final int lastIdx = ranges.size() - 1;
@@ -215,7 +241,7 @@ public final class ColorRangeSet
                     minColor);
         }
         return rangeList;
-    }  
+    }
     
     // Internal representation of color ranges:
     private class InternalRange implements Comparable<InternalRange>
@@ -233,11 +259,11 @@ public final class ColorRangeSet
         public InternalRange
         (long value, Color color, FadeType fadeType, double maxFade)
         {
-            if (maxFade > 1 || maxFade < 0)
-            {
-                throw new IllegalArgumentException("maxFade must be between "
-                        + "0 and 1.");   
-            }
+            Validate.notNull(color, "Color cannot be null.");
+            Validate.notNull(fadeType, "Fade type cannot be null.");
+            Validate.isTrue(maxFade >= 0 && maxFade <= 1,
+                "Minimum color intensity must be between zero and one"
+                + " inclusive, but maxFade = " + String.valueOf(maxFade));
             this.value = value;
             this.color = color;
             this.fadeType = fadeType;
@@ -257,6 +283,7 @@ public final class ColorRangeSet
         @Override
         public int compareTo(InternalRange otherRange)
         {
+            Validate.notNull(otherRange, "Ranges should never be null.");
             return (int) (otherRange.value - value);
         }
         

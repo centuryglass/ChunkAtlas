@@ -6,10 +6,12 @@
 
 package com.centuryglass.mcmap.mapping.images;
 
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import com.centuryglass.mcmap.worldinfo.Biome;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang.Validate;
 
 public class BiomeTextures
 {
@@ -38,6 +40,7 @@ public class BiomeTextures
      */
     public static String getTexturePath(Biome biome)
     {
+        Validate.notNull(biome, "Biome cannot be null.");
         return TEXTURE_DIR + biome.name() + ".png";
     }
     
@@ -57,11 +60,8 @@ public class BiomeTextures
      */
     public Color getPixel(Biome biome, int x, int y, int scale)
     {
-        if (biome == null)
-        {
-            System.err.println("Null biome!");
-            return null;
-        }
+        Validate.notNull(biome, "Biome cannot be null.");
+        ExtendedValidate.isPositive(scale, "Texture scale");
         Texture texture = textures.get(biome);
         if (texture == null)
         {

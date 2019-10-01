@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import org.apache.commons.lang.Validate;
 
 /**
  * ActivityMapper a map showing the relative amount of time that players have
@@ -103,6 +104,7 @@ public class ActivityMapper extends Mapper
     @Override
     public Color getChunkColor(ChunkData chunk)
     {
+        Validate.notNull(chunk, "Chunk cannot be null.");
         if (chunk.getErrorType() != ChunkData.ErrorFlag.NONE)
         {
             return null;
@@ -155,6 +157,8 @@ public class ActivityMapper extends Mapper
         {
             ColorRangeSet.Range[] rangeDescriptionList
                     = colorRanges.getRanges();
+            Validate.notEmpty(rangeDescriptionList,
+                    "Color ranges should not be empty.");
             for (ColorRangeSet.Range range : rangeDescriptionList)
             {
                 TickDuration rangeMax = new TickDuration(range.maxValue);
@@ -168,6 +172,7 @@ public class ActivityMapper extends Mapper
             final int x = entry.getKey().x;
             final int z = entry.getKey().y;
             final long mapValue = entry.getValue();
+            
             map.setChunkColor(x, z, colorRanges.getValueColor(mapValue));
         });
         super.finalProcessing(map);

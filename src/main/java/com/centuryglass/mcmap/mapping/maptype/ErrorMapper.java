@@ -7,8 +7,6 @@
 package com.centuryglass.mcmap.mapping.maptype;
 
 import com.centuryglass.mcmap.mapping.KeyItem;
-import com.centuryglass.mcmap.mapping.images.BiomeTextures;
-import com.centuryglass.mcmap.worldinfo.Biome;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
 import java.io.File;
@@ -16,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import org.apache.commons.lang.Validate;
 
 /**
  *  ErrorMapper shows all chunks with missing or invalid data, color coded by
@@ -115,6 +114,7 @@ public class ErrorMapper extends Mapper
     @Override
     public Color getChunkColor(ChunkData chunk)
     {
+        Validate.notNull(chunk, "Chunk cannot be null.");
         return ERROR_COLORS.get(chunk.getErrorType());
     }    
 }

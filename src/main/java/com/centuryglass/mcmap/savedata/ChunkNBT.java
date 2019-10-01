@@ -8,6 +8,7 @@
  */
 package com.centuryglass.mcmap.savedata;
 
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import com.centuryglass.mcmap.worldinfo.Biome;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import com.centuryglass.mcmap.worldinfo.Structure;
@@ -30,6 +31,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
+import org.apache.commons.lang.Validate;
 
 /**
  * ChunkNBT extracts compressed NBT chunk data arrays, and parses the extracted
@@ -71,10 +73,9 @@ public class ChunkNBT
      */
     public ChunkNBT(byte[] compressedData)
     {
-        if (compressedData == null || compressedData.length == 0)
-        {
-            return;
-        }
+        Validate.notNull(compressedData, "Data cannot be null.");
+        Validate.isTrue(compressedData.length != 0,
+                "Data cannot be length 0.");
 
         // Inflate ZLib compressed chunk data:
         final int bufferSize = compressedData.length * BUF_MULT;
@@ -174,7 +175,6 @@ public class ChunkNBT
                 {
                     if (chunkStream.remaining() == 0)
                     {
-                        //System.out.println("End of stream at " + chunkStream.getStreamPos());
                         return builder;
                     }
                     tag = readTag();
@@ -665,6 +665,7 @@ public class ChunkNBT
      */
     public final void saveToFile(String path)
     {
+        ExtendedValidate.notNullOrEmpty(path, "JSON path");
         OutputStream jsonOut;
         try
         {

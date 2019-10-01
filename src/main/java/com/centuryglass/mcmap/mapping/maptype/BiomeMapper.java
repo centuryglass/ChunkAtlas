@@ -15,6 +15,7 @@ import java.io.File;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import org.apache.commons.lang.Validate;
 
 /**
  * BiomeMapper draws a map showing the biomes of all generated chunks within
@@ -102,6 +103,7 @@ public class BiomeMapper extends Mapper
     @Override
     protected Color getChunkColor(ChunkData chunk)
     {
+        Validate.notNull(chunk, "Chunk cannot be null.");
         if (chunk.getErrorType() != ChunkData.ErrorFlag.NONE)
         {
             return null;

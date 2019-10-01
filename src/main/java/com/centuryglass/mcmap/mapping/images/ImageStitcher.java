@@ -6,6 +6,7 @@
  */
 package com.centuryglass.mcmap.mapping.images;
 
+import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -16,7 +17,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
+import org.apache.commons.lang.Validate;
 
+/**
+ * Stitches a set of image tiles together into a single map image, optionally
+ * with a Minecraft map item background and border.
+ */
 public class ImageStitcher
 {
     /**
@@ -29,6 +35,7 @@ public class ImageStitcher
      */
     private static Point getTilePos(File tile)
     {
+        Validate.notNull(tile, "Map tile file object cannot be null.");
         final String name = tile.getName();
         final String numericChars = "-0123456789";
         int xStart = -1;
@@ -55,6 +62,34 @@ public class ImageStitcher
                 Integer.parseInt(name.substring(zStart, zEnd)));
     }
     
+    /**
+     * Stitches a set of tile images together into a single-image map.
+     * 
+     * @param tileDir         The directory containing tile images to stitch
+     *                        together.
+     * 
+     * @param outFile         The path where the file image will be saved.
+     * 
+     * @param xMin            The lowest chunk x-coordinate that will be shown
+     *                        within the map image.
+     * 
+     * @param zMin            The lowest chunk z-coordinate that will be shown
+     *                        within the map image.
+     * 
+     * @param width           The height in chunks of the mapped area that will
+     *                        be copied into the map image.
+     * 
+     * @param height          The width in chunks of the mapped area that will
+     *                        be copied into the map image.
+     * 
+     * @param pixelsPerChunk  The width and height in pixels of each chunk drawn
+     *                        in the final map image.
+     * 
+     * @param tileSize        The width and height in chunks of each tile image.
+     * 
+     * @param drawBackground  Whether the Minecraft map background texture
+     *                        should be drawn behind map images.
+     */
     public static void stitch(File tileDir,
             File outFile,
             int xMin,
@@ -65,6 +100,13 @@ public class ImageStitcher
             int tileSize,
             boolean drawBackground)
     {
+        ExtendedValidate.isDirectory(tileDir, "Tile source directory");
+        ExtendedValidate.couldBeFile(outFile, "Image output path");
+        ExtendedValidate.isPositive(width, "Width");
+        ExtendedValidate.isPositive(height, "Height");
+        ExtendedValidate.isPositive(pixelsPerChunk, "Pixels per chunk");
+        ExtendedValidate.isPositive(tileSize, "Tile size");
+        
         File [] possibleTiles = tileDir.listFiles();
         Map <File, Point> tilePoints = new HashMap();
         for (File tile : possibleTiles)
