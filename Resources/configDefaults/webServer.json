@@ -1,4 +1,4 @@
 {
-    "address" : "localhost",
+    "address" : "http://localhost",
     "port" : 8080
 }
