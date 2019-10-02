@@ -23,6 +23,8 @@ import java.util.TreeSet;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang.Validate;
 
 /**
@@ -212,6 +214,28 @@ public class MapCollector
             {
                 builder.add(keyItem.toJson());
             });
+        });
+        return builder.build();
+    }
+    
+    /**
+     * Gets a JSON object storing all map files created by all Mappers.
+     * 
+     * @return  A JSON object mapping each Mapper's name to its list of file
+     *          paths.
+     */
+    public JsonObject getMapFiles()
+    {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        mappers.forEach((mapper) ->
+        {
+            JsonArrayBuilder fileListBuilder = Json.createArrayBuilder();
+            ArrayList<File> mapFiles = mapper.getMapFileList();
+            mapFiles.forEach((file) ->
+            {
+                fileListBuilder.add(file.getAbsolutePath());
+            });
+            builder.add(mapper.getTypeName(), fileListBuilder.build());  
         });
         return builder.build();
     }

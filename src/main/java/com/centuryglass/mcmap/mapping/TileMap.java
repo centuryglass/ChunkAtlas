@@ -109,6 +109,36 @@ public class TileMap extends WorldMap
     }
     
     /**
+     * Gets the list of all files used to hold map data.
+     * 
+     * @return  The list of map image files. 
+     */
+    @Override
+    public ArrayList<File> getMapFiles()
+    {
+        final ArrayList<File> files = new ArrayList();
+        Deque<File> mapDirs = new ArrayDeque();
+        mapDirs.push(getTileSizeDir(tileSize));
+        for (int size : altSizes)
+        {
+            mapDirs.push(getTileSizeDir(size));
+        }
+        while (! mapDirs.isEmpty())
+        {
+            File mapDir = mapDirs.pop();
+            File[] childFiles = mapDir.listFiles();
+            for (File child : childFiles)
+            {
+                if (child.isFile())
+                {
+                    files.add(child);
+                }
+            }
+        }
+        return files;
+    }
+    
+    /**
      * All data needed to get or set a specific pixel within a tile image.
      */
     private class TilePixelData
@@ -462,36 +492,6 @@ public class TileMap extends WorldMap
                 }
             }
         }
-    }
-    
-    /**
-     * Gets the list of all files used to hold map data.
-     * 
-     * @return  The list of map image files. 
-     */
-    @Override
-    protected ArrayList<File> getMapFiles()
-    {
-        final ArrayList<File> files = new ArrayList();
-        Deque<File> mapDirs = new ArrayDeque();
-        mapDirs.push(getTileSizeDir(tileSize));
-        for (int size : altSizes)
-        {
-            mapDirs.push(getTileSizeDir(size));
-        }
-        while (! mapDirs.isEmpty())
-        {
-            File mapDir = mapDirs.pop();
-            File[] childFiles = mapDir.listFiles();
-            for (File child : childFiles)
-            {
-                if (child.isFile())
-                {
-                    files.add(child);
-                }
-            }
-        }
-        return files;
     }
     
     // TileMap creation time, used when determining if tiles need to be updated:

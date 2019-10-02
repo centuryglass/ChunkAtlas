@@ -208,7 +208,17 @@ public class MapImage extends WorldMap
             }
         }
     }
-    
+         
+    /**
+     * Gets the list of all files used to hold map data.
+     * 
+     * @return  The list of map image files. 
+     */
+    @Override
+    public ArrayList<File> getMapFiles()
+    {
+        return mapFiles;
+    }
         
     /**
      * Gets the map color near a chunk coordinate.
@@ -336,17 +346,6 @@ public class MapImage extends WorldMap
                 chunkAction.accept(chunkPt);
             } 
         }
-    }
-         
-    /**
-     * Gets the list of all files used to hold map data.
-     * 
-     * @return  The list of map image files. 
-     */
-    @Override
-    protected ArrayList<File> getMapFiles()
-    {
-        return mapFiles;
     }
     
     // Saved map image data:

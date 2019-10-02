@@ -50,6 +50,13 @@ public abstract class WorldMap
     }
     
     /**
+     * Gets the list of all files used to hold map data.
+     * 
+     * @return  The list of map image files. 
+     */
+    public abstract ArrayList<File> getMapFiles();
+    
+    /**
      * Gets the length in pixels of each chunk edge within the map.
      *
      * @return  The chunk pixel dimensions. This serves as the multiplier
@@ -190,13 +197,6 @@ public abstract class WorldMap
      * @param chunkAction  The action to perform for each valid chunk.
      */
     protected abstract void foreachChunk(Consumer<Point> chunkAction);
-    
-    /**
-     * Gets the list of all files used to hold map data.
-     * 
-     * @return  The list of map image files. 
-     */
-    protected abstract ArrayList<File> getMapFiles();
     
     /**
      * Gets the directory where map files will be saved.

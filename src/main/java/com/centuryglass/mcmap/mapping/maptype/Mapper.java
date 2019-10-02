@@ -14,6 +14,7 @@ import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.awt.Color;
 import java.awt.Point;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Set;
 import org.apache.commons.lang.Validate;
 
@@ -139,6 +140,20 @@ public abstract class Mapper
         }
         finalProcessing(map);
         map.saveToDisk();
+    }
+    
+    /**
+     * Gets the list of map files created by this Mapper.
+     * 
+     * @return  A list containing all created map files. 
+     */
+    public final ArrayList<File> getMapFileList()
+    {
+        if (map == null)
+        {
+            return new ArrayList();
+        }
+        return map.getMapFiles();
     }
     
     /**

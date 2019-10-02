@@ -22,6 +22,7 @@ import com.centuryglass.mcmap.util.args.ArgParser;
 import com.centuryglass.mcmap.util.args.InvalidArgumentException;
 import java.awt.Point;
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,8 @@ import java.util.function.Function;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang.Validate;
 
 /**
@@ -53,6 +56,7 @@ public final class MapCreator
         regionsToMap = new ArrayList();
         enabledMapTypes = new TreeSet();
         keyBuilder = Json.createArrayBuilder();
+        tileListBuilder = Json.createObjectBuilder();
     }
     
     /**
@@ -66,6 +70,7 @@ public final class MapCreator
         regionsToMap = new ArrayList();
         enabledMapTypes = new TreeSet();
         keyBuilder = Json.createArrayBuilder();
+        tileListBuilder = Json.createObjectBuilder();
         applyConfigOptions(mapConfig);
     }
     
@@ -524,6 +529,17 @@ public final class MapCreator
     }
     
     /**
+     * Gets the list of all map file paths created by the MapCreator.
+     * 
+     * @return  A JSON object holding lists of tile paths, indexed by region and
+     *          map type.
+     */
+    public JsonObject getMapTileList()
+    {
+        return tileListBuilder.build();
+    }
+    
+    /**
      * Apply the current settings to create tile maps for a region directory.
      * 
      * @param mapRegion  A Minecraft region directory path and its associated
@@ -567,7 +583,7 @@ public final class MapCreator
             }
             Collections.sort(regionFiles, new RegionSort());
         }
-        final int chunksMapped = mapRegion(regionFiles);
+        final int chunksMapped = mapRegion(mapRegion.name, regionFiles);
         if (chunksMapped > 0)
         {
             int mapKM = MapUnit.convert(chunksMapped, MapUnit.CHUNK,
@@ -625,7 +641,7 @@ public final class MapCreator
         }
         mappers = new MapCollector(outDir, mapRegion.name, xMin, zMin, width,
                 height, pixelsPerChunk, enabledMapTypes);
-        final int chunksMapped = mapRegion(regionFiles);
+        final int chunksMapped = mapRegion(mapRegion.name, regionFiles);
         if (chunksMapped > 0)
         {
             int numChunks = width * height;
@@ -644,12 +660,15 @@ public final class MapCreator
      * Finishes the process of mapping a set of Minecraft region files,
      * processing all regions within multiple threads.
      * 
+     * @param regionName   The name of the mapped region.
+     * 
      * @param regionFiles  The set of Minecraft region files to map.
      * 
      * @return             The total number of region chunks mapped.
      */
-    private int mapRegion(ArrayList<File> regionFiles)
+    private int mapRegion(String regionName, ArrayList<File> regionFiles)
     {
+        ExtendedValidate.notNullOrEmpty(regionName, "Region name");
         Validate.notNull(regionFiles, "Region files cannot be null.");
         Validate.notNull(mappers, "MapCollector cannot be null.");
         int numRegionFiles = regionFiles.size();
@@ -727,6 +746,7 @@ public final class MapCreator
         {
             keyBuilder.add(regionKey.get(i));
         }
+        tileListBuilder.add(regionName, mappers.getMapFiles());
         return progressThread.getChunkCount();
     }
     
@@ -746,7 +766,8 @@ public final class MapCreator
     private int[] altTileSizes = null;
     
     private MapCollector mappers = null;
-    JsonArrayBuilder keyBuilder;
+    private final JsonArrayBuilder keyBuilder;
+    private final JsonObjectBuilder tileListBuilder;
     private final ArrayList<Region> regionsToMap;
     private Set<MapType> enabledMapTypes;
     private int pixelsPerChunk = 0;  
