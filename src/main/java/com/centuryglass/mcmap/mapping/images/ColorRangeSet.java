@@ -51,9 +51,10 @@ public final class ColorRangeSet
         protected Range(long maxValue, long minValue, Color maxColor,
                 Color minColor)
         {
-            Validate.isTrue(maxValue > minValue, "Maximum must exceed minimum,"
-                    + "but maximum = " + String.valueOf(maxValue)
-                    + " and minimum = " + String.valueOf(minValue) + ".");
+            Validate.isTrue(maxValue >= minValue,
+                    "Minimum must not exceed maximum, but maximum = "
+                    + String.valueOf(maxValue) + " and minimum = "
+                    + String.valueOf(minValue) + ".");
             Validate.notNull(maxColor, "Max. color cannot be null.");
             Validate.notNull(minColor, "Min. color cannot be null.");
             this.maxValue = maxValue;
@@ -224,7 +225,6 @@ public final class ColorRangeSet
         for (int i = 0; i <= lastIdx; i++)
         {
             final InternalRange range = ranges.get(i);
-            final Color maxColor = range.color;
             Color minColor = range.getRangeEndColor();
             if (minColor == null)
             {

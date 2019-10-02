@@ -8,11 +8,13 @@ package com.centuryglass.mcmap.mapping;
 
 import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,16 +41,23 @@ public class TileMap extends WorldMap
     /**
      * Sets initial map data on construction.
      * 
-     * @param mapDir    The directory where image tiles will be saved.
+     * @param mapDir          The directory where image tiles will be saved.
      * 
-     * @param baseName  The base string to use when naming image files.
+     * @param baseName        The base string to use when naming image files.
      * 
-     * @param tileSize  The width and height, in both chunks and pixels, of
-     *                  each map tile image.
+     * @param tileSize        The width and height in chunks of each map tile
+     *                        image.
+     * 
+     * @param altSizes        An optional list of alternate tile sizes to
+     *                        create.
+     * 
+     * @param pixelsPerChunk  The width and height in pixels of each mapped
+     *                        chunk.
      */
-    public TileMap(File mapDir, String baseName, int tileSize)
+    public TileMap(File mapDir, String baseName, int tileSize, int[] altSizes,
+            int pixelsPerChunk)
     {
-        super(mapDir, baseName, 1);
+        super(mapDir, baseName, pixelsPerChunk);
         ExtendedValidate.couldBeDirectory(mapDir, "Tile output directory");
         ExtendedValidate.notNullOrEmpty(baseName, "Base tile name");
         ExtendedValidate.isPositive(tileSize, "Tile size");
@@ -56,6 +65,7 @@ public class TileMap extends WorldMap
         mapTiles = new HashMap();
         recentTiles = new ArrayDeque();
         this.tileSize = tileSize;
+        this.altSizes = altSizes;
         if (! mapDir.isDirectory())
         {
             mapDir.mkdirs();
@@ -74,16 +84,10 @@ public class TileMap extends WorldMap
      */
     @Override
     public Color getChunkColor(int xPos, int zPos)
-    {
-        Point tilePt = getTilePoint(xPos, zPos);
-        if(! mapTiles.containsKey(tilePt))
-        {
-            return null;
-        }
-        BufferedImage tile = getTileImage(tilePt);
-        int xPixel = (xPos - tilePt.x) * getChunkSize();
-        int yPixel = (zPos - tilePt.y) * getChunkSize();
-        return new Color(tile.getRGB(xPixel, yPixel));
+    {        
+        TilePixelData chunkData = getChunkPixelData(xPos, zPos);
+        return new Color(chunkData.tile.getRGB(chunkData.pixelCoords.x,
+                chunkData.pixelCoords.y));
     }   
     
     /**
@@ -99,30 +103,148 @@ public class TileMap extends WorldMap
     public void setChunkColor(int xPos, int zPos, Color color)
     {
         Validate.notNull(color, "Color cannot be null.");
-        Point tilePt = getTilePoint(xPos, zPos);
-        BufferedImage tile = getTileImage(tilePt);
-        final int chunkPx = getChunkSize();       
-        int xPixel = (xPos - tilePt.x) * chunkPx;
-        int yPixel = (zPos - tilePt.y) * chunkPx;
-        try
+        TilePixelData chunkData = getChunkPixelData(xPos, zPos);
+        chunkData.tile.setRGB(chunkData.pixelCoords.x, chunkData.pixelCoords.y,
+                color.getRGB());
+    }
+    
+    /**
+     * All data needed to get or set a specific pixel within a tile image.
+     */
+    private class TilePixelData
+    {
+        protected final BufferedImage tile;
+        protected final Point pixelCoords;
+        protected TilePixelData(BufferedImage tile, Point pixelCoords)
         {
-            int numPixels = chunkPx * chunkPx;
-            for (int i = 0; i < numPixels; i++)
+            Validate.notNull(tile, "Tile image cannot be null.");
+            Validate.notNull(pixelCoords, "Pixel coordinates cannot be null.");
+            ExtendedValidate.inInclusiveBounds(pixelCoords.x, 0,
+                    tile.getWidth() - 1, "Pixel x-coordinate");
+            ExtendedValidate.inInclusiveBounds(pixelCoords.y, 0,
+                    tile.getHeight() - 1, "Pixel y-coordinate");
+            this.tile = tile;
+            this.pixelCoords = pixelCoords;
+        }
+    }
+    
+    /**
+     * Gets all data needed to get or set the upper-left image pixel mapped to
+     * a specific Minecraft chunk.
+     * 
+     * @param xPos          The chunk's x-coordinate.
+     * 
+     * @param zPos          The chunk's z-coordinate.
+     * 
+     * @return              TilePixelData holding the requested chunk's image
+     *                      object and image pixel coordinates.
+     */
+    private TilePixelData getChunkPixelData(int xPos, int zPos)
+    {
+        final int chunkSize = getChunkSize();
+        final Point tilePt = getTilePoint(xPos, zPos);
+        return new TilePixelData(getTileImage(tilePt), new Point(
+                (xPos - tilePt.x) * chunkSize,
+                (zPos - tilePt.y) * chunkSize));
+    }
+    
+    /**
+     * Gets all data needed to get or set a pixel at a specific offset from a
+     * Minecraft map chunk.
+     * 
+     * @param xPos          The chunk's x-coordinate.
+     * 
+     * @param zPos          The chunk's z-coordinate.
+     * 
+     * @param xPixelOffset  The x-offset in pixels from the chunk's image 
+     *                      coordinate.
+     * 
+     * @param yPixelOffset  The y-offset in pixels from the chunk's image
+     *                      coordinate.
+     * 
+     * @return              TilePixelData holding the requested pixel's image
+     *                      object and image pixel coordinates.
+     */
+    private TilePixelData getChunkOffsetData(int xPos, int zPos,
+            int xPixelOffset, int yPixelOffset)
+    {
+        final int chunkSize = getChunkSize();
+        final int tilePxSize = chunkSize * tileSize;
+        final Point tilePt = getTilePoint(xPos, zPos);   
+        // If offsets push the pixel coordinates outside of tile bounds, adjust
+        // coordinates to find the tile that actually contains the selected
+        // pixel.
+        class OffsetFinder
+        {
+            public OffsetFinder
+            (int chunkCoord, int tileCoord, int pixelOffset)
             {
-                tile.setRGB(xPixel + (i % chunkPx), yPixel + (i / chunkPx),
-                        color.getRGB());
+                int px = (chunkCoord - tileCoord) * chunkSize + pixelOffset;
+                tileChunkOffset = tileSize
+                        * (px / tilePxSize - (px < 0 ? 1 : 0));
+                pixelCoord = px - tileChunkOffset * chunkSize;
             }
+            public final int pixelCoord;
+            public final int tileChunkOffset;
         }
-        catch (ArrayIndexOutOfBoundsException e)
-        {
-            int imageSize = tileSize * getChunkSize();
-            System.err.println("Pixel (" + xPixel + ", " + yPixel
-                    + "), is out of bounds for an image of size "
-                    + imageSize + " x " + imageSize + ".");
-            System.err.println("TilePt=" + tilePt.toString() +", chunkPt="
-                    + new Point(xPos, zPos).toString());
-            System.exit(1);       
-        }
+        OffsetFinder xOffset = new OffsetFinder(xPos, tilePt.x, xPixelOffset);
+        OffsetFinder yOffset = new OffsetFinder(zPos, tilePt.y, yPixelOffset);
+        tilePt.translate(xOffset.tileChunkOffset, yOffset.tileChunkOffset);
+        return new TilePixelData(getTileImage(tilePt),
+                new Point(xOffset.pixelCoord, yOffset.pixelCoord));  
+    }
+    
+    /**
+     * Gets the map color near a chunk coordinate.
+     * 
+     * @param xPos          The chunk's x-coordinate.
+     * 
+     * @param zPos          The chunk's z-coordinate.
+     * 
+     * @param xPixelOffset  The x-offset in pixels from the chunk's image 
+     *                      coordinate.
+     * 
+     * @param yPixelOffset  The y-offset in pixels from the chunk's image
+     *                      coordinate.
+     * 
+     * @return              The color of the pixel with the given offset from
+     *                      the chunk coordinate, or null if the requested pixel
+     *                      is outside of the map bounds.
+     */
+    @Override
+    protected Color getChunkOffsetColor(int xPos, int zPos, int xPixelOffset,
+            int yPixelOffset)
+    { 
+        TilePixelData offsetData = getChunkOffsetData(xPos, zPos, xPixelOffset,
+                yPixelOffset);
+        return new Color(offsetData.tile.getRGB(
+                offsetData.pixelCoords.x, offsetData.pixelCoords.y));
+    }
+    
+    /**
+     * Sets the map color near a chunk coordinate.
+     * 
+     * @param xPos          The chunk's x-coordinate.
+     * 
+     * @param zPos          The chunk's z-coordinate.
+     * 
+     * @param xPixelOffset  The x-offset in pixels from the chunk's image 
+     *                      coordinate.
+     * 
+     * @param yPixelOffset  The y-offset in pixels from the chunk's image
+     *                      coordinate.
+     * 
+     * @param color         The color to apply to the selected pixel, if not
+     *                      outside of the map bounds.
+     */
+    @Override
+    protected void setChunkOffsetColor(int xPos, int zPos,
+            int xPixelOffset, int yPixelOffset, Color color)
+    {    
+        TilePixelData offsetData = getChunkOffsetData(xPos, zPos, xPixelOffset,
+                yPixelOffset);
+        offsetData.tile.setRGB(offsetData.pixelCoords.x,
+                offsetData.pixelCoords.y, color.getRGB());
     }
     
     /**
@@ -143,23 +265,51 @@ public class TileMap extends WorldMap
             Validate.isTrue(mapDir.mkdirs(),
                     "Couldn't create map tile output directory");
         }
-        for (Map.Entry<Point, BufferedImage> entry : mapTiles.entrySet())
+        while (! mapTiles.isEmpty())
         {
-            if (entry.getValue() == null)
-            {
-                continue; // Tile has already been offloaded to disk.
-            }
-            File imageFile = getTileFile(entry.getKey());
-            try
-            {
-                ImageIO.write(entry.getValue(), "png", imageFile);
-            }
-            catch (IOException e)
-            {
-                System.err.println("TileMap: Failed to save tile "
-                        + imageFile.getName() + " to disk: " + e.getMessage());
-            } 
+            Point tilePt = mapTiles.keySet().iterator().next();
+            saveTileToDisk(tilePt);
         }
+    }
+    
+    /**
+     * Saves a buffered tile image to the disk, creates scaled images, and
+     * removes the buffered image from memory.
+     * 
+     * @param tilePt  The coordinates of a buffered tile image. If no such image
+     *                exists, files will not be saved.
+     */
+    private void saveTileToDisk(Point tilePt)
+    {
+        Validate.notNull(tilePt, "Tile point cannot be null.");
+        BufferedImage tileImage = mapTiles.get(tilePt);
+        mapTiles.remove(tilePt);
+        if (tileImage == null)
+        {
+            return;
+        }
+        File imageFile = getTileFile(tilePt);
+        try
+        {
+            ImageIO.write(tileImage, "png", imageFile);
+            // Also create alternate tile sizes:
+            for (int size : altSizes)
+            {
+                File resizedDir = getTileSizeDir(size);
+                BufferedImage resizedImage = new BufferedImage(size,
+                        size, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D graphics = resizedImage.createGraphics();
+                graphics.drawImage(tileImage, 0, 0, size, size, null);
+                ImageIO.write(resizedImage, "png", new File(resizedDir,
+                        imageFile.getName()));
+            }
+        }
+        catch (IOException e)
+        {
+            System.err.println("TileMap: Failed to save tile "
+                    + imageFile.getName() + " to disk: " + e.getMessage());
+        } 
+        
     }
         
     /**
@@ -247,19 +397,7 @@ public class TileMap extends WorldMap
             {
                 // Offload oldest tile from memory to disk:
                 Point toRemove = recentTiles.removeLast();
-                BufferedImage imageToSave = mapTiles.get(toRemove);
-                File offloadedTile = getTileFile(toRemove);
-                try
-                {
-                    ImageIO.write(imageToSave, "png", offloadedTile);
-                }
-                catch (IOException e)
-                {
-                    System.err.println("TileMap: Failed to save tile "
-                            + offloadedTile.getName() + " to disk: "
-                            + e.getMessage());
-                }
-                mapTiles.put(toRemove, null);
+                saveTileToDisk(toRemove);
             }
         }
         return tileImage;
@@ -277,8 +415,29 @@ public class TileMap extends WorldMap
         Validate.notNull(tilePt, "Chunk coordinate cannot be null.");
         String filename = getFileName() + "." + String.valueOf(tilePt.x)
                 + "." + String.valueOf(tilePt.y) + ".png";
-        return new File(getMapDir(), filename);
-    } 
+        return new File(getTileSizeDir(tileSize), filename);
+    }
+    
+    /**
+     * Get the directory used to store a specific tile size within the main map
+     * tile directory. If it doesn't already exist, this will create the new
+     * directory.
+     * 
+     * @param tileSize  A valid tile output size.
+     * 
+     * @return          The directory for that tile size. 
+     */
+    private File getTileSizeDir(int tileSize)
+    {
+        File tileSizeDir = new File(getMapDir(), String.valueOf(tileSize));
+        ExtendedValidate.couldBeDirectory(tileSizeDir, "Tile size directory");
+        if (! tileSizeDir.exists())
+        {
+            Validate.isTrue(tileSizeDir.mkdirs(), "Failed to create tile "
+                    + "size directory \"" + tileSizeDir.toString() + "\".");
+        }
+        return tileSizeDir;
+    }   
         
     /**
      * Iterates through each chunk in the map, running a callback for each
@@ -305,6 +464,36 @@ public class TileMap extends WorldMap
         }
     }
     
+    /**
+     * Gets the list of all files used to hold map data.
+     * 
+     * @return  The list of map image files. 
+     */
+    @Override
+    protected ArrayList<File> getMapFiles()
+    {
+        final ArrayList<File> files = new ArrayList();
+        Deque<File> mapDirs = new ArrayDeque();
+        mapDirs.push(getTileSizeDir(tileSize));
+        for (int size : altSizes)
+        {
+            mapDirs.push(getTileSizeDir(size));
+        }
+        while (! mapDirs.isEmpty())
+        {
+            File mapDir = mapDirs.pop();
+            File[] childFiles = mapDir.listFiles();
+            for (File child : childFiles)
+            {
+                if (child.isFile())
+                {
+                    files.add(child);
+                }
+            }
+        }
+        return files;
+    }
+    
     // TileMap creation time, used when determining if tiles need to be updated:
     private final long initTime;
     // All initialized map tiles, generated as needed:
@@ -314,4 +503,6 @@ public class TileMap extends WorldMap
     private final Deque<Point> recentTiles;
     // The width and height in chunks/pixels of each map tile:
     private final int tileSize;
+    // Optional alternate tile sizes:
+    private final int[] altSizes;
 }

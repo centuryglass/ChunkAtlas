@@ -60,7 +60,7 @@ public class MapCollector
             int heightInChunks,
             int pixelsPerChunk)
     {
-        validateInitParams(imageDir, regionName);
+        validateInitParams(imageDir, regionName, pixelsPerChunk);
         mappers = new ArrayList();
         initImageMappers(imageDir, regionName, xMin, zMin, widthInChunks,
                 heightInChunks, pixelsPerChunk, getFullTypeSet());
@@ -98,7 +98,7 @@ public class MapCollector
             int pixelsPerChunk,
             Set<MapType> mapTypes)
     {
-        validateInitParams(imageDir, regionName);
+        validateInitParams(imageDir, regionName, pixelsPerChunk);
         mappers = new ArrayList();
         initImageMappers(imageDir, regionName, xMin, zMin, widthInChunks,
                 heightInChunks, pixelsPerChunk, mapTypes);
@@ -107,51 +107,70 @@ public class MapCollector
     /**
      * Initializes all mappers to create tiled image map folders.
      * 
-     * @param imageDir    The directory where map images will be saved.
+     * @param imageDir       The directory where map images will be saved.
      * 
-     * @param regionName  The name of the mapped region.
+     * @param regionName      The name of the mapped region.
      * 
-     * @param tileSize    The width of each tile, measured in chunks.
+     * @param tileSize        The width and height of each tile, measured in
+     *                        chunks.
+     * 
+     * @param altSizes        The list of alternate scaled tile sizes to create.
+     * 
+     * @param pixelsPerChunk  The width and height in pixels of each mapped
+     *                        chunk.
      */
-    public MapCollector(File imageDir, String regionName, int tileSize)
+    public MapCollector(File imageDir, String regionName, int tileSize,
+            int[] altSizes, int pixelsPerChunk)
     {
-        validateInitParams(imageDir, regionName);
+        validateInitParams(imageDir, regionName, pixelsPerChunk);
         mappers = new ArrayList();
-        initTileMappers(imageDir, regionName, tileSize, getFullTypeSet());
+        initTileMappers(imageDir, regionName, tileSize, altSizes,
+                pixelsPerChunk, getFullTypeSet());
     }
         
     /**
      * Initializes a specific set of mappers to create tiled image map folders.
      * 
-     * @param imageDir    The directory where map images will be saved.
+     * @param imageDir        The directory where map images will be saved.
      * 
-     * @param regionName  The name of the mapped region.
+     * @param regionName      The name of the mapped region.
      * 
-     * @param tileSize    The width of each tile, measured in chunks.
+     * @param tileSize        The width of each tile, measured in chunks.
      * 
-     * @param mapTypes    The set of Mapper types that should be used.
+     * @param altSizes        The list of alternate scaled tile sizes to create.
+     * 
+     * @param pixelsPerChunk  The width and height in pixels of each mapped
+     *                        chunk.
+     * 
+     * @param mapTypes        The set of Mapper types that should be used.
      */
     public MapCollector(File imageDir, String regionName, int tileSize,
-            Set<MapType> mapTypes)
+            int[] altSizes, int pixelsPerChunk, Set<MapType> mapTypes)
     {
-        validateInitParams(imageDir, regionName);
+        validateInitParams(imageDir, regionName, pixelsPerChunk);
         mappers = new ArrayList();
-        initTileMappers(imageDir, regionName, tileSize, mapTypes);
+        initTileMappers(imageDir, regionName, tileSize, altSizes,
+                pixelsPerChunk, mapTypes);
     }
     
     /**
      * Ensures MapCollector construction parameters are valid.
      * 
-     * @param imageDir    The image output directory. This cannot be null, and
-     *                    cannot be a regular file.
+     * @param imageDir         The image output directory. This cannot be null,
+     *                         and  cannot be a regular file.
      * 
-     * @param regionName  The name of the mapped region. This cannot be null or
-     *                    empty.
+     * @param regionName      The name of the mapped region. This cannot be null
+     *                        or empty.
+     * 
+     * @param pixelsPerChunk  The width and height in pixels of each mapped
+     *                        chunk. This must be a positive value.
      */
-    private void validateInitParams(File imageDir, String regionName)
+    private void validateInitParams(File imageDir, String regionName,
+            int pixelsPerChunk)
     {
         ExtendedValidate.couldBeDirectory(imageDir, "Image output directory");
         ExtendedValidate.notNullOrEmpty(regionName, "Region name");
+        ExtendedValidate.isPositive(pixelsPerChunk, "Pixels per chunk");
     }
     
     /**
@@ -239,21 +258,26 @@ public class MapCollector
     /**
      * Creates tile mappers for a set of map types.
      * 
-     * @param imageDir    The directory where map images will be saved.
+     * @param imageDir        The directory where map images will be saved.
      * 
-     * @param regionName  The name of the mapped region.
+     * @param regionName      The name of the mapped region.
      * 
-     * @param tileSize    The width of each tile, measured in chunks.
+     * @param tileSize        The width of each tile, measured in chunks.
      * 
-     * @param mapTypes    The set of Mapper types that will be used.
+     * @param altSizes        The list of alternate scaled tile sizes to create.
+     * 
+     * @param pixelsPerChunk  The width and height in pixels of each mapped
+     *                        chunk.
+     * 
+     * @param mapTypes        The set of Mapper types that will be used.
      */
     private void initTileMappers(File imageDir, String regionName, int tileSize,
-            Set<MapType> mapTypes)
+            int[] altSizes, int pixelsPerChunk, Set<MapType> mapTypes)
     {
         createMappers(imageDir, regionName, mapTypes);
         mappers.forEach((mapper) ->
         {
-            mapper.initTileMap(tileSize);
+            mapper.initTileMap(tileSize, altSizes, pixelsPerChunk);
         });
     }
     

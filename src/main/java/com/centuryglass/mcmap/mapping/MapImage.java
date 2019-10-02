@@ -13,6 +13,9 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.function.Consumer;
 import javax.imageio.ImageIO;
 import org.apache.commons.lang.Validate;
@@ -75,6 +78,7 @@ public class MapImage extends WorldMap
         borderWidth = borderPixelWidth / pixelsPerChunk;
         mapImage = new BufferedImage(imageWidth, imageHeight,
                 BufferedImage.TYPE_INT_ARGB);
+        mapFiles = new ArrayList();
         if (drawBackgrounds)
         {
             BufferedImage sourceImage = MapBackground.getBackgroundImage();
@@ -205,6 +209,59 @@ public class MapImage extends WorldMap
         }
     }
     
+        
+    /**
+     * Gets the map color near a chunk coordinate.
+     * 
+     * @param xPos          The chunk's x-coordinate.
+     * 
+     * @param zPos          The chunk's z-coordinate.
+     * 
+     * @param xPixelOffset  The x-offset in pixels from the chunk's image 
+     *                      coordinate.
+     * 
+     * @param yPixelOffset  The y-offset in pixels from the chunk's image
+     *                      coordinate.
+     * 
+     * @return              The color of the pixel with the given offset from
+     *                      the chunk coordinate, or null if the requested pixel
+     *                      is outside of the map bounds.
+     */
+    @Override
+    protected Color getChunkOffsetColor(int xPos, int zPos, int xPixelOffset,
+            int yPixelOffset)
+    { 
+        Point pixelPt = chunkToPixel(xPos, zPos);
+        pixelPt.translate(xPixelOffset, yPixelOffset);
+        return getPixelColor(pixelPt.x, pixelPt.y);
+    }
+    
+    /**
+     * Sets the map color near a chunk coordinate.
+     * 
+     * @param xPos          The chunk's x-coordinate.
+     * 
+     * @param zPos          The chunk's z-coordinate.
+     * 
+     * @param xPixelOffset  The x-offset in pixels from the chunk's image 
+     *                      coordinate.
+     * 
+     * @param yPixelOffset  The y-offset in pixels from the chunk's image
+     *                      coordinate.
+     * 
+     * @param color         The color to apply to the selected pixel, if not
+     *                      outside of the map bounds.
+     */
+    @Override
+    protected void setChunkOffsetColor(int xPos, int zPos,
+            int xPixelOffset, int yPixelOffset, Color color)
+    {
+        Validate.notNull(color, "Color cannot be null.");
+        Point pixelPt = chunkToPixel(xPos, zPos);
+        pixelPt.translate(xPixelOffset, yPixelOffset);
+        setPixelColor(pixelPt.x, pixelPt.y, color);
+    }
+    
     /**
      * Saves the image to its output path.
      * 
@@ -221,6 +278,10 @@ public class MapImage extends WorldMap
         {
             File imageFile = new File(mapDir, baseName + ".png");
             ImageIO.write(mapImage, "png", imageFile);
+            if (! mapFiles.contains(imageFile))
+            {
+                mapFiles.add(imageFile);
+            }
             System.out.println("Saved map to " + imageFile.toString());
         }
         catch (IOException e)
@@ -276,9 +337,21 @@ public class MapImage extends WorldMap
             } 
         }
     }
+         
+    /**
+     * Gets the list of all files used to hold map data.
+     * 
+     * @return  The list of map image files. 
+     */
+    @Override
+    protected ArrayList<File> getMapFiles()
+    {
+        return mapFiles;
+    }
     
     // Saved map image data:
     private final BufferedImage mapImage;
+    private final ArrayList<File> mapFiles;
     // Whether backgrounds are drawn. This setting is shared across all maps.
     private static boolean drawBackgrounds = true;
     // Map/image dimensions, measured in chunks:

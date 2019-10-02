@@ -10,7 +10,6 @@ import com.centuryglass.mcmap.config.MapGenConfig;
 import com.centuryglass.mcmap.mapping.MapCollector;
 import com.centuryglass.mcmap.mapping.maptype.MapType;
 import com.centuryglass.mcmap.mapping.TileMap;
-import com.centuryglass.mcmap.mapping.images.Downscaler;
 import com.centuryglass.mcmap.mapping.images.ImageStitcher;
 import com.centuryglass.mcmap.savedata.MCAFile;
 import com.centuryglass.mcmap.threads.MapperThread;
@@ -22,10 +21,7 @@ import com.centuryglass.mcmap.util.args.ArgOption;
 import com.centuryglass.mcmap.util.args.ArgParser;
 import com.centuryglass.mcmap.util.args.InvalidArgumentException;
 import java.awt.Point;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +31,9 @@ import java.util.Deque;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
+import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import org.apache.commons.lang.Validate;
 
 /**
@@ -54,6 +52,7 @@ public final class MapCreator
     {
         regionsToMap = new ArrayList();
         enabledMapTypes = new TreeSet();
+        keyBuilder = Json.createArrayBuilder();
     }
     
     /**
@@ -66,6 +65,7 @@ public final class MapCreator
         Validate.notNull(mapConfig, "Map configuration object cannot be null.");
         regionsToMap = new ArrayList();
         enabledMapTypes = new TreeSet();
+        keyBuilder = Json.createArrayBuilder();
         applyConfigOptions(mapConfig);
     }
     
@@ -290,6 +290,16 @@ public final class MapCreator
                     {
                         if (child.isDirectory())
                         {
+                            String name = child.getName();
+                            // Detect and skip resized tile directories:
+                            if (name.matches("^\\d+$"))
+                            {
+                                int nameValue = Integer.parseInt(name);
+                                if (nameValue != tileSize)
+                                {
+                                    continue;
+                                }
+                            }
                             toSearch.push(child);
                         }
                         else if (! tilesFound)
@@ -309,21 +319,12 @@ public final class MapCreator
                     tileDirs.forEach((tileDir) ->
                     {
                         File outFile = new File(regionImageOutDir,
-                                tileDir.getName() + ".png");
+                                tileDir.getParentFile().getName() + ".png");
                         System.out.println("Creating " + outFile.toString()
                                 + " from tiles at " + tileDir.toString() + ".");
                         ImageStitcher.stitch(tileDir, outFile, xMin, zMin,
                                 width, height, pixelsPerChunk, tileSize, 
                                 drawBackgrounds);
-                    });
-                }
-                
-                 // If necessary, create resized tile directories:
-                if (altTileSizes != null && altTileSizes.length > 0)
-                {
-                    tileDirs.forEach((tileDir) ->
-                    {
-                        Downscaler.scaleTiles(tileDir, tileSize, altTileSizes);
                     });
                 }
             }
@@ -519,11 +520,7 @@ public final class MapCreator
      */
     public JsonArray getMapKeys()
     {
-        if (mappers == null)
-        {
-            return null;
-        }
-        return mappers.getMapKeys();
+        return keyBuilder.build();
     }
     
     /**
@@ -542,7 +539,7 @@ public final class MapCreator
         ArrayList<File> regionFiles = new ArrayList(Arrays.asList(
                 mapRegion.directory.listFiles()));
         mappers = new MapCollector(outDir, mapRegion.name, tileSize,
-                enabledMapTypes);
+                altTileSizes, pixelsPerChunk, enabledMapTypes);
         // If more than one tile fits in a region, sort regions by tile:
         if (tileSize > 32)
         {
@@ -725,9 +722,13 @@ public final class MapCreator
             catch (InterruptedException e) { }
         }
         mappers.saveMapFile();
+        JsonArray regionKey = mappers.getMapKeys();
+        for (int i = 0; i < regionKey.size(); i++)
+        {
+            keyBuilder.add(regionKey.get(i));
+        }
         return progressThread.getChunkCount();
     }
-
     
     // Image map options:
     private boolean imageMapsEnabled = false;
@@ -745,6 +746,7 @@ public final class MapCreator
     private int[] altTileSizes = null;
     
     private MapCollector mappers = null;
+    JsonArrayBuilder keyBuilder;
     private final ArrayList<Region> regionsToMap;
     private Set<MapType> enabledMapTypes;
     private int pixelsPerChunk = 0;  

@@ -72,14 +72,19 @@ public abstract class Mapper
      * Initializes an empty map that will save its data within a set of tile
      * images.
      * 
-     * @param tileSize         The width and height in chunks of each map tile
-     *                         image.
+     * @param tileSize        The width and height in chunks of each map tile
+     *                        image.
+     * 
+     * @param altSizes        The list of alternate scaled tile sizes to create.
+     * 
+     * @param pixelsPerChunk  The width and height in pixels of each mapped
+     *                        chunk.
      */
-    public void initTileMap(int tileSize)
+    public void initTileMap(int tileSize, int[] altSizes, int pixelsPerChunk)
     {
         ExtendedValidate.isPositive(tileSize, "Tile size");
         map = new TileMap(new File(imageDir, getTypeName()), regionName,
-                tileSize);
+                tileSize, altSizes, pixelsPerChunk);
     }
     
     /**

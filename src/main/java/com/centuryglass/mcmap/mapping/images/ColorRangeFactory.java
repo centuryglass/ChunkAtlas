@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.commons.lang.Validate;
 
@@ -192,56 +194,53 @@ public class ColorRangeFactory
         ColorRangeSet rangeSet = new ColorRangeSet();
         int rangeCount = colors.size();
         ExtendedValidate.isPositive(rangeCount, "Color range count");
-        long[] rangeMaxValues = new long[rangeCount];
-        rangeMaxValues[0] = rangeAdjuster.apply(orderedValues[0]);
+        final ArrayList<Long> rangeMaxValues = new ArrayList();
+        Consumer<Long> rangeAdder = (rawValue) ->
+        {
+            final long lastMax;
+            if (rangeMaxValues.isEmpty())
+            {
+                lastMax = Long.MAX_VALUE;
+            }
+            else
+            {
+                int lastIdx = rangeMaxValues.size() - 1;
+                lastMax = rangeMaxValues.get(lastIdx);
+            }
+            long adjustedValue = rangeAdjuster.apply(rawValue);
+            if (adjustedValue < lastMax)
+            {
+                rangeMaxValues.add(adjustedValue);
+            }
+            // If adjustments break range order, try using the raw value:
+            else if (rawValue < lastMax)
+            {
+                rangeMaxValues.add(rawValue); 
+            }
+        };
         
         if (divisionType == DivisionType.BY_COUNT)
         {
-            for (int i = 1; i < rangeCount; i++)
+            for (int i = 0; i < rangeCount; i++)
             {
                 int valueIdx = orderedValues.length / rangeCount * i;
-                rangeMaxValues[i]
-                        = rangeAdjuster.apply(orderedValues[valueIdx]);
-                // If the value set is particularly small or uniform, it might
-                // be necessary to use a greater value index, or even to not
-                // create ranges for all provided colors.
-                while (valueIdx < orderedValues.length
-                        && orderedValues[valueIdx] >= rangeMaxValues[i - 1])
-                {
-                    valueIdx++;
-                }
-                if (valueIdx == orderedValues.length)
-                {
-                    rangeCount = i - 1;
-                    break;
-                }
-                    
-                // Discard adjustments if they would put ranges out of order:
-                if (rangeMaxValues[i] >= rangeMaxValues[i - 1])
-                {
-                    rangeMaxValues[i] = orderedValues[valueIdx];
-                }
+                long rawValue = orderedValues[valueIdx];
+                rangeAdder.accept(rawValue);
             }      
         }
         else // divisionType == BY_VALUE
         {
             final long fullRange = orderedValues[0]
                     - orderedValues[orderedValues.length - 1];
-            for (int i = 1; i < rangeCount; i++)
+            for (int i = 0; i < rangeCount; i++)
             {
-                long maxValue = orderedValues[0] - fullRange / rangeCount * i;
-                rangeMaxValues[i] = rangeAdjuster.apply(maxValue);
-                // Discard adjustments if they would put ranges out of order:
-                if (rangeMaxValues[i] >= rangeMaxValues[i - 1])
-                {
-                    rangeMaxValues[i] = maxValue;
-                }
+                long rawValue = orderedValues[0] - fullRange / rangeCount * i;
+                rangeAdder.accept(rawValue);
             }
         }
-        
-        for (int i = 0; i < rangeCount; i++)
+        for (int i = 0; i < rangeMaxValues.size(); i++)
         {
-            rangeSet.addColorRange(rangeMaxValues[i], colors.get(i),
+            rangeSet.addColorRange(rangeMaxValues.get(i), colors.get(i),
                     rangeFadeTypes[i], rangeFadeFractions[i]);
         }
         return rangeSet;

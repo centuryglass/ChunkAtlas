@@ -10,6 +10,7 @@ import com.centuryglass.mcmap.util.ExtendedValidate;
 import java.awt.Color;
 import java.awt.Point;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 import org.apache.commons.lang.Validate;
 
@@ -47,7 +48,6 @@ public abstract class WorldMap
         }
         saveMapData(mapDir, fileName);
     }
-
     
     /**
      * Gets the length in pixels of each chunk edge within the map.
@@ -84,6 +84,97 @@ public abstract class WorldMap
     public abstract void setChunkColor(int xPos, int zPos, Color color);
     
     /**
+     * Gets the color of a single pixel within a mapped chunk.
+     * 
+     * @param xPos    The chunk's x-coordinate.
+     * 
+     * @param zPos    The chunk's z-coordinate.
+     * 
+     * @param xPixel  The x-offset from the chunk's left edge, in pixels. This
+     *                value must be less than the chunk's pixel size.
+     * 
+     * @param yPixel  The y-offset from the chunk's top edge, in pixels. This
+     *                value must be less than the chunk's pixel size.
+     * 
+     * @return        The color of the requested chunk pixel, or null if the
+     *                chunk is outside of the map bounds.
+     */
+    public Color getChunkPixelColor(int xPos, int zPos, int xPixel, int yPixel)
+    {
+        ExtendedValidate.inInclusiveBounds(xPixel, 0, chunkSize - 1,
+                "Pixel x-coordinate");
+        ExtendedValidate.inInclusiveBounds(yPixel, 0, chunkSize - 1,
+                "Pixel y-coordinate");
+        return getChunkOffsetColor(xPos, zPos, xPixel, yPixel);
+    }
+    
+    /**
+     * Sets the color of a single pixel within a mapped chunk.
+     * 
+     * @param xPos    The chunk's x-coordinate.
+     * 
+     * @param zPos    The chunk's z-coordinate.
+     * 
+     * @param xPixel  The x-offset from the chunk's left edge, in pixels. This
+     *                value must be less than the chunk's pixel size.
+     * 
+     * @param yPixel  The y-offset from the chunk's top edge, in pixels. This
+     *                value must be less than the chunk's pixel size.
+     * 
+     * @param color   The color to apply to the selected chunk pixel if it is
+     *                within the map bounds.
+     */
+    public void setChunkPixelColor(int xPos, int zPos, int xPixel, int yPixel,
+            Color color)
+    {
+        ExtendedValidate.inInclusiveBounds(xPixel, 0, chunkSize - 1,
+                "Pixel x-coordinate");
+        ExtendedValidate.inInclusiveBounds(yPixel, 0, chunkSize - 1,
+                "Pixel y-coordinate");
+        setChunkOffsetColor(xPos, zPos, xPixel, yPixel, color);
+    }
+       
+    /**
+     * Gets the map color near a chunk coordinate.
+     * 
+     * @param xPos          The chunk's x-coordinate.
+     * 
+     * @param zPos          The chunk's z-coordinate.
+     * 
+     * @param xPixelOffset  The x-offset in pixels from the chunk's image 
+     *                      coordinate.
+     * 
+     * @param yPixelOffset  The y-offset in pixels from the chunk's image
+     *                      coordinate.
+     * 
+     * @return              The color of the pixel with the given offset from
+     *                      the chunk coordinate, or null if the requested pixel
+     *                      is outside of the map bounds.
+     */
+    protected abstract Color getChunkOffsetColor(int xPos, int zPos,
+            int xPixelOffset, int yPixelOffset);
+    
+    /**
+     * Sets the map color near a chunk coordinate.
+     * 
+     * @param xPos          The chunk's x-coordinate.
+     * 
+     * @param zPos          The chunk's z-coordinate.
+     * 
+     * @param xPixelOffset  The x-offset in pixels from the chunk's image 
+     *                      coordinate.
+     * 
+     * @param yPixelOffset  The y-offset in pixels from the chunk's image
+     *                      coordinate.
+     * 
+     * @param color         The color to apply to the selected pixel, if not
+     *                      outside of the map bounds.
+     */
+    protected abstract void setChunkOffsetColor(int xPos, int zPos,
+            int xPixelOffset, int yPixelOffset, Color color);
+    
+    
+    /**
      * Saves map data to one or more map files.
      * 
      * @param mapDir    The directory where the map files will be saved.
@@ -99,6 +190,13 @@ public abstract class WorldMap
      * @param chunkAction  The action to perform for each valid chunk.
      */
     protected abstract void foreachChunk(Consumer<Point> chunkAction);
+    
+    /**
+     * Gets the list of all files used to hold map data.
+     * 
+     * @return  The list of map image files. 
+     */
+    protected abstract ArrayList<File> getMapFiles();
     
     /**
      * Gets the directory where map files will be saved.
