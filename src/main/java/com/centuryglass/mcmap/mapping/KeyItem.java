@@ -163,7 +163,7 @@ public class KeyItem
                 }
                 return hex;
             };
-            String colorString = "#" + hexComponent.apply(color.getRed())
+            String colorString = hexComponent.apply(color.getRed())
                     + hexComponent.apply(color.getGreen())
                     + hexComponent.apply(color.getBlue());
             builder.add(JsonKeys.COLOR, colorString);
