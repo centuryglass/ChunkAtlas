@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import org.apache.commons.lang.Validate;
 
 /**
@@ -41,6 +42,7 @@ public class StructureMapper extends Mapper
     {
         super(imageDir, regionName);
         structureRefs = new HashMap();
+        encounteredStructures = new TreeSet();
     }
         
     /**
@@ -80,13 +82,13 @@ public class StructureMapper extends Mapper
     /**
      * Gets all items in this mapper's map key.
      * 
-     * @return  All KeyItems for this map type and region. 
+     * @return  Key items for each structure that appears on this map.
      */
     @Override
     public Set<KeyItem> getMapKey()
     {
         Set<KeyItem> key = new LinkedHashSet();
-        for (Structure structure : Structure.values())
+        for (Structure structure : encounteredStructures)
         {
             if (structure.equals(Structure.UNKNOWN))
             {
@@ -117,6 +119,8 @@ public class StructureMapper extends Mapper
         }
         final Color emptyChunkColor = new Color(0);
         Color color = emptyChunkColor;
+        /*
+        TODO: fix false positives in chunk structures
         Set<Structure> chunkStructures = chunk.getStructures();
         Structure highestPriority = Structure.UNKNOWN;
         for (Structure structure : chunkStructures)
@@ -130,6 +134,7 @@ public class StructureMapper extends Mapper
         {
             color = Structure.getStructureColor(highestPriority);
         }
+        */
         Map<Point, Structure> chunkStructureRefs = chunk.getStructureRefs();
         chunkStructureRefs.entrySet().forEach((entry) ->
         {
@@ -141,6 +146,7 @@ public class StructureMapper extends Mapper
                     return;
                 }
             }
+            encounteredStructures.add(entry.getValue());
             structureRefs.put(entry.getKey(), entry.getValue());
         });
         return color;
@@ -199,4 +205,5 @@ public class StructureMapper extends Mapper
     }
     
     private final Map<Point, Structure> structureRefs;
+    private final Set<Structure> encounteredStructures;
 }

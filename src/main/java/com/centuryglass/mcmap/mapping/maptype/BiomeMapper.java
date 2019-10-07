@@ -15,12 +15,13 @@ import java.io.File;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import org.apache.commons.lang.Validate;
 
 /**
  * BiomeMapper draws a map showing the biomes of all generated chunks within
  * the mapped region. Individual structure colors are defined in the
- * worldinfo.Biome enum, and documented in the project's mapKey.png file.
+ * worldinfo.Biome Enum, and documented in the project's mapKey.png file.
  */
 public class BiomeMapper extends Mapper
 {
@@ -39,6 +40,7 @@ public class BiomeMapper extends Mapper
     {
         super(imageDir, regionName);
         textureData = new BiomeTextures();
+        encounteredBiomes = new TreeSet();
     }
         
     /**
@@ -77,18 +79,18 @@ public class BiomeMapper extends Mapper
     /**
      * Gets all items in this mapper's map key.
      * 
-     * @return  All KeyItems for this map type and region. 
+     * @return  Key items for each biome found in this map.
      */
     @Override
     public Set<KeyItem> getMapKey()
     {
         Set<KeyItem> key = new LinkedHashSet();
-        for (Biome biome : Biome.values())
+        encounteredBiomes.forEach((biome) ->
         {
             key.add(new KeyItem(biome.toString(), getMapType(), getRegionName(),
                     BiomeTextures.getTexturePath(biome),
-                    Biome.getBiomeColor(biome))); 
-        }
+                    Biome.getBiomeColor(biome)));
+        });
         return key;
     }
     
@@ -116,6 +118,7 @@ public class BiomeMapper extends Mapper
         long blue = 0;
         for (Map.Entry<Biome, Integer> entry : chunkBiomes.entrySet())
         {
+            encounteredBiomes.add(entry.getKey());
             Color biomeColor = textureData.getPixel(entry.getKey(),
                     chunk.getPos().x, chunk.getPos().y, 1);
             int count = entry.getValue();
@@ -139,4 +142,5 @@ public class BiomeMapper extends Mapper
     }
     
     private final BiomeTextures textureData;
+    private final Set<Biome> encounteredBiomes;
 }
