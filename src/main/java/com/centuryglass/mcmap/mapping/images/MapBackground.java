@@ -7,11 +7,11 @@
 package com.centuryglass.mcmap.mapping.images;
 
 import com.centuryglass.mcmap.util.ExtendedValidate;
+import com.centuryglass.mcmap.util.JarResource;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import javax.imageio.ImageIO;
-import org.apache.commons.lang.Validate;
 
 /**
  * Loads and draws the Minecraft map background image that may be used behind
@@ -42,22 +42,20 @@ public class MapBackground
     /**
      * Gets the image data source used to draw the map background.
      * 
-     * @return  The background image data.
+     * @return  The background image data, or null if loading the background
+     *          image failed.
      */
     public static BufferedImage getBackgroundImage()
     {
-        URL imageURL = MapBackground.class.getResource(BACKGROUND_PATH);
-        BufferedImage backgroundImage;
         try
         {
-            backgroundImage = ImageIO.read(imageURL);
+            return JarResource.readImageResource(BACKGROUND_PATH);
         }
         catch (IOException e)
         {
-            System.err.println("Opening background image "
-                    + BACKGROUND_PATH + " failed.");
-            return null;
+            System.err.println("Opening background image " + BACKGROUND_PATH
+                    + " failed.");
         }
-        return backgroundImage;
+        return null;
     }  
 }

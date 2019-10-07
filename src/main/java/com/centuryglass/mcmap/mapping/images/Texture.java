@@ -7,12 +7,10 @@
 package com.centuryglass.mcmap.mapping.images;
 
 import com.centuryglass.mcmap.util.ExtendedValidate;
+import com.centuryglass.mcmap.util.JarResource;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.URL;
-import javax.imageio.ImageIO;
-import org.apache.commons.lang.Validate;
 
 public class Texture 
 {
@@ -25,13 +23,10 @@ public class Texture
     public Texture(String texturePath)
     {
         ExtendedValidate.notNullOrEmpty(texturePath, "Texture path");
-        final URL textureURL = Texture.class.getResource(texturePath);
-        Validate.notNull(textureURL, "Texture \"" + texturePath
-                + "\" was not found in resources.");
         final BufferedImage textureImage;
         try
         {
-            textureImage = ImageIO.read(textureURL);
+            textureImage = JarResource.readImageResource(texturePath);
         }
         catch (IOException e)
         {

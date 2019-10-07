@@ -111,6 +111,13 @@ public class JarResource
         FileOutputStream fileStream = null;
         try
         {
+            if (! outFile.exists() && ! outFile.createNewFile())
+            {
+                System.err.println("Unable to create file at \""
+                        + outFile.toString() + "\" to copy resource \""
+                        + resourcePath + "\".");
+                return false;
+            }
             resourceStream
                     = JarResource.class.getResourceAsStream(resourcePath);
             if (resourceStream == null)

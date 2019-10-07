@@ -6,6 +6,7 @@
 
 package com.centuryglass.mcmap.config;
 
+import com.centuryglass.mcmap.util.JarResource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -65,20 +66,10 @@ public class ConfigFile
         }
         
         // Attempt to load default options:
-        try (InputStream optionStream = ConfigFile.class.getResourceAsStream(
-                        defaultFilePath))       
+        try    
         {
-            assert (optionStream != null);
-            try (JsonReader reader = Json.createReader(optionStream))
-            {
-                defaultOptions = reader.readObject();
-            }
-            catch (JsonException | IllegalStateException ex)
-            {
-                System.err.println("Failed to load default config resource "
-                        + defaultFilePath + ": " + ex.getMessage());
-                defaultOptions = null;
-            }
+            defaultOptions = (JsonObject) JarResource.readJsonResource(
+                    defaultFilePath);
         }
         catch (IOException e)
         {
@@ -89,24 +80,9 @@ public class ConfigFile
         if (defaultOptions != null && loadedOptions == null
                 && configFile != null)
         {
-            try (InputStream optionStream
-                    = ConfigFile.class.getResourceAsStream(defaultFilePath))
+            try
             {
-                if (! configFile.exists() && ! configFile.createNewFile())
-                {
-                    System.err.println("Failed to create config file at \""
-                            + configFile.toString() + "\".");
-                    return;
-                }
-                try (FileOutputStream output = new FileOutputStream(configFile))
-                {
-                    byte[] copyBuffer = new byte[1280];
-                    int bytesRead;
-                    while ((bytesRead = optionStream.read(copyBuffer)) != -1)
-                    {
-                        output.write(copyBuffer, 0, bytesRead);
-                    }
-                }
+                JarResource.copyResourceToFile(defaultFilePath, configFile);
             }
             catch (IOException e)
             {
