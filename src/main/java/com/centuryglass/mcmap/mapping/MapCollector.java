@@ -18,6 +18,8 @@ import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.json.Json;
@@ -229,13 +231,41 @@ public class MapCollector
         JsonObjectBuilder builder = Json.createObjectBuilder();
         mappers.forEach((mapper) ->
         {
+            Map<Integer, JsonArrayBuilder> sizeBuilders = new HashMap();
             JsonArrayBuilder fileListBuilder = Json.createArrayBuilder();
             ArrayList<File> mapFiles = mapper.getMapFileList();
             mapFiles.forEach((file) ->
             {
-                fileListBuilder.add(file.getAbsolutePath());
+                try
+                {
+                    int tileSize
+                            = Integer.parseInt(file.getParentFile().getName());
+                    if (! sizeBuilders.containsKey(tileSize))
+                    {
+                        sizeBuilders.put(tileSize, Json.createArrayBuilder());
+                    }
+                    sizeBuilders.get(tileSize).add(file.getPath());
+                }
+                catch (NumberFormatException e)
+                {
+                    fileListBuilder.add(file.getPath());
+                }
             });
-            builder.add(mapper.getTypeName(), fileListBuilder.build());  
+            if (sizeBuilders.isEmpty())
+            {
+                builder.add(mapper.getTypeName(), fileListBuilder.build());
+            }
+            else
+            {
+                JsonObjectBuilder typeBuilder = Json.createObjectBuilder();
+                for (Map.Entry<Integer, JsonArrayBuilder> entry
+                        : sizeBuilders.entrySet())
+                {
+                    typeBuilder.add(String.valueOf(entry.getKey()),
+                            entry.getValue().build());
+                }
+                builder.add(mapper.getTypeName(), typeBuilder.build());
+            }
         });
         return builder.build();
     }
