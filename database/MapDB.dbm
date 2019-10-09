@@ -185,7 +185,29 @@ SELECT * FROM new_or_existing]]></definition>
 	<return-type>
 	<type name="void" length="0"/>
 	</return-type>
-	<definition><![CDATA[TRUNCATE key_items;
+	<definition><![CDATA[WITH resource_staging AS
+(
+	SELECT ir.image_url, ir.resource_id
+	FROM image_resources ir
+	WHERE EXISTS 
+	(
+		SELECT image_resource_id
+		FROM staging_map_tiles mt
+		WHERE mt.image_resource_id = ir.resource_id
+	)
+	OR EXISTS
+	(
+		SELECT icon_resource_id
+		FROM staging_key_items ki
+		WHERE ki.icon_resource_id = ir.resource_id
+	)
+)
+UPDATE image_resources ir
+	SET resource_loaded = TRUE
+	FROM resource_staging rs
+	WHERE rs.resource_id = ir.resource_id
+	AND rs.image_url IS NOT NULL;
+TRUNCATE key_items;
 INSERT INTO key_items (description, region_name, map_type, icon_resource_id, color)
 	SELECT description, region_name, map_type, icon_resource_id, color
 	FROM staging_key_items;
@@ -194,6 +216,7 @@ TRUNCATE map_tiles;
 INSERT INTO map_tiles (image_resource_id, region_name, map_type, tile_size, chunk_coordinates)
 	SELECT image_resource_id, region_name, map_type, tile_size, chunk_coordinates
 	FROM staging_map_tiles;
+
 TRUNCATE staging_map_tiles;]]></definition>
 </function>
 
@@ -271,8 +294,8 @@ JOIN directory dir on tiles.region_name = dir.region_name]]></definition>
 	</return-type>
 	<definition><![CDATA[SELECT DISTINCT tiles.map_type
 FROM map_tiles tiles
-JOIN key_items key on tiles.map_type = key.map_type
-JOIN directory dir on tiles.map_type = dir.map_type]]></definition>
+JOIN key_items ki ON tiles.map_type = ki.map_type
+JOIN directory dir ON tiles.map_type = dir.map_type]]></definition>
 </function>
 
 <function name="image_resources_find_or_add"
