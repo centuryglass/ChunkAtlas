@@ -34,7 +34,7 @@ public class ProgressThread extends Thread
      */
     public ProgressThread(int numRegions)
     {
-        updateQueue = new LinkedBlockingQueue();
+        updateQueue = new LinkedBlockingQueue<>();
         shouldExit = new AtomicBoolean();
         numRegionFiles = numRegions;
         lastPercentage = 0;

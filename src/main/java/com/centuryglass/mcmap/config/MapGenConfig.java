@@ -267,7 +267,7 @@ public class MapGenConfig extends ConfigFile
      */
     public Set<MapType> getEnabledMapTypes()
     {
-        Set<MapType> typesUsed = new TreeSet();
+        Set<MapType> typesUsed = new TreeSet<>();
         JsonObject typeSettings = getObjectOption(JsonKeys.MAP_TYPES_USED,
                 null);
         if (typeSettings == null)

@@ -23,7 +23,7 @@ public class BiomeTextures
      */
     public BiomeTextures()
     {
-        textures = new HashMap();
+        textures = new HashMap<>();
         for (Biome biome : Biome.values())
         {
             final String texturePath = getTexturePath(biome);

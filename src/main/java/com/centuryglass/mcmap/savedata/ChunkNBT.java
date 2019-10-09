@@ -13,6 +13,7 @@ import com.centuryglass.mcmap.worldinfo.Biome;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import com.centuryglass.mcmap.worldinfo.Structure;
 import java.awt.Point;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -51,7 +52,7 @@ public class ChunkNBT
     static final ArrayList<String> SKIPPED_TAGS;
     static
     {
-        SKIPPED_TAGS = new ArrayList();
+        SKIPPED_TAGS = new ArrayList<>();
         SKIPPED_TAGS.add("He"); // HeightMap
         SKIPPED_TAGS.add("Bl"); // BlockStates, BlockLight
         SKIPPED_TAGS.add("Sk"); // SkyLight
@@ -133,7 +134,7 @@ public class ChunkNBT
         
         // Store function classes for putting any NBT data type into
         // objectBuilders and arrayBuilders:
-        Map<NBTTag, Parser> parsers = new HashMap();
+        Map<NBTTag, Parser> parsers = new HashMap<>();
         
         // Reads miscellaneous data from the chunk data stream:
         class Reader
@@ -607,7 +608,8 @@ public class ChunkNBT
                     Keys.STRUCT_STARTS);
             if (newStructures != null)
             {
-                for (Map.Entry<String, JsonValue> entry : newStructures.entrySet())
+                for (Map.Entry<String, JsonValue> entry
+                        : newStructures.entrySet())
                 {
                     Structure structure = Structure.parse(entry.getKey());
                     chunk.addStructure(structure);
@@ -639,7 +641,8 @@ public class ChunkNBT
                     Keys.STRUCT_REFS);
             if (structureRefs != null)
             {
-                for (Map.Entry<String, JsonValue> entry : structureRefs.entrySet())
+                for (Map.Entry<String, JsonValue> entry
+                        : structureRefs.entrySet())
                 {
                     ByteBuffer pointBuf = ByteBuffer.allocate(8);
                     Structure structure = Structure.parse(entry.getKey());
@@ -671,7 +674,7 @@ public class ChunkNBT
         {
             jsonOut = new FileOutputStream(path);         
         }
-        catch (Exception e)
+        catch (FileNotFoundException e)
         {
             System.err.println("ChunkNBT: Error writing to " + path + ":");
             System.err.println(e.getMessage());

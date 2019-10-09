@@ -116,7 +116,7 @@ public enum Biome
     private static final Map<Integer, Biome> codeBiomes;
     static
     {
-        codeBiomes = new HashMap();
+        codeBiomes = new HashMap<>();
         for(Biome biome : Biome.values())
         {
             codeBiomes.put(biome.biomeCode, biome);
@@ -137,7 +137,7 @@ public enum Biome
     private static final Map<Biome, Color> colorMap;
     static
     {
-        colorMap = new HashMap();
+        colorMap = new HashMap<>();
         colorMap.put(BADLANDS_PLATEAU,
                 new Color(0xcc, 0x7a, 0x7a));
         colorMap.put(MODIFIED_BADLANDS_PLATEAU,

@@ -29,7 +29,7 @@ public class ErrorMapper extends Mapper
     private static final Map<ChunkData.ErrorFlag, Color> ERROR_COLORS;
     static
     {
-        ERROR_COLORS = new HashMap();
+        ERROR_COLORS = new HashMap<>();
         ERROR_COLORS.put(ChunkData.ErrorFlag.NONE,
                 new Color(0, 255, 0, 255));
         ERROR_COLORS.put(ChunkData.ErrorFlag.BAD_OFFSET,
@@ -94,7 +94,7 @@ public class ErrorMapper extends Mapper
     @Override
     public Set<KeyItem> getMapKey()
     {
-        Set<KeyItem> key = new LinkedHashSet();
+        Set<KeyItem> key = new LinkedHashSet<>();
         ERROR_COLORS.entrySet().forEach((entry) ->
         {
             key.add(new KeyItem(entry.getKey().toString(), getMapType(),

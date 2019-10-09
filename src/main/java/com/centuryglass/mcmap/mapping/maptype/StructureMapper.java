@@ -41,8 +41,8 @@ public class StructureMapper extends Mapper
     public StructureMapper(File imageDir, String regionName)
     {
         super(imageDir, regionName);
-        structureRefs = new HashMap();
-        encounteredStructures = new TreeSet();
+        structureRefs = new HashMap<>();
+        encounteredStructures = new TreeSet<>();
     }
         
     /**
@@ -87,7 +87,7 @@ public class StructureMapper extends Mapper
     @Override
     public Set<KeyItem> getMapKey()
     {
-        Set<KeyItem> key = new LinkedHashSet();
+        Set<KeyItem> key = new LinkedHashSet<>();
         for (Structure structure : encounteredStructures)
         {
             if (structure.equals(Structure.UNKNOWN))

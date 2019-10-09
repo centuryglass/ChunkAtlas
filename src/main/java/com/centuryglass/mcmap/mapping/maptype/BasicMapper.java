@@ -78,7 +78,7 @@ public class BasicMapper extends Mapper
     @Override
     public Set<KeyItem> getMapKey()
     {
-        return new LinkedHashSet();
+        return new LinkedHashSet<>();
     }
     
     /**

@@ -62,8 +62,8 @@ public class TileMap extends WorldMap
         ExtendedValidate.notNullOrEmpty(baseName, "Base tile name");
         ExtendedValidate.isPositive(tileSize, "Tile size");
         initTime = System.currentTimeMillis();
-        mapTiles = new HashMap();
-        recentTiles = new ArrayDeque();
+        mapTiles = new HashMap<>();
+        recentTiles = new ArrayDeque<>();
         this.tileSize = tileSize;
         this.altSizes = altSizes;
         if (! mapDir.isDirectory())
@@ -116,8 +116,8 @@ public class TileMap extends WorldMap
     @Override
     public ArrayList<File> getMapFiles()
     {
-        final ArrayList<File> files = new ArrayList();
-        Deque<File> mapDirs = new ArrayDeque();
+        final ArrayList<File> files = new ArrayList<>();
+        Deque<File> mapDirs = new ArrayDeque<>();
         mapDirs.push(getTileSizeDir(tileSize));
         for (int size : altSizes)
         {

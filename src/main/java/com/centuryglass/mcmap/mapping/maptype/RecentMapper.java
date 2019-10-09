@@ -40,8 +40,8 @@ public class RecentMapper extends Mapper
     public RecentMapper(File imageDir, String regionName)
     {
         super(imageDir, regionName);
-        updateTimes = new HashMap();
-        key = new LinkedHashSet();
+        updateTimes = new HashMap<>();
+        key = new LinkedHashSet<>();
     }
     
     /**
@@ -127,7 +127,7 @@ public class RecentMapper extends Mapper
     protected void finalProcessing(WorldMap map)
     {
         // Initialize color ranges:
-        final ArrayList<Color> updateTimeColors = new ArrayList();     
+        final ArrayList<Color> updateTimeColors = new ArrayList<>();     
         updateTimeColors.add(Color.YELLOW);
         updateTimeColors.add(Color.RED);
         updateTimeColors.add(Color.MAGENTA);

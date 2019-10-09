@@ -27,12 +27,14 @@ public class MCAFile
     /**
      * Loads data from a .mca file on construction.
      *
-     * @param mcaFile  The Minecraft anvil region file to load.
+     * @param mcaFile                 The Minecraft anvil region file to load.
+     * 
+     * @throws FileNotFoundException  If the file does not exist.
      */
-    public MCAFile(File mcaFile)
+    public MCAFile(File mcaFile) throws FileNotFoundException
     {
         ExtendedValidate.isFile(mcaFile, "Minecraft region file");
-        loadedChunks = new ArrayList();
+        loadedChunks = new ArrayList<>();
         // read the region file's base coordinates from the file name:
         Point regionPt = getChunkCoords(mcaFile);
         if (regionPt.x == -1 && regionPt.y == -1)
@@ -179,7 +181,7 @@ public class MCAFile
             System.err.println(mcaFile.getName() + " had zero chunks!");
             System.exit(1);
         }
-        return new ArrayList(loadedChunks);
+        return new ArrayList<>(loadedChunks);
     }
    
     private File mcaFile;

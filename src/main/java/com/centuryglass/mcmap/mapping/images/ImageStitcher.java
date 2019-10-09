@@ -13,6 +13,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,30 +66,34 @@ public class ImageStitcher
     /**
      * Stitches a set of tile images together into a single-image map.
      * 
-     * @param tileDir         The directory containing tile images to stitch
-     *                        together.
+     * @param tileDir                 The directory containing tile images to
+     *                                stitch together.
      * 
-     * @param outFile         The path where the file image will be saved.
+     * @param outFile                 The path where the file image will be
+     *                                saved.
      * 
-     * @param xMin            The lowest chunk x-coordinate that will be shown
-     *                        within the map image.
+     * @param xMin                    The lowest chunk x-coordinate that will be
+     *                                shown within the map image.
      * 
-     * @param zMin            The lowest chunk z-coordinate that will be shown
-     *                        within the map image.
+     * @param zMin                    The lowest chunk z-coordinate that will be
+     *                                shown within the map image.
      * 
-     * @param width           The height in chunks of the mapped area that will
-     *                        be copied into the map image.
+     * @param width                   The height in chunks of the mapped area
+     *                                that will be copied into the map image.
      * 
-     * @param height          The width in chunks of the mapped area that will
-     *                        be copied into the map image.
+     * @param height                  The width in chunks of the mapped area
+     *                                that will be copied into the map image.
      * 
-     * @param pixelsPerChunk  The width and height in pixels of each chunk drawn
-     *                        in the final map image.
+     * @param pixelsPerChunk          The width and height in pixels of each
+     *                                chunk drawn in the final map image.
      * 
-     * @param tileSize        The width and height in chunks of each tile image.
+     * @param tileSize                The width and height in chunks of each
+     *                                tile image.
      * 
-     * @param drawBackground  Whether the Minecraft map background texture
-     *                        should be drawn behind map images.
+     * @param drawBackground          Whether the Minecraft map background
+     *                                texture should be drawn behind map images.
+     * 
+     * @throws FileNotFoundException  If the tile directory doesn't exist.
      */
     public static void stitch(File tileDir,
             File outFile,
@@ -98,7 +103,7 @@ public class ImageStitcher
             int height,
             int pixelsPerChunk,
             int tileSize,
-            boolean drawBackground)
+            boolean drawBackground) throws FileNotFoundException
     {
         ExtendedValidate.isDirectory(tileDir, "Tile source directory");
         ExtendedValidate.couldBeFile(outFile, "Image output path");
@@ -108,7 +113,7 @@ public class ImageStitcher
         ExtendedValidate.isPositive(tileSize, "Tile size");
         
         File [] possibleTiles = tileDir.listFiles();
-        Map <File, Point> tilePoints = new HashMap();
+        Map <File, Point> tilePoints = new HashMap<>();
         for (File tile : possibleTiles)
         {
             if (tile.isFile() && tile.getPath().endsWith(".png"))

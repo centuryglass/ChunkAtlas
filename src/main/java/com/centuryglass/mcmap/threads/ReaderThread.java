@@ -9,7 +9,10 @@ import com.centuryglass.mcmap.savedata.MCAFile;
 import com.centuryglass.mcmap.util.ExtendedValidate;
 import com.centuryglass.mcmap.worldinfo.ChunkData;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang.Validate;
 
 public class ReaderThread extends Thread
@@ -47,8 +50,16 @@ public class ReaderThread extends Thread
     {
         for (File file : regionFiles)
         {
-            ExtendedValidate.isFile(file, "Region file");
-            MCAFile regionFile = new MCAFile(file);
+            MCAFile regionFile;
+            try
+            {
+                regionFile = new MCAFile(file);
+            }
+            catch (FileNotFoundException e)
+            {
+                System.err.println(e.getMessage());
+                continue;
+            }
             ArrayList<ChunkData> regionChunks = regionFile.getLoadedChunks();
             int chunkCount = 0;
             for (ChunkData chunk : regionChunks)

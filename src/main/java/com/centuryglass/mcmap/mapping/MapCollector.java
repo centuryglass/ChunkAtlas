@@ -65,7 +65,7 @@ public class MapCollector
             int pixelsPerChunk)
     {
         validateInitParams(imageDir, regionName, pixelsPerChunk);
-        mappers = new ArrayList();
+        mappers = new ArrayList<>();
         initImageMappers(imageDir, regionName, xMin, zMin, widthInChunks,
                 heightInChunks, pixelsPerChunk, getFullTypeSet());
     }
@@ -103,7 +103,7 @@ public class MapCollector
             Set<MapType> mapTypes)
     {
         validateInitParams(imageDir, regionName, pixelsPerChunk);
-        mappers = new ArrayList();
+        mappers = new ArrayList<>();
         initImageMappers(imageDir, regionName, xMin, zMin, widthInChunks,
                 heightInChunks, pixelsPerChunk, mapTypes);
     }
@@ -127,7 +127,7 @@ public class MapCollector
             int[] altSizes, int pixelsPerChunk)
     {
         validateInitParams(imageDir, regionName, pixelsPerChunk);
-        mappers = new ArrayList();
+        mappers = new ArrayList<>();
         initTileMappers(imageDir, regionName, tileSize, altSizes,
                 pixelsPerChunk, getFullTypeSet());
     }
@@ -152,7 +152,7 @@ public class MapCollector
             int[] altSizes, int pixelsPerChunk, Set<MapType> mapTypes)
     {
         validateInitParams(imageDir, regionName, pixelsPerChunk);
-        mappers = new ArrayList();
+        mappers = new ArrayList<>();
         initTileMappers(imageDir, regionName, tileSize, altSizes,
                 pixelsPerChunk, mapTypes);
     }
@@ -231,7 +231,7 @@ public class MapCollector
         JsonObjectBuilder builder = Json.createObjectBuilder();
         mappers.forEach((mapper) ->
         {
-            Map<Integer, JsonArrayBuilder> sizeBuilders = new HashMap();
+            Map<Integer, JsonArrayBuilder> sizeBuilders = new HashMap<>();
             JsonArrayBuilder fileListBuilder = Json.createArrayBuilder();
             ArrayList<File> mapFiles = mapper.getMapFileList();
             mapFiles.forEach((file) ->
@@ -381,7 +381,7 @@ public class MapCollector
      */
     private Set<MapType> getFullTypeSet()
     {
-        Set<MapType> types = new TreeSet();
+        Set<MapType> types = new TreeSet<>();
         types.addAll(Arrays.asList(MapType.values()));
         return types;
     }

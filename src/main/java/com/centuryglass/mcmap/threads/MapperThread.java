@@ -28,7 +28,7 @@ public class MapperThread extends Thread
     {
         Validate.notNull(mapCollector, "Map collector cannot be null.");
         this.mapCollector = mapCollector;
-        chunkQueue = new LinkedBlockingQueue();
+        chunkQueue = new LinkedBlockingQueue<>();
         shouldExit = new AtomicBoolean();
     }
 

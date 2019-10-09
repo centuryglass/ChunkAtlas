@@ -89,7 +89,7 @@ public final class ColorRangeSet
      */
     public ColorRangeSet()
     {
-        ranges = new ArrayList();
+        ranges = new ArrayList<>();
     }
     
     /**
@@ -114,7 +114,7 @@ public final class ColorRangeSet
         Validate.isTrue(maxFade >= 0 && maxFade <= 1,
                 "Minimum color intensity must be between zero and one"
                 + " inclusive, but maxFade = " + String.valueOf(maxFade));
-        ranges = new ArrayList();
+        ranges = new ArrayList<>();
         addColorRange(maxValue, color, fadeType, maxFade);
     }
     

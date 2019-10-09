@@ -37,9 +37,9 @@ public class ChunkData
         chunkPos = (Point) pos.clone();
         inhabitedTime = inhabited;
         lastUpdate = updateTime;
-        biomeCounts = new HashMap();
-        structureRefs = new HashMap();
-        structures = new TreeSet();
+        biomeCounts = new HashMap<>();
+        structureRefs = new HashMap<>();
+        structures = new TreeSet<>();
         errorType = ErrorFlag.NONE;
     }
     
@@ -55,9 +55,9 @@ public class ChunkData
         chunkPos = (Point) pos.clone();
         inhabitedTime = 0;
         lastUpdate = 0;
-        biomeCounts = new HashMap();
-        structureRefs = new HashMap();
-        structures = new TreeSet();
+        biomeCounts = new HashMap<>();
+        structureRefs = new HashMap<>();
+        structures = new TreeSet<>();
         this.errorType = errorType;
     }
       

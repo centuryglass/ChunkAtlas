@@ -40,7 +40,7 @@ public class BiomeMapper extends Mapper
     {
         super(imageDir, regionName);
         textureData = new BiomeTextures();
-        encounteredBiomes = new TreeSet();
+        encounteredBiomes = new TreeSet<>();
     }
         
     /**
@@ -84,7 +84,7 @@ public class BiomeMapper extends Mapper
     @Override
     public Set<KeyItem> getMapKey()
     {
-        Set<KeyItem> key = new LinkedHashSet();
+        Set<KeyItem> key = new LinkedHashSet<>();
         encounteredBiomes.forEach((biome) ->
         {
             key.add(new KeyItem(biome.toString(), getMapType(), getRegionName(),

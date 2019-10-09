@@ -54,6 +54,9 @@
             </goals>
             <properties>
                 <Main-Class>com.centuryglass.mcmap.Main</Main-Class>
+                <compilerArgs>
+                    <arg>-Xlint:unchecked</arg>
+                </compilerArgs>
             </properties>
         </action>
     </actions>

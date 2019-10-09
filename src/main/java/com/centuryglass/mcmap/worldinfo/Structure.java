@@ -96,7 +96,7 @@ public enum Structure
     private static final Map<Structure, Color> structureColors;
     static
     {
-        structureToName = new HashMap();
+        structureToName = new HashMap<>();
         structureToName.put(MONUMENT, "Monument");
         structureToName.put(MANSION, "Mansion");
         structureToName.put(SWAMP_HUT, "Swamp_Hut");
@@ -113,13 +113,13 @@ public enum Structure
         structureToName.put(END_CITY, "EndCity");
         structureToName.put(FORTRESS, "Fortress");
 
-        nameToStructure = new HashMap();
+        nameToStructure = new HashMap<>();
         for (Map.Entry<Structure, String> entry : structureToName.entrySet())
         {
             nameToStructure.put(entry.getValue(), entry.getKey());
         }
 
-        structureColors = new HashMap();
+        structureColors = new HashMap<>();
         structureColors.put(MONUMENT,         new Color(0x00, 0xe2, 0xaa));
         structureColors.put(MANSION,          new Color(0xae, 0x5c, 0x28));
         structureColors.put(SWAMP_HUT,        new Color(0x05, 0x4c, 0x3e));

@@ -7,6 +7,7 @@
 package com.centuryglass.mcmap.util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import org.apache.commons.lang.Validate;
 
 /**
@@ -32,16 +33,24 @@ public class ExtendedValidate
     /**
      * Tests that a file object is not null, and it exists in the file system.
      * 
-     * @param file            The File object to validate.
+     * @param file                    The File object to validate.
      * 
-     * @param messagePrefix   A string to print before the error message if the
-     *                        file is null or not in the file system.
+     * @param messagePrefix           A string to print before the error message
+     *                                if the file is null or not in the file
+     *                                system.
+     * 
+     * @throws FileNotFoundException  If the file does not exist.
      */
     public static void fileExists(File file, String messagePrefix)
+            throws FileNotFoundException
     {
         fileNotNull(file, messagePrefix);
-        Validate.isTrue(file.exists(), messagePrefix + " path \""
-                + file.toString() + "\" does not exist on the file system.");
+        if (! file.exists())
+        {
+            throw new FileNotFoundException(messagePrefix + " path \""
+                    + file.toString() 
+                    + "\" does not exist on the file system.");
+        }
     }
     
     /**
@@ -79,12 +88,16 @@ public class ExtendedValidate
     /**
      * Tests that a file is not null and exists in the file system as a file.
      * 
-     * @param file            The file to validate.
+     * @param file                    The file to validate.
      * 
-     * @param messagePrefix   The string to print before the error message if
-     *                        the file does not exist as a non-directory file.
+     * @param messagePrefix           The string to print before the error
+     *                                message if the file does not exist as a
+     *                                non-directory file.
+     * 
+     * @throws FileNotFoundException  If the file does not exist.
      */
     public static void isFile(File file, String messagePrefix)
+            throws FileNotFoundException
     {
         fileExists(file, messagePrefix);
         Validate.isTrue(file.isFile(), messagePrefix
@@ -95,12 +108,16 @@ public class ExtendedValidate
      * Tests that a file is not null and exists in the file system as a
      * directory.
      * 
-     * @param file            The file to validate.
+     * @param file                    The file to validate.
      * 
-     * @param messagePrefix   The string to print before the error message if
-     *                        the file does not exist as a directory file.
+     * @param messagePrefix           The string to print before the error
+     *                                message if the file does not exist as a
+     *                                directory file.
+     * 
+     * @throws FileNotFoundException  If the file does not exist.
      */
     public static void isDirectory(File file, String messagePrefix)
+            throws FileNotFoundException
     {
         fileExists(file, messagePrefix);
         Validate.isTrue(file.isDirectory(), messagePrefix

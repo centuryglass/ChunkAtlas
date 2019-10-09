@@ -151,7 +151,7 @@ public abstract class Mapper
     {
         if (map == null)
         {
-            return new ArrayList();
+            return new ArrayList<>();
         }
         return map.getMapFiles();
     }

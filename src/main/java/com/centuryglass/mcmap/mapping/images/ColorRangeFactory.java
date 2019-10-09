@@ -194,7 +194,7 @@ public class ColorRangeFactory
         ColorRangeSet rangeSet = new ColorRangeSet();
         int rangeCount = colors.size();
         ExtendedValidate.isPositive(rangeCount, "Color range count");
-        final ArrayList<Long> rangeMaxValues = new ArrayList();
+        final ArrayList<Long> rangeMaxValues = new ArrayList<>();
         Consumer<Long> rangeAdder = (rawValue) ->
         {
             final long lastMax;

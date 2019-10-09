@@ -45,8 +45,8 @@ public class ActivityMapper extends Mapper
     public ActivityMapper(File imageDir, String regionName)
     {
         super(imageDir, regionName);
-        inhabitedTimes = new HashMap();
-        key = new LinkedHashSet();
+        inhabitedTimes = new HashMap<>();
+        key = new LinkedHashSet<>();
     } 
     
     /**
@@ -124,16 +124,7 @@ public class ActivityMapper extends Mapper
     @Override
     protected void finalProcessing(WorldMap map)
     {
-        ArrayList<Color> rangeColors = new ArrayList();
-        BiFunction<Color, Double, Color> setMagnitude = (color, fraction) ->
-        {
-            if (fraction < 0) { fraction = 0.0; }
-            else if (fraction > 1) { fraction = 1.0; }
-            return new Color((int) (color.getRed() * fraction),
-                    (int) (color.getGreen() * fraction),
-                    (int) (color.getBlue() * fraction));
-                    
-        };
+        ArrayList<Color> rangeColors = new ArrayList<>();
         rangeColors.add(Color.YELLOW);
         rangeColors.add(Color.RED);
         rangeColors.add(Color.MAGENTA);

@@ -20,7 +20,7 @@ public class ArgParserFactory<ArgEnum>
 {
     public ArgParserFactory()
     {
-        optionData = new HashMap();
+        optionData = new HashMap<>();
     }
     
     /**
@@ -53,6 +53,7 @@ public class ArgParserFactory<ArgEnum>
      * @param description        A short description of the argument
      *                           option, used when printing help text.
      */
+    @SuppressWarnings("unchecked")
     public void setOptionProperties(ArgEnum type, String shortFlag,
             String longFlag, int minParamCount, int maxParamCount,
             String paramDescription, String description)
@@ -67,6 +68,7 @@ public class ArgParserFactory<ArgEnum>
      * @return                           The ArgParser created to process
      *                                   arguments.
      */
+    @SuppressWarnings("unchecked")
     public ArgParser createParser()
     {
         return new ArgParser(optionData);

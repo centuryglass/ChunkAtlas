@@ -28,11 +28,12 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
     {
         // Confirm data is provided for all options, map option flags, and
         // collect help text:
-        optionFlags = new HashMap();
+        optionFlags = new HashMap<>();
         String combinedHelpText = "";
         
         assert (optionData != null && ! optionData.isEmpty());
         ArgEnum arbitraryType = optionData.keySet().iterator().next();
+        @SuppressWarnings("unchecked")
         Class<ArgEnum> enumClass = (Class<ArgEnum>) arbitraryType.getClass();
         for (ArgEnum value : enumClass.getEnumConstants())
         {
@@ -52,7 +53,7 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
             }
         }
         helpText = combinedHelpText;
-        optionValues = new HashMap();
+        optionValues = new HashMap<>();
     }
     
     /**
@@ -108,7 +109,7 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
                 String[] params = Arrays.copyOfRange(args, i + 1,
                         i + 1 + paramsFound);
                 optionValues.put(option.getType(),
-                        new ArgOption(option.getType(), params));
+                        new ArgOption<>(option.getType(), params));
                 i += paramsFound;
             }
         }
@@ -159,6 +160,7 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
      */
     public ArgOption<ArgEnum>[] getAllOptions()
     {
+        @SuppressWarnings("unchecked")
         ArgOption<ArgEnum>[] options = new ArgOption[optionValues.size()];
         int idx = 0;
         for(Map.Entry<ArgEnum, ArgOption<ArgEnum>> e : optionValues.entrySet())

@@ -78,7 +78,7 @@ public class MapImage extends WorldMap
         borderWidth = borderPixelWidth / pixelsPerChunk;
         mapImage = new BufferedImage(imageWidth, imageHeight,
                 BufferedImage.TYPE_INT_ARGB);
-        mapFiles = new ArrayList();
+        mapFiles = new ArrayList<>();
         if (drawBackgrounds)
         {
             BufferedImage sourceImage = MapBackground.getBackgroundImage();
