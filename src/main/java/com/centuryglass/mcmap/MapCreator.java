@@ -22,7 +22,7 @@ import com.centuryglass.mcmap.util.args.ArgParser;
 import com.centuryglass.mcmap.util.args.InvalidArgumentException;
 import java.awt.Point;
 import java.io.File;
-import java.math.BigDecimal;
+import java.io.FileNotFoundException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,8 +53,8 @@ public final class MapCreator
      */
     public MapCreator()
     {
-        regionsToMap = new ArrayList();
-        enabledMapTypes = new TreeSet();
+        regionsToMap = new ArrayList<>();
+        enabledMapTypes = new TreeSet<>();
         keyBuilder = Json.createArrayBuilder();
         tileListBuilder = Json.createObjectBuilder();
     }
@@ -66,12 +66,14 @@ public final class MapCreator
      */
     public MapCreator(MapGenConfig mapConfig)
     {
-        Validate.notNull(mapConfig, "Map configuration object cannot be null.");
-        regionsToMap = new ArrayList();
-        enabledMapTypes = new TreeSet();
+        regionsToMap = new ArrayList<>();
+        enabledMapTypes = new TreeSet<>();
         keyBuilder = Json.createArrayBuilder();
         tileListBuilder = Json.createObjectBuilder();
-        applyConfigOptions(mapConfig);
+        if (mapConfig != null)
+        {
+            applyConfigOptions(mapConfig);
+        }
     }
     
     /**
@@ -104,7 +106,16 @@ public final class MapCreator
             
             mapConfig.forEachRegionPath((regionDir, name)->
             {
-                addRegion(name, regionDir);
+                try 
+                {
+                    addRegion(name, regionDir);
+                }
+                catch (FileNotFoundException e)
+                {
+                    System.err.println("Warning: Cannot find directory \""
+                        + regionDir.toString() + "\" for region \""
+                        + name + "\", this region will be ignored.");
+                }
             });
             enabledMapTypes = mapConfig.getEnabledMapTypes();
         }   
@@ -118,9 +129,12 @@ public final class MapCreator
      *                                   the command line argument array.
      * 
      * @throws InvalidArgumentException  If any option parameters are invalid.
+     * 
+     * @throws FileNotFoundException     If the region file directory does not
+     *                                   exist.
      */
     public void applyArgOptions(ArgParser<MapArgOptions> parsedArgs)
-            throws InvalidArgumentException
+            throws InvalidArgumentException, FileNotFoundException
     {
         Validate.notNull(parsedArgs, "Parsed argument object cannot be null");
         ArgOption<MapArgOptions>[] options = parsedArgs.getAllOptions();
@@ -257,7 +271,7 @@ public final class MapCreator
             File regionTileOutDir = getRegionOutDir.apply(tileOutDir);
             File regionImageOutDir = getRegionOutDir.apply(imageOutDir);
             // Remove old map images:
-            Deque<File> toDelete = new ArrayDeque();
+            Deque<File> toDelete = new ArrayDeque<>();
             if (tilesEnabled) 
             { 
                 toDelete.add(regionTileOutDir);
@@ -282,8 +296,8 @@ public final class MapCreator
             {
                 createTileMaps(region, regionTileOutDir);
                 // Find and store all tile map directories:
-                ArrayList<File> tileDirs = new ArrayList();
-                Deque<File> toSearch = new ArrayDeque();
+                ArrayList<File> tileDirs = new ArrayList<>();
+                Deque<File> toSearch = new ArrayDeque<>();
                 toSearch.add(regionTileOutDir);
                 while (! toSearch.isEmpty())
                 {
@@ -327,9 +341,17 @@ public final class MapCreator
                                 tileDir.getParentFile().getName() + ".png");
                         System.out.println("Creating " + outFile.toString()
                                 + " from tiles at " + tileDir.toString() + ".");
-                        ImageStitcher.stitch(tileDir, outFile, xMin, zMin,
-                                width, height, pixelsPerChunk, tileSize, 
-                                drawBackgrounds);
+                        try
+                        {
+                            ImageStitcher.stitch(tileDir, outFile, xMin, zMin,
+                                    width, height, pixelsPerChunk, tileSize,
+                                    drawBackgrounds);
+                        }
+                        catch (FileNotFoundException e)
+                        {
+                            System.err.println("Failed to create map: "
+                                    + e.getMessage());
+                        }
                     });
                 }
             }
@@ -463,13 +485,16 @@ public final class MapCreator
     /**
      * Adds a new Minecraft region directory that should be mapped.
      * 
-     * @param regionName       A name to apply to all created maps for the
-     *                         region.
+     * @param regionName              A name to apply to all created maps for
+     *                                the region.
      * 
-     * @param regionDirectory  The path to a directory containing Minecraft
-     *                         anvil region files.
+     * @param regionDirectory         The path to a directory containing
+     *                                Minecraft anvil region files.
+     * 
+     * @throws FileNotFoundException  If the region directory does not exist.
      */
     public void addRegion(String regionName, File regionDirectory)
+            throws FileNotFoundException
     {
         ExtendedValidate.notNullOrEmpty(regionName, "Region name");
         ExtendedValidate.isDirectory(regionDirectory, "Region directory");
@@ -552,7 +577,7 @@ public final class MapCreator
     {
         Validate.notNull(mapRegion, "Mapped region cannot be null.");
         ExtendedValidate.couldBeDirectory(outDir, "Tile output directory");
-        ArrayList<File> regionFiles = new ArrayList(Arrays.asList(
+        ArrayList<File> regionFiles = new ArrayList<>(Arrays.asList(
                 mapRegion.directory.listFiles()));
         mappers = new MapCollector(outDir, mapRegion.name, tileSize,
                 altTileSizes, pixelsPerChunk, enabledMapTypes);
@@ -606,7 +631,7 @@ public final class MapCreator
     {
         Validate.notNull(mapRegion, "Mapped region cannot be null.");
         ExtendedValidate.couldBeDirectory(outDir, "Image output directory");
-        ArrayList<File> regionFiles = new ArrayList();
+        ArrayList<File> regionFiles = new ArrayList<>();
         int regionChunks = MapUnit.convert(1, MapUnit.REGION, MapUnit.CHUNK);
         // Valid region files within the given bounds will all be named
         // r.X.Z.mca, where X and Z are valid region coordinates within the
@@ -696,14 +721,14 @@ public final class MapCreator
         System.out.println("Processing " + numRegionFiles
                 + " region files with " + numReaderThreads + " threads.");
         int filesPerThread = numRegionFiles / numReaderThreads;
-        ArrayList<ReaderThread> threadList = new ArrayList();
+        ArrayList<ReaderThread> threadList = new ArrayList<>();
         for (int i = 0; i < numReaderThreads; i++)
         {
             int regionStart = i * filesPerThread;
             int regionEnd = (i == (numReaderThreads - 1))
                     ? numRegionFiles : (regionStart + filesPerThread);
-            threadList.add(new ReaderThread(
-                    new ArrayList(regionFiles.subList(regionStart, regionEnd)),
+            threadList.add(new ReaderThread(new ArrayList<>(
+                    regionFiles.subList(regionStart, regionEnd)),
                     mapperThread,
                     progressThread));
             threadList.get(i).start();

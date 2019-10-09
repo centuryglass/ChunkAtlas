@@ -19,9 +19,22 @@ public enum MapArgOptions
      */
     HELP,
     /**
-     * Sets the outPath to the map generation configuration file.
+     * Sets the path to the map generation configuration file.
      */
-    CONFIG_PATH,
+    MAP_CONFIG_PATH,
+    /**
+     * Sets the path to the web server connection configuration file.
+     */
+    WEB_SERVER_CONFIG_PATH,
+    /**
+     * Optionally sets a path where JSON server update messages will be cached.
+     */
+    UPDATE_CACHE_PATH,
+    /**
+     * If cached server update data is found, skip map generation and re-send
+     * cached data.
+     */
+    USE_CACHED_UPDATE,
     /**
      * Sets the name and path of each region data directory that should be 
      * mapped.
@@ -96,15 +109,28 @@ public enum MapArgOptions
      * 
      * @return  The initialized argument parser. 
      */
+    @SuppressWarnings("unchecked")
     public static ArgParser<MapArgOptions> createArgParser()
     {
-        ArgParserFactory<MapArgOptions> parserFactory = new ArgParserFactory();
+        ArgParserFactory<MapArgOptions> parserFactory
+                = new ArgParserFactory<>();
         final String optionalBool = "[<true>|<false>|<0>|<1>]";
         parserFactory.setOptionProperties(HELP, "-h", "--help", 0, 0, "",
                 "Print this help text.");
-        parserFactory.setOptionProperties(CONFIG_PATH, "-c", "--config", 1, 1,
-                "<path/to/config.json>",
+        parserFactory.setOptionProperties(MAP_CONFIG_PATH, "-m", "--map-config",
+                1, 1, "<path/to/mapConfig.json>",
                 "Set the map generation configuration file path.");
+        parserFactory.setOptionProperties(WEB_SERVER_CONFIG_PATH, "-w",
+                "--web-config", 1, 1, "<path/to/webConfig.json>",
+                "Set the web server configuration file path.");
+        parserFactory.setOptionProperties(UPDATE_CACHE_PATH, "-u",
+                "--update-cache-path", 1, 1, "<path/to/updateCache.json>",
+                "Set a path where the latest web server update message will be"
+                + " saved.");
+        parserFactory.setOptionProperties(USE_CACHED_UPDATE, "-c",
+                "--use-cached", 0, 1, optionalBool,
+                "If available, send cached update data to the web server "
+                + "without generating new maps.");
         parserFactory.setOptionProperties(REGION_DIRS, "-r", "--regionDirs",
                 1, Integer.MAX_VALUE, "<regionName=RegionPath>...",
                 "Set Minecraft region data directory paths.");

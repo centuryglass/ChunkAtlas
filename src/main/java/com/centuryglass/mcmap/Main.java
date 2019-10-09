@@ -5,10 +5,8 @@
  */
 package com.centuryglass.mcmap;
 
-import com.centuryglass.mcmap.config.MapGenConfig;
 import com.centuryglass.mcmap.util.args.ArgParser;
 import com.centuryglass.mcmap.util.args.InvalidArgumentException;
-import java.io.File;
 
 /**
  * Starts map generation, using command line options, options read from a
@@ -49,27 +47,6 @@ public class Main
             System.err.println(e.getMessage());
             printHelpAndExit.run();
         }
-        
-        // Load options from arguments, a configuration file, or default values:
-        String configPath = DEFAULT_CONFIG_PATH;
-        if (argParser.optionFound(MapArgOptions.CONFIG_PATH))
-        {
-            configPath = argParser.getOptionParams(MapArgOptions.CONFIG_PATH)
-                    .getParameter(0);
-        }
-        MapGenConfig mapConfig = new MapGenConfig(new File(configPath));
-        MapCreator mapCreator = new MapCreator(mapConfig);
-        try
-        {
-            mapCreator.applyArgOptions(argParser);
-        }
-        catch (InvalidArgumentException e)
-        {
-            System.err.println(e.getMessage());
-            printHelpAndExit.run();
-        }
-        
-        // Apply settings to create maps:
-        mapCreator.createMaps();
+        MapUpdater.update(argParser);
     }
 }

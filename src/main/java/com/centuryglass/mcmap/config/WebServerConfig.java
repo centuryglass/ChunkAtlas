@@ -71,11 +71,34 @@ public class WebServerConfig extends ConfigFile
         return port;
     }
     
+    /**
+     * Gets the path where cached update data should be saved.
+     * 
+     * @return  The path to a JSON cache file, or the empty string if update
+     *          data shouldn't be cached.
+     */
+    public String getUpdateCachePath()
+    {
+        return getStringOption(JsonKeys.CACHE, "");
+    }
+    
+    /**
+     * Checks whether cached update data should be reused if present.
+     * 
+     * @return  Whether old update data should be sent instead of running a
+     *          new update.
+     */
+    public boolean sendCachedUpdates()
+    {
+        return getBoolOption(JsonKeys.SEND_CACHE, false);
+    }
+    
     // All JSON key strings used by the configuration file.
     private class JsonKeys
     {
         public static final String ADDRESS = "address";
         public static final String PORT = "port";
-    }
-    
+        public static final String CACHE = "cached update";
+        public static final String SEND_CACHE = "send cached";
+    }   
 }
