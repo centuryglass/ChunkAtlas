@@ -101,7 +101,12 @@ public enum MapArgOptions
     /**
      * Sets whether Minecraft structure maps should be created.
      */
-    STRUCTURE_MAPS_ENABLED;
+    STRUCTURE_MAPS_ENABLED,
+    /**
+     * Generates a pair of security keys to use when connecting to the web
+     * server.
+     */
+    GENERATE_RSA_KEYPAIR;
     
     /**
      * Creates an ArgParser that can read these options from a list of command
@@ -160,6 +165,12 @@ public enum MapArgOptions
         parserFactory.setOptionProperties(TILE_ALT_SIZES, "-a",
                 "--alt-tile-sizes", 1, Integer.MAX_VALUE, "<size>...",
                 "Sets one or more alternate sizes of tile image to create.");
+        parserFactory.setOptionProperties(GENERATE_RSA_KEYPAIR, "-g",
+                "--generate-rsa", 2, 2,
+                "</path/to/publicKeyFile> </path/to/privateKeyFile>",
+                "Skips all normal operations, and instead creates and saves a "
+                + "pair of RSA key files that can be used to ensure that "
+                + "communication with the web server is secure.");
         
         parserFactory.setOptionProperties(ACTIVITY_MAPS_ENABLED, "-A",
                 "--activity-map", 0, 1, optionalBool,

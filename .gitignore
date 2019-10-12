@@ -6,3 +6,8 @@ MCMap
 gzstream/*.o
 gzstream/*.a
 testMapGen.json
+testServerConf.json
+testUpdate
+public.pub
+private.key
+/nbproject/

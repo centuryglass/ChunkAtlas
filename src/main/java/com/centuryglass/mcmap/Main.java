@@ -5,8 +5,12 @@
  */
 package com.centuryglass.mcmap;
 
+import com.centuryglass.mcmap.util.args.ArgOption;
 import com.centuryglass.mcmap.util.args.ArgParser;
 import com.centuryglass.mcmap.util.args.InvalidArgumentException;
+import com.centuryglass.mcmap.webserver.security.RSAGenerator;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Starts map generation, using command line options, options read from a
@@ -39,8 +43,27 @@ public class Main
             if (argParser.optionFound(MapArgOptions.HELP))
             {
                 printHelpAndExit.run();
-                
             }
+            ArgOption<MapArgOptions> keyGen = argParser.getOptionParams(
+                    MapArgOptions.GENERATE_RSA_KEYPAIR);
+            if (keyGen != null)
+            {
+                System.out.println("Skipping map creation and generating web"
+                        + " server security keys.");
+                File publicKeyFile = new File(keyGen.getParameter(0));
+                File privateKeyFile = new File(keyGen.getParameter(1));
+                try
+                {
+                    RSAGenerator.generate(publicKeyFile, privateKeyFile);
+                }
+                catch (IOException e)
+                {
+                    System.err.println("Failed to write key files: "
+                            + e.getMessage());
+                }
+                System.out.println("Keys generated successfully.");
+            }
+            return;
         }
         catch (InvalidArgumentException e)
         {
