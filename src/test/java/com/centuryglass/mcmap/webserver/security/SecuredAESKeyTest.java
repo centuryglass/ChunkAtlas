@@ -7,7 +7,11 @@ package com.centuryglass.mcmap.webserver.security;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.SignatureException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.crypto.SecretKey;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,21 +48,29 @@ public class SecuredAESKeyTest
     @BeforeAll
     public static void setUpClass() throws IOException
     {
-        File[] tempPublic = { createTemp(), createTemp() };
-        File[] tempPrivate = { createTemp(), createTemp() };
-        RSAGenerator.generate(tempPublic[LOCAL], tempPrivate[LOCAL]);
-        RSAGenerator.generate(tempPublic[REMOTE], tempPrivate[REMOTE]);
-        KEY_SETS[LOCAL] = new KeySet(tempPrivate[LOCAL], tempPublic[LOCAL],
-                tempPublic[REMOTE]);
-        KEY_SETS[REMOTE] = new KeySet(tempPrivate[REMOTE], tempPublic[REMOTE],
-                tempPublic[LOCAL]);
-        SecretKey aesLocal = AESGenerator.generate();
-        SecretKey aesRemote = AESGenerator.generate();
-        SECURED_AES[LOCAL] = new SecuredAESKey(aesLocal, KEY_SETS[LOCAL]);
-        SECURED_AES[REMOTE] = new SecuredAESKey(aesRemote,
-                KEY_SETS[REMOTE]);
-        for (File f : tempPublic) { f.delete(); }
-        for (File f : tempPrivate) { f.delete(); }
+        try
+        {
+            File[] tempPublic = { createTemp(), createTemp() };
+            File[] tempPrivate = { createTemp(), createTemp() };
+            RSAGenerator.generate(tempPublic[LOCAL], tempPrivate[LOCAL]);
+            RSAGenerator.generate(tempPublic[REMOTE], tempPrivate[REMOTE]);
+            KEY_SETS[LOCAL] = new KeySet(tempPrivate[LOCAL], tempPublic[LOCAL],
+                    tempPublic[REMOTE]);
+            KEY_SETS[REMOTE] = new KeySet(tempPrivate[REMOTE], tempPublic[REMOTE],
+                    tempPublic[LOCAL]);
+            SecretKey aesLocal = AESGenerator.generate();
+            SecretKey aesRemote = AESGenerator.generate();
+            SECURED_AES[LOCAL] = new SecuredAESKey(aesLocal, KEY_SETS[LOCAL]);
+            SECURED_AES[REMOTE] = new SecuredAESKey(aesRemote,
+                    KEY_SETS[REMOTE]);
+            for (File f : tempPublic) { f.delete(); }
+            for (File f : tempPrivate) { f.delete(); }
+        }
+        catch (GeneralSecurityException e)
+        {
+            System.err.println("Failed to set up SecuredAESKey tests: "
+                    + e.getMessage());
+        }
     }
     
     @AfterAll
@@ -78,8 +90,40 @@ public class SecuredAESKeyTest
     public void testGetSecuredKeyString()
     {
         String secured = SECURED_AES[LOCAL].getSecuredKeyString();
-        assertNotNull(secured);
-        assertNotEquals("", secured);
+        assertNotNull(secured, "The secured key string should never be null.");
+        assertNotEquals("", secured,
+                "The secured key string should never be empty.");
+        assertEquals(secured, SECURED_AES[LOCAL].getSecuredKeyString(),
+                "The exported secure key string should always be the same.");
+        String initialEncrypted = SECURED_AES[LOCAL].encryptMessage(
+                TEST_MESSAGE);
+        try
+        {
+            SecuredAESKey remoteKey
+                    = new SecuredAESKey(secured, KEY_SETS[REMOTE]);
+            String remoteEncrypted = remoteKey.encryptMessage(TEST_MESSAGE);
+            assertEquals(initialEncrypted, remoteEncrypted,
+                    "Encrypted data created remotely doesn't match encrypted "
+                    + "data created locally.");
+            String remoteSecured = remoteKey.getSecuredKeyString();
+            assertNotNull(remoteSecured,
+                    "The secured key string should never be null.");
+            assertNotEquals("", remoteSecured,
+                    "The secured key string should never be empty.");
+            assertNotEquals(secured, remoteSecured,
+                    "The secured key string signed and encrypted locally "
+                    + "shouldn't equal the one signed and encrypted remotely.");
+            SecuredAESKey duplicateKey 
+                    = new SecuredAESKey(remoteSecured, KEY_SETS[LOCAL]);
+            String encryptedAgain = duplicateKey.encryptMessage(TEST_MESSAGE);
+            assertEquals(initialEncrypted, encryptedAgain,
+                    "The restored local key should encrypt messages the same "
+                    + "way as the original secured key instance.");
+        }
+        catch (InvalidKeyException | SignatureException e)
+        {
+            fail(e.getMessage());
+        }
     }
 
     /**
@@ -96,24 +140,5 @@ public class SecuredAESKeyTest
         assertNotEquals(TEST_MESSAGE, encryptedMessage);
         String decrypted = SECURED_AES[LOCAL].decryptMessage(encryptedMessage);
         assertEquals(TEST_MESSAGE, decrypted);
-    }
-     
-    /**
-     * Test loading a remotely generated secured key string.
-     */
-    @Test
-    public void testRemoteKeyLoading()
-    {
-        String remoteData = SECURED_AES[REMOTE].getSecuredKeyString();
-        try
-        {
-            SecuredAESKey loadedKey
-                    = new SecuredAESKey(remoteData, KEY_SETS[LOCAL]);
-        }
-        catch (InvalidKeyException e)
-        {
-            fail("Unable to load remotely generated key from string: "
-                    + e.getMessage());
-        }
     }
 }

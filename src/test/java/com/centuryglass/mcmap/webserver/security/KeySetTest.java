@@ -1,6 +1,11 @@
 package com.centuryglass.mcmap.webserver.security;
 
 import java.io.File;
+import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.security.SignatureException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
@@ -57,15 +62,19 @@ public class KeySetTest
     }
 
     /**
-     * Test of createSignedData method, of class KeySet.
+     * Test of createMessageSignature method, of class KeySet.
      */
     @Test
     public void testCreateSignedMessage()
     {
-        byte[] signed = testedSet.createSignedData(TEST_MESSAGE);
-        assertNotNull(signed);
-        byte[] reversed = matchedSet.readRemoteSignedMessage(signed);
-        assertArrayEquals(TEST_MESSAGE, reversed);
+        try
+        {
+            testedSet.createMessageSignature(TEST_MESSAGE);
+        }
+        catch (InvalidKeyException | SignatureException e)
+        {
+            fail(e.getMessage());
+        }
     }
 
     /**
@@ -74,34 +83,51 @@ public class KeySetTest
     @Test
     public void testCreateEncryptedMessage()
     {
-        byte[] encrypted = testedSet.createEncryptedMessage(TEST_MESSAGE);
-        assertNotNull(encrypted);
-        byte[] reversed = matchedSet.decryptMessage(encrypted);
-        assertArrayEquals(TEST_MESSAGE, reversed);
+        try
+        {
+            byte[] encrypted = testedSet.createEncryptedMessage(TEST_MESSAGE);
+            assertNotNull(encrypted);
+        }
+        catch (GeneralSecurityException e)
+        {
+            fail(e.getMessage());
+        }
     }
 
     /**
      * Test of readLocallySignedMessage method, of class KeySet.
      */
     @Test
-    public void testReadLocallySignedMessage()
+    public void testVerifyLocallySignedMessage()
     {
-        byte[] signed = testedSet.createSignedData(TEST_MESSAGE);
-        assertNotNull(signed);
-        byte[] reversed = testedSet.readLocallySignedMessage(signed);
-        assertArrayEquals(TEST_MESSAGE, reversed);
+        try
+        {
+            byte[] signature = testedSet.createMessageSignature(TEST_MESSAGE);
+            assertTrue(testedSet.verifyLocallySignedMessage(signature,
+                    TEST_MESSAGE));
+        }
+        catch (InvalidKeyException | SignatureException e)
+        {
+            fail(e.getMessage());
+        }
     }
 
     /**
-     * Test of readRemoteSignedMessage method, of class KeySet.
+     * Test of verifyRemoteSignedMessage method, of class KeySet.
      */
     @Test
-    public void testReadRemoteSignedMessage()
+    public void testVerifyRemoteSignedMessage()
     {
-        byte[] signed = matchedSet.createSignedData(TEST_MESSAGE);
-        assertNotNull(signed);
-        byte[] reversed = testedSet.readRemoteSignedMessage(signed);
-        assertArrayEquals(TEST_MESSAGE, reversed);
+        try
+        {
+            byte[] signature = testedSet.createMessageSignature(TEST_MESSAGE);
+            assertTrue(matchedSet.verifyRemoteSignedMessage(signature,
+                    TEST_MESSAGE));
+        }
+        catch (InvalidKeyException | SignatureException e)
+        {
+            fail(e.getMessage());
+        }
     }
 
     /**
@@ -110,9 +136,16 @@ public class KeySetTest
     @Test
     public void testDecryptMessage()
     {
-        byte[] encrypted = matchedSet.createEncryptedMessage(TEST_MESSAGE);
-        assertNotNull(encrypted);
-        byte[] reversed = testedSet.decryptMessage(encrypted);
-        assertArrayEquals(TEST_MESSAGE, reversed);
+        try
+        {
+            byte[] encrypted = matchedSet.createEncryptedMessage(TEST_MESSAGE);
+            assertNotNull(encrypted);
+            byte[] reversed = testedSet.decryptMessage(encrypted);
+            assertArrayEquals(TEST_MESSAGE, reversed);
+        }
+        catch (GeneralSecurityException e)
+        {
+            fail(e.getMessage());
+        }
     }  
 }

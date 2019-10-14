@@ -9,9 +9,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
@@ -61,5 +65,41 @@ public class RSAPublicKey extends RSAKey
     public RSAPublicKey(File keyFile) throws IOException
     {
         super(initKey(keyFile));
-    }  
+    }
+    
+    /**
+     * Verifies that a message signature was created by the private key paired
+     * with this public key.
+     * 
+     * @param signature             The signature to verify.
+     * 
+     * @param message               The signed message data.
+     * 
+     * @return                      Whether the signature was valid.
+     * 
+     * @throws InvalidKeyException  If this object is not a valid public key.
+     * 
+     * @throws SignatureException   If the signature parameter was not a valid
+     *                              signature.
+     */
+    public boolean verify(byte[] signature, byte[] message)
+            throws InvalidKeyException, SignatureException
+    
+    {
+        Signature sign;
+        try
+        {
+            sign = Signature.getInstance("SHA256withRSA");
+            sign.initVerify((PublicKey) getKey());
+            sign.update(message);
+            return sign.verify(signature);
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            // This should never run, "SHA256withRSA" should always be valid.
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+        return false;
+    }
 }

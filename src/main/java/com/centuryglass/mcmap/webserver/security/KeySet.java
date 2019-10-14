@@ -44,7 +44,7 @@ public class KeySet
      * 
      * @return         The message data signature.
      */
-    byte[] createSignedData(byte[] message) throws InvalidKeyException,
+    byte[] createMessageSignature(byte[] message) throws InvalidKeyException,
             SignatureException
     {
         return privateKey.sign(message);
@@ -64,32 +64,45 @@ public class KeySet
         return webServerPublic.encrypt(message);
     }
     
+    
     /**
-     * Decodes a signed public message that this application created.
+     * Verifies that a message was signed by this application.
      * 
-     * @param message  Data that needs to be decrypted with this application's
-     *                 public key.
+     * @param signature             The signature to verify.
      * 
-     * @return         The decrypted message data.
+     * @param message               The signed message data.
+     * 
+     * @return                      Whether the signature was valid.
+     * 
+     * @throws InvalidKeyException  If this application's public key is invalid.
+     * 
+     * @throws SignatureException   If the signature parameter was not a valid
+     *                              signature.
      */
-    byte[] readLocallySignedMessage(byte[] message)
-            throws GeneralSecurityException
+    boolean verifyLocallySignedMessage(byte[] signature, byte[] message)
+            throws InvalidKeyException, SignatureException
     {   
-        return publicKey.decrypt(message);
+        return publicKey.verify(signature, message);
     }
     
     /**
-     * Decodes a signed public message from the web server.
+     * Verifies that a message was signed by the web server.
      * 
-     * @param message  Data from the web server that needs to be decrypted with
-     *                 the server's public key.
+     * @param signature             The signature to verify.
      * 
-     * @return         The decrypted message data.
+     * @param message               The signed message data.
+     * 
+     * @return                      Whether the signature was valid.
+     * 
+     * @throws InvalidKeyException  If the web server's public key is invalid.
+     * 
+     * @throws SignatureException   If the signature parameter was not a valid
+     *                              signature.
      */
-    byte[] readRemoteSignedMessage(byte[] message)
-            throws GeneralSecurityException
+    boolean verifyRemoteSignedMessage(byte[] signature, byte[] message)
+            throws InvalidKeyException, SignatureException
     {   
-        return webServerPublic.decrypt(message);
+        return webServerPublic.verify(signature, message);
     }
         
     /**

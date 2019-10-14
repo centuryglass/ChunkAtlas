@@ -10,9 +10,13 @@ import com.centuryglass.mcmap.util.ExtendedValidate;
 import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -29,11 +33,8 @@ import org.apache.commons.lang.Validate;
  * expected recipient can decode the key, and to prove to the recipient that
  * the key came from the expected sender.
  * 
- *  The first 256 bytes are the signature field. When decrypted with the
- * expected key source's RSA public key, the result should be the first eight
- * bytes of the encrypted key. If the result is as expected, the message must
- * have been signed with the expected key source's private key. If the signature
- * is not valid, the key will be discarded.
+ *  The first 256 bytes are the SHA256 signature field, used to verify that the
+ * rest of the message was signed by the appropriate message source.
  * 
  *  The last 256 bytes are the encrypted AES key. Decrypting this with the
  * intended recipient's private RSA key will produce a valid AES key value
@@ -42,9 +43,6 @@ import org.apache.commons.lang.Validate;
  */
 public class SecuredAESKey
 {
-    // The number of bytes to copy from the start of the encrypted key when
-    // creating the signature:
-    private static final int SIGNED_BYTE_COUNT = 8;
     // Charset used when encoding or decoding String data:
     private static final String CHARSET = "UTF-8";
     // Expected size in bytes of secured key data:
@@ -54,21 +52,24 @@ public class SecuredAESKey
      * Creates a signed and encrypted version of an AES key suitable for sending
      * to a single recipient.
      * 
-     * @param aesKey   The AES key to send.
+     * @param aesKey                     The AES key to send.
      * 
-     * @param rsaKeys  An object managing the sender's public and private keys,
-     *                 and the recipient's public key.
+     * @param rsaKeys                    An object managing the sender's public
+     *                                   and private keys, and the recipient's
+     *                                   public key.
+     * 
+     * @throws GeneralSecurityException  If any of the RSA keys involved were
+     *                                   invalid.
      */
     public SecuredAESKey(SecretKey aesKey, KeySet rsaKeys)
+            throws GeneralSecurityException
     {
         Validate.notNull(aesKey, "AES key cannot be null.");
         Validate.notNull(rsaKeys, "RSA keys cannot be null.");
         this.aesKey = aesKey;
         byte[] keyBytes = aesKey.getEncoded();
         encryptedKey = rsaKeys.createEncryptedMessage(keyBytes);
-        byte[] signedBytes = Arrays.copyOfRange(encryptedKey, 0,
-                SIGNED_BYTE_COUNT);
-        signature = rsaKeys.createSignedData(signedBytes);
+        signature = rsaKeys.createMessageSignature(encryptedKey);
     }
     
     /**
@@ -85,13 +86,15 @@ public class SecuredAESKey
      *                              format, if the signature was not correct
      *                              for the expected key sender, or if decrypted
      *                              key data was not a valid RSA key.
+     * 
+     * @throws SignatureException   If the message's signature field was not a
+     *                              valid signature.
      */
     public SecuredAESKey(String securedKey, KeySet rsaKeys)
-            throws InvalidKeyException
+            throws InvalidKeyException, SignatureException
     {
         ExtendedValidate.notNullOrEmpty(securedKey, "Secured key string");
         Validate.notNull(rsaKeys, "RSA keys cannot be null.");
-        byte[] decryptedKey;
         byte[] keyData;
         try
         {
@@ -111,38 +114,30 @@ public class SecuredAESKey
                 + String.valueOf(keyData.length) + ", expected "
                 + String.valueOf(BYTE_SIZE) + ".");
         }
-        signature = Arrays.copyOfRange(keyData, 0, BYTE_SIZE / 2);
-        encryptedKey = Arrays.copyOfRange(keyData, BYTE_SIZE / 2,
+        byte[] remoteSignature = Arrays.copyOfRange(keyData, 0, BYTE_SIZE / 2);
+        byte[] remoteEncryptedKey = Arrays.copyOfRange(keyData, BYTE_SIZE / 2,
                 BYTE_SIZE);
-        byte[] decodedSignature
-                = rsaKeys.readRemoteSignedMessage(signature);
-        if (decodedSignature == null)
+        
+        if (! rsaKeys.verifyRemoteSignedMessage(remoteSignature,
+                remoteEncryptedKey))
         {
-            throw new InvalidKeyException("Failed to validate signature from "
-                    + String.valueOf(signature.length)
+            throw new InvalidKeyException(
+                    "Failed to validate signature from "
+                    + String.valueOf(remoteSignature.length)
                     + "-byte signature field");
         }
-        if (decodedSignature.length != SIGNED_BYTE_COUNT)
+        try
         {
-            throw new InvalidKeyException("Expected a signature of length "
-                    + String.valueOf(SIGNED_BYTE_COUNT)
-                    + ", but found "
-                    + String.valueOf(decodedSignature.length) + " bytes.");
+            byte[] decryptedKey = rsaKeys.decryptMessage(remoteEncryptedKey);
+            aesKey = new SecretKeySpec(decryptedKey, "AES");
+            encryptedKey = rsaKeys.createEncryptedMessage(aesKey.getEncoded());
         }
-        decryptedKey = rsaKeys.decryptMessage(encryptedKey);
-        if (decryptedKey == null)
+        catch (GeneralSecurityException e)
         {
-            throw new InvalidKeyException("Unable to decrypt AES key from "
-                    + "encrypted field of length "
-                    + String.valueOf(encryptedKey.length) + ".");
+            throw new InvalidKeyException("Error decrypting secured AES key: "
+                    + e.getMessage());
         }
-        if (! Arrays.equals(decodedSignature, Arrays.copyOf(encryptedKey,
-                SIGNED_BYTE_COUNT)))
-        {
-            throw new InvalidKeyException("Invalid signature, this key "
-                    + "probably did not come from the expected source.");
-        }
-        aesKey = new SecretKeySpec(decryptedKey, "AES");
+        signature = rsaKeys.createMessageSignature(encryptedKey);
     }
     
     /**
