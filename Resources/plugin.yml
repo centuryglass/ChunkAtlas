@@ -1,9 +1,9 @@
-name: MCMap
+name: ChunkAtlas
 
 description: WIP minecraft map plugin
 
 version: 0.1
 
-main: com.centuryglass.mcmap.serverplugin.Plugin
+main: com.centuryglass.chunk_atlas.serverplugin.Plugin
 
 api-version: 1.14

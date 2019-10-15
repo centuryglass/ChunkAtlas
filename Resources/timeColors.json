@@ -1,0 +1,11 @@
+{
+    "minIntensity" : 0.25,
+    "colors" : [
+        "ffff00",
+        "ff0000",
+        "ff00ff",
+        "00ff00",
+        "00ffff",
+        "0000ff"
+    ]
+}

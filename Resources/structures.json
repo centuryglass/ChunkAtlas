@@ -1,0 +1,62 @@
+{
+   "BURIED_TREASURE" : {
+      "color" : "ffb600",
+      "formattedName" : "Buried Treasure"
+   },
+   "DESERT_PYRAMID" : {
+      "color" : "d0ff00",
+      "formattedName" : "Desert Pyramid"
+   },
+   "END_CITY" : {
+      "color" : "e5d7d7",
+      "formattedName" : "End City"
+   },
+   "FORTRESS" : {
+      "color" : "a04e44",
+      "formattedName" : "Fortress"
+   },
+   "IGLOO" : {
+      "color" : "0de0ec",
+      "formattedName" : "Igloo"
+   },
+   "JUNGLE_PYRAMID" : {
+      "color" : "515f49",
+      "formattedName" : "Jungle Pyramid"
+   },
+   "MANSION" : {
+      "color" : "ae5c28",
+      "formattedName" : "Mansion"
+   },
+   "MINESHAFT" : {
+      "color" : "850603",
+      "formattedName" : "Mineshaft"
+   },
+   "MONUMENT" : {
+      "color" : "00e2aa",
+      "formattedName" : "Monument"
+   },
+   "OCEAN_RUIN" : {
+      "color" : "000d55",
+      "formattedName" : "Ocean Ruin"
+   },
+   "PILLAGER_OUTPOST" : {
+      "color" : "9d9709",
+      "formattedName" : "Pillager Outpost"
+   },
+   "SHIPWRECK" : {
+      "color" : "5c253e",
+      "formattedName" : "Shipwreck"
+   },
+   "STRONGHOLD" : {
+      "color" : "a30ccc",
+      "formattedName" : "Stronghold"
+   },
+   "SWAMP_HUT" : {
+      "color" : "054c3e",
+      "formattedName" : "Swamp Hut"
+   },
+   "VILLAGE" : {
+      "color" : "b1aeae",
+      "formattedName" : "Village"
+   }
+}

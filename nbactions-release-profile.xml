@@ -10,7 +10,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-classpath %classpath com.centuryglass.mcmap.Main -i -t 512 -p 1</exec.args>
+                <exec.args>-classpath %classpath com.centuryglass.chunk_atlas.Main -i -t 512 -p 1</exec.args>
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
@@ -24,7 +24,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath com.centuryglass.mcmap.Main -i -t 512 -p 1</exec.args>
+                <exec.args>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath com.centuryglass.chunk_atlas.Main -i -t 512 -p 1</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
             </properties>
@@ -39,7 +39,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-classpath %classpath com.centuryglass.mcmap.Main -i -t 512 -p 1</exec.args>
+                <exec.args>-classpath %classpath com.centuryglass.chunk_atlas.Main -i -t 512 -p 1</exec.args>
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
@@ -53,7 +53,7 @@
                 <goal>install</goal>
             </goals>
             <properties>
-                <Main-Class>com.centuryglass.mcmap.Main</Main-Class>
+                <Main-Class>com.centuryglass.chunk_atlas.Main</Main-Class>
                 <compilerArgs>
                     <arg>-Xlint:unchecked</arg>
                 </compilerArgs>

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Generates an SQL script that will populate the MCMap PostgreSQL database
+# Generates an SQL script that will populate the ChunkAtlas PostgreSQL database
 # with initial values.
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ use File::Slurp;
 
 ## File and Directory Paths: ##
 # Java class containing biome data that will go in the database:
-my $biomeFile = '../src/main/java/com/centuryglass/mcmap/worldinfo/Biome.java';
+my $biomeFile = '../src/main/java/com/centuryglass/chunk_atlas/worldinfo/Biome.java';
 # Directory containing all biome texture images:
 my $textureDir = '../Resources/biomeTile';
 # Resource directory where biome textures will be placed later:

@@ -2,5 +2,10 @@
     "address"       : "http://localhost",
     "port"          : 8080,
     "cached update" : "",
-    "send cached"   : false
+    "send cached"   : false,
+    "key paths"     : {
+        "public"            : "plugins/ChunkAtlas/public.pub",
+        "private"           : "plugins/ChunkAtlas/private.key",
+        "web server public" : "plugins/ChunkAtlas/webPublic.pub"        
+            }
 }

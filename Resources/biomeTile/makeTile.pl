@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use File::Slurp;
 
-my $path = "/home/anthony/Workspace/Java/MCMap/src/main/java/com/centuryglass/mcmap/worldinfo/Biome.java";
+my $path = "/home/anthony/Workspace/Java/ChunkAtlas/src/main/java/com/centuryglass/chunk_atlas/worldinfo/Biome.java";
 my $text = read_file($path);
 
 my @biomes = ($text =~ /colorMap.put\((.*?,\s+new Color[^;]+);/gs);
