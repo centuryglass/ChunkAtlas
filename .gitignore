@@ -2,7 +2,8 @@ build
 target
 map
 server*
-MCMap
+ChunkAtlas
 *test.png
 gzstream/*.o
 gzstream/*.a
+node_modules

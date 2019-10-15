@@ -1,7 +1,7 @@
 /**
  * @file script.js
  *
- * The main MCMap page script.
+ * The main ChunkAtlas page script.
  */
 
 document.addEventListener("DOMContentLoaded", pageLoaded);
