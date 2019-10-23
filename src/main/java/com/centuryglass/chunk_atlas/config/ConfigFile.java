@@ -10,9 +10,8 @@ import com.centuryglass.chunk_atlas.util.JarResource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.function.Function;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
@@ -115,8 +114,19 @@ public class ConfigFile
         {
             return defaultValue;
         }
-        if (defaultValue != null && ! configValue.getValueType().equals(
-                defaultValue.getValueType()))
+        Function<JsonValue, JsonValue.ValueType> compType = (value) ->
+        {
+            if (value == null) { return JsonValue.ValueType.NULL; }
+            JsonValue.ValueType type = value.getValueType();
+            // For the sake of comparison: convert all boolean value types to
+            // TRUE
+            if (type.equals(JsonValue.ValueType.FALSE))
+            {
+                return JsonValue.ValueType.TRUE;
+            }
+            return type;
+        };
+        if (! compType.apply(defaultValue).equals(compType.apply(configValue)))
         {
             System.err.println("Warning: expected config value of type "
                     + defaultValue.getValueType().toString() + " for key "
