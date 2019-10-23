@@ -92,8 +92,16 @@ public class ServerUpdate
             String requestedImage = response.getString(i);
             Map<String, String> imageHeaders = new HashMap<>();
             imageHeaders.put("path", requestedImage);
-            webConnection.sendPng(requestedImage, imageHeaders,
-                    ServerPaths.IMAGE_UPLOAD);
+            try
+            {
+                webConnection.sendPng(requestedImage, imageHeaders,
+                        ServerPaths.IMAGE_UPLOAD);
+            }
+            catch (IOException e)
+            {
+                System.err.println("Error sending \"" + requestedImage + "\": "
+                        + e.toString());
+            }
         }   
     }
     

@@ -7,18 +7,20 @@
 package com.centuryglass.chunk_atlas.webserver;
 
 import com.centuryglass.chunk_atlas.config.WebServerConfig;
-import com.centuryglass.chunk_atlas.util.JarResource;
 import com.centuryglass.chunk_atlas.webserver.security.AESGenerator;
 import com.centuryglass.chunk_atlas.webserver.security.KeySet;
 import com.centuryglass.chunk_atlas.webserver.security.SecuredAESKey;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -33,8 +35,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.HttpClients;
 
 /**
@@ -52,6 +52,8 @@ public class Connection
         public static final String RESPONSE_SIGNATURE = "signature";
     }
     
+    private static final int MAX_IMAGE_SIZE = 1000000;
+    
     /**
      * Configures the connection using settings from a configuration file.
      * 
@@ -66,6 +68,52 @@ public class Connection
         client = HttpClients.createDefault();
         serverAddress = webOptions.getServerAddress() + ":"
                 + String.valueOf(webOptions.getServerPort());
+    }
+    
+    /**
+     * Adds a secured AES key and encrypted message body to a POST request
+     * object.
+     * 
+     * @param post                        The HTTP POST object to update.
+     * 
+     * @param rsaKeys                     Keys used to sign and encrypt the AES
+     *                                    key.
+     * 
+     * @param message                     Message data that should be encrypted
+     *                                    and set as the POST request's main
+     *                                    data.
+     * 
+     * @throws GeneralSecurityException   If unable to properly sign or encrypt
+     *                                    the message.
+     */
+    private void addSignedEncryptedMessage(HttpPost post, KeySet rsaKeys,
+            byte[] message) throws GeneralSecurityException
+    {
+        final SecuredAESKey aesKey = new SecuredAESKey(AESGenerator.generate(),
+                rsaKeys);
+        post.addHeader(HTMLHeaderKeys.SIGNED_AES_KEY,
+                aesKey.getSecuredKeyString());
+        
+        byte[] encryptedMessage = aesKey.encryptMessage(message);
+        ByteArrayEntity encryptedEntity
+                = new ByteArrayEntity(encryptedMessage);
+        post.setEntity(encryptedEntity);
+    }
+    
+    /**
+     * Creates a KeySet using the RSA key files defined in web configuration
+     * options.
+     * 
+     * @return               The object providing RSA keys used to securely
+     *                       connect to the web server.
+     * 
+     * @throws IOException   If unable to read any of the key files. 
+     */
+    private KeySet loadRSAKeys() throws IOException
+    {
+        return new KeySet(webOptions.getPrivateKeyFile(),
+                    webOptions.getPublicKeyFile(),
+                    webOptions.getWebPublicKeyFile());
     }
     
     /**
@@ -100,23 +148,22 @@ public class Connection
             public MutableJson(JsonStructure v) { value = v; }
         }
         final MutableJson jsonResponse = new MutableJson(null);
-        final KeySet rsaKeys = new KeySet(webOptions.getPrivateKeyFile(),
-                    webOptions.getPublicKeyFile(),
-                    webOptions.getWebPublicKeyFile());
-        final SecuredAESKey aesKey = new SecuredAESKey(AESGenerator.generate(),
-                rsaKeys);
+        final KeySet rsaKeys = loadRSAKeys();
         // Sign, encrypt, and send JSON data:
         sendMessage((post) ->
         {
             String messageStr = messageData.toString();
             byte[] byteMessage = messageStr.getBytes(
                     Charset.forName("UTF-8"));
-            byte[] encryptedMessage = aesKey.encryptMessage(byteMessage);
-            ByteArrayEntity encryptedEntity
-                    = new ByteArrayEntity(encryptedMessage);
-            post.addHeader(HTMLHeaderKeys.SIGNED_AES_KEY,
-                    aesKey.getSecuredKeyString());
-            post.setEntity(encryptedEntity);
+            try
+            {
+                addSignedEncryptedMessage(post, rsaKeys, byteMessage);
+            }
+            catch (GeneralSecurityException e)
+            {
+                System.out.println("Failed to sign and encrypt message data: "
+                        + e.toString());
+            }
         }, (response) ->
         {
             try
@@ -207,32 +254,48 @@ public class Connection
      * 
      * @return                   The response status code received over the
      *                           connection, or -1 if no response was received.
+     *
+     * @throws IOException       If unable to read the image from the given
+     *                           path.
      */
     public int sendPng(String imagePath, Map<String, String> headerStrings,
-            String connectionSubPath)
+            String connectionSubPath) throws IOException
     {
         Validate.notNull(imagePath, "Image path cannot be null.");
         // Locate the file, copying resources to temp storage if needed:
         final File imageFile;
         final File savedFile = new File(imagePath);
+        InputStream imageStream;
         if (! savedFile.isFile()) // Check if the path is to a resource:
         {
-            try
-            {
-                imageFile = File.createTempFile("imgResource", ".png");
-                JarResource.copyResourceToFile(imagePath, imageFile);
-            }
-            catch (IOException e)
-            {
-                System.err.println("Error creating temporary resource file: "
-                        + e.getMessage());
-                return -1;
-            }
+            imageStream = Connection.class.getResourceAsStream(imagePath);
         }
         else
         {
+            try 
+            {
+                imageStream = new FileInputStream(savedFile);
+            }
+            catch (FileNotFoundException e)
+            {
+                imageStream = null;
+            }
             imageFile = savedFile;
         }
+        if (imageStream == null)
+        {
+            throw new IOException("Unable to find image \"" + imagePath + "\"");
+        }
+        byte[] imageBuffer = new byte[MAX_IMAGE_SIZE];
+        int lastRead = imageStream.read(imageBuffer);
+        int bytesRead = lastRead;
+        while (bytesRead < MAX_IMAGE_SIZE && lastRead > 0)
+        {
+            lastRead = imageStream.read(imageBuffer, bytesRead,
+                    MAX_IMAGE_SIZE - bytesRead);
+            bytesRead += lastRead;
+        }
+        byte[] imageData = Arrays.copyOfRange(imageBuffer, 0, bytesRead);
         
         // Response code container, editable within lambdas:
         class MutableInt
@@ -241,13 +304,20 @@ public class Connection
             public MutableInt(int v) { value = v; }
         }
         final MutableInt responseCode = new MutableInt(-1);
+        final KeySet rsaKeys = loadRSAKeys();
         
         // Send message, declaring lambda initializer and response handler:
         sendMessage((post) -> 
         {        
-            FileEntity imageEntity = new FileEntity(imageFile,
-                    ContentType.IMAGE_PNG);
-            post.setEntity(imageEntity);
+            try
+            {
+                addSignedEncryptedMessage(post, rsaKeys, imageData);
+            }
+            catch (GeneralSecurityException e)
+            {
+                System.out.println("Failed to sign and encrypt message data: "
+                        + e.toString());
+            }
             if (headerStrings != null)
             {
                 for (Map.Entry<String, String> pair : headerStrings.entrySet())
