@@ -8,6 +8,7 @@ gzstream/*.a
 testMapGen.json
 testServerConf.json
 testUpdate
-public.pub
-private.key
+generatorTestKeys
+*.pub
+*.key
 /nbproject/
