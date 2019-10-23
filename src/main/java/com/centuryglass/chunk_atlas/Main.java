@@ -62,8 +62,8 @@ public class Main
                             + e.getMessage());
                 }
                 System.out.println("Keys generated successfully.");
+                return;
             }
-            return;
         }
         catch (InvalidArgumentException e)
         {
