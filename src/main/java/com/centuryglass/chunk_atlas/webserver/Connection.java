@@ -8,8 +8,18 @@ package com.centuryglass.chunk_atlas.webserver;
 
 import com.centuryglass.chunk_atlas.config.WebServerConfig;
 import com.centuryglass.chunk_atlas.util.JarResource;
+import com.centuryglass.chunk_atlas.webserver.security.AESGenerator;
+import com.centuryglass.chunk_atlas.webserver.security.KeySet;
+import com.centuryglass.chunk_atlas.webserver.security.SecuredAESKey;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.security.SignatureException;
+import java.util.Base64;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.json.Json;
@@ -22,9 +32,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 
 /**
@@ -33,6 +43,15 @@ import org.apache.http.impl.client.HttpClients;
  */
 public class Connection
 {
+    // Stores HTML header key strings.
+    private static class HTMLHeaderKeys
+    {
+        // Holds the signed and encrypted AES key:
+        public static final String SIGNED_AES_KEY = "key";
+        // Holds the message signature in responses from the web server:
+        public static final String RESPONSE_SIGNATURE = "signature";
+    }
+    
     /**
      * Configures the connection using settings from a configuration file.
      * 
@@ -43,6 +62,7 @@ public class Connection
     {
         Validate.notNull(webOptions,
                 "Web configuration object cannot be null.");
+        this.webOptions = webOptions;
         client = HttpClients.createDefault();
         serverAddress = webOptions.getServerAddress() + ":"
                 + String.valueOf(webOptions.getServerPort());
@@ -51,17 +71,25 @@ public class Connection
     /**
      * Sends JSON data over the connection, returning any response.
      * 
-     * @param messageData        A JSON object or array to send.
+     * @param messageData                A JSON object or array to send.
      * 
-     * @param connectionSubPath  An optional subdirectory under the main
-     *                           connection path where the request should be
-     *                           sent.
+     * @param connectionSubPath          An optional subdirectory under the main
+     *                                   connection path where the request
+     *                                   should be sent.
      * 
-     * @return                   The response received, or null if no response
-     *                           arrived or the response wasn't JSON.
+     * @return                           The response received, or null if no
+     *                                   response arrived or the response wasn't
+     *                                   JSON.
+     *
+     * @throws IOException               If unable to load encryption keys.
+     * 
+     * @throws GeneralSecurityException  If unable to create a secured
+     *                                   encryption key to share with the 
+     *                                   intended recipient.
      */
     public JsonStructure sendJson(JsonStructure messageData,
-            String connectionSubPath)
+            String connectionSubPath) throws IOException,
+            GeneralSecurityException
     {
         Validate.notNull(messageData, "JSON message data cannot be null.");
         
@@ -72,21 +100,82 @@ public class Connection
             public MutableJson(JsonStructure v) { value = v; }
         }
         final MutableJson jsonResponse = new MutableJson(null);
-        
-        // Send JSON, saving response:
+        final KeySet rsaKeys = new KeySet(webOptions.getPrivateKeyFile(),
+                    webOptions.getPublicKeyFile(),
+                    webOptions.getWebPublicKeyFile());
+        final SecuredAESKey aesKey = new SecuredAESKey(AESGenerator.generate(),
+                rsaKeys);
+        // Sign, encrypt, and send JSON data:
         sendMessage((post) ->
         {
-            StringEntity jsonString = new StringEntity(messageData.toString(),
-                    ContentType.APPLICATION_JSON);
-            post.setEntity(jsonString);
+            String messageStr = messageData.toString();
+            byte[] byteMessage = messageStr.getBytes(
+                    Charset.forName("UTF-8"));
+            byte[] encryptedMessage = aesKey.encryptMessage(byteMessage);
+            ByteArrayEntity encryptedEntity
+                    = new ByteArrayEntity(encryptedMessage);
+            post.addHeader(HTMLHeaderKeys.SIGNED_AES_KEY,
+                    aesKey.getSecuredKeyString());
+            post.setEntity(encryptedEntity);
         }, (response) ->
         {
             try
             {
+                if (! response.containsHeader(
+                        HTMLHeaderKeys.RESPONSE_SIGNATURE))
+                {
+                    System.err.println("Server response was not signed!");
+                    return;
+                }
                 HttpEntity responseData = response.getEntity();
-                JsonReader reader = Json.createReader(
-                        responseData.getContent());
-                jsonResponse.value = reader.read();
+                InputStream bodyStream = responseData.getContent();
+                int bodySize = (int) responseData.getContentLength();
+                byte [] body = new byte[bodySize];
+                int lastReadSize = bodyStream.read(body);
+                int bytesRead = lastReadSize;
+                while (bytesRead < bodySize && lastReadSize > 0)
+                {
+                    lastReadSize = bodyStream.read(body, bytesRead,
+                            bodySize - bytesRead);
+                    bytesRead += lastReadSize;
+                }
+                Validate.isTrue(bytesRead == bodySize,
+                        "Failed to read entire response message."
+                        + " Expected: " + String.valueOf(bodySize)
+                        + ", found: " + String.valueOf(bytesRead));
+                byte [] signature = Base64.getDecoder().decode(
+                        response.getFirstHeader(
+                        HTMLHeaderKeys.RESPONSE_SIGNATURE).getValue());
+                
+                System.out.println("Checking "
+                        + String.valueOf(signature.length)
+                        + "-byte signature against "
+                        + String.valueOf(body.length)
+                        + "-byte response body...");
+                boolean isValidResponse;
+                try
+                {
+                    isValidResponse = rsaKeys.verifyRemoteSignedMessage(
+                            signature, body);
+                }
+                catch (InvalidKeyException | SignatureException e)
+                {
+                    System.err.println(e.toString());
+                    isValidResponse = false;
+                }
+                   
+                if (isValidResponse)
+                {
+                    ByteArrayInputStream jsonStream
+                            = new ByteArrayInputStream(body);
+                    JsonReader reader = Json.createReader(jsonStream);
+                    jsonResponse.value = reader.read();
+                }
+                else
+                {
+                    System.err.println("Update response lacked a valid "
+                            + "signature, and will be ignored.");
+                }
             }
             catch (IOException ex)
             {
@@ -227,4 +316,5 @@ public class Connection
     
     private final HttpClient client;
     private final String serverAddress;
+    private final WebServerConfig webOptions;
 }

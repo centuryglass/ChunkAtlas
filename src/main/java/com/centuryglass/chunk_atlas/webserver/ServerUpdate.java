@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.json.Json;
@@ -67,8 +68,18 @@ public class ServerUpdate
      */
     public void sendUpdate(Connection webConnection)
     {
-        JsonArray response = (JsonArray) webConnection.sendJson(message,
+        JsonArray response = null;
+        try 
+        {
+            response = (JsonArray) webConnection.sendJson(message,
                 ServerPaths.UPDATE);
+        }
+        catch (IOException | GeneralSecurityException e)
+        {
+            System.err.println("Failed to send update to web server: "
+                    + e.getMessage());
+            return;
+        }
         if (response == null)
         {
             System.out.println("No response from web server.");
