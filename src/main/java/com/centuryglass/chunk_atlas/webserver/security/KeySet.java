@@ -40,12 +40,17 @@ public class KeySet
     /**
      *  Uses this application's private key to sign a message data array.
      * 
-     * @param message  A message data array to sign.
+     * @param message               A message data array to sign.
      * 
-     * @return         The message data signature.
+     * @return                      The message data signature.
+     * 
+     * @throws InvalidKeyException  If the sender's private key or the 
+     *                              recipient's public key is invalid.
+     * 
+     * @throws SignatureException   If unable to properly sign the message.
      */
-    byte[] createMessageSignature(byte[] message) throws InvalidKeyException,
-            SignatureException
+    public byte[] createMessageSignature(byte[] message)
+            throws InvalidKeyException, SignatureException
     {
         return privateKey.sign(message);
     }
@@ -54,11 +59,14 @@ public class KeySet
      * Creates an encrypted message that can only be decrypted with the web
      * server's private key.
      * 
-     * @param message  A message data array to encrypt.
+     * @param message                    A message data array to encrypt.
      * 
-     * @return         The encrypted message data.
+     * @return                           The encrypted message data.
+     * 
+     * @throws GeneralSecurityException  If data encryption fails for any
+     *                                   reason.
      */
-    byte[] createEncryptedMessage(byte[] message)
+    public byte[] createEncryptedMessage(byte[] message)
             throws GeneralSecurityException
     {
         return webServerPublic.encrypt(message);
@@ -80,8 +88,8 @@ public class KeySet
      * @throws SignatureException   If the signature parameter was not a valid
      *                              signature.
      */
-    boolean verifyLocallySignedMessage(byte[] signature, byte[] message)
-            throws InvalidKeyException, SignatureException
+    public boolean verifyLocallySignedMessage(byte[] signature,
+            byte[] message) throws InvalidKeyException, SignatureException
     {   
         return publicKey.verify(signature, message);
     }
@@ -100,8 +108,8 @@ public class KeySet
      * @throws SignatureException   If the signature parameter was not a valid
      *                              signature.
      */
-    boolean verifyRemoteSignedMessage(byte[] signature, byte[] message)
-            throws InvalidKeyException, SignatureException
+    public boolean verifyRemoteSignedMessage(byte[] signature,
+            byte[] message) throws InvalidKeyException, SignatureException
     {   
         return webServerPublic.verify(signature, message);
     }
@@ -109,14 +117,17 @@ public class KeySet
     /**
      * Decodes an encrypted message from the web server.
      * 
-     * @param message  Data from the web server that needs to be decrypted with
-     *                 this application's private key.
+     * @param message                    Data from the web server that needs to
+     *                                   be decrypted with this application's
+     *                                   private key.
      * 
-     * @return         The decrypted message data, or null if the given
-     *                 message couldn't be decrypted with the application's
-     *                 private key.
+     * @return                           The decrypted message data.
+     * 
+     * @throws GeneralSecurityException  If data decryption fails for any
+     *                                   reason.
      */
-    byte[] decryptMessage(byte[] message) throws GeneralSecurityException
+    public byte[] decryptMessage(byte[] message)
+            throws GeneralSecurityException
     {   
         return privateKey.decrypt(message);
     } 
