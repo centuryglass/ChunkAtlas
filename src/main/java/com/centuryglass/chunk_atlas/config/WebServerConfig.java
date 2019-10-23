@@ -95,6 +95,11 @@ public class WebServerConfig extends ConfigFile
         return getBoolOption(JsonKeys.SEND_CACHE, false);
     }
     
+    /**
+     * Gets the File holding this application's public RSA key.
+     * 
+     * @return  The public key's file path. 
+     */
     public File getPublicKeyFile()
     {
         JsonObject keys = getObjectOption(JsonKeys.KEY_PATHS,
@@ -103,7 +108,12 @@ public class WebServerConfig extends ConfigFile
         return new File(path);
     }
             
-    public File getPrivateKeyPath()
+    /**
+     * Gets the File holding this application's private RSA key.
+     * 
+     * @return  The private key's file path.
+     */
+    public File getPrivateKeyFile()
     {
         JsonObject keys = getObjectOption(JsonKeys.KEY_PATHS,
                 JsonValue.EMPTY_JSON_OBJECT);
@@ -111,7 +121,12 @@ public class WebServerConfig extends ConfigFile
         return new File(path);
     }
             
-    public File getWebPublicKeyPath()
+    /**
+     * Gets the File holding the ChunkAtlas web server's public RSA key.
+     * 
+     * @return  The server public key's file path.
+     */
+    public File getWebPublicKeyFile()
     {
         JsonObject keys = getObjectOption(JsonKeys.KEY_PATHS,
                 JsonValue.EMPTY_JSON_OBJECT);
