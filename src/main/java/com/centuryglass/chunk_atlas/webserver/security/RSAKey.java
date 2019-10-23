@@ -96,7 +96,7 @@ public abstract class RSAKey
     {
         try
         {
-            Cipher cipher = Cipher.getInstance("RSA");
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(mode, key);
             return cipher.doFinal(data);
         }
