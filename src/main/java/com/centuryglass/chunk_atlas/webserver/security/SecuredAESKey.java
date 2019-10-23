@@ -10,14 +10,11 @@ import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import com.sun.org.apache.xml.internal.security.exceptions
         .Base64DecodingException;
 import com.sun.org.apache.xml.internal.security.utils.Base64;
-import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -28,7 +25,7 @@ import org.apache.commons.lang.Validate;
 
 /** 
  *  Uses RSA encryption to sign and encrypt an AES encryption key. Secured keys
- * are shared as 512 bytes of data, base-64 encoded into a string.
+ * are shared as 512 bytes of data.
  * 
  *  Secured AES keys are protected with RSA encryption to ensure that only the
  * expected recipient can decode the key, and to prove to the recipient that
@@ -44,8 +41,6 @@ import org.apache.commons.lang.Validate;
  */
 public class SecuredAESKey
 {
-    // Charset used when encoding or decoding String data:
-    private static final String CHARSET = "UTF-8";
     // Expected size in bytes of secured key data:
     private static final int BYTE_SIZE = 512;
     
@@ -158,25 +153,23 @@ public class SecuredAESKey
     /**
      * Encrypts a message string using the AES key.
      * 
-     * @param message  A message string to encrypt.
+     * @param message  A message data array to encrypt.
      * 
-     * @return         The encrypted UTF-8 message data base-64 encoded into a
-     *                 string, or null if any encryption errors occur.
+     * @return         The encrypted message data bytes, or null if any
+     *                 encryption errors occur.
      */
-    public String encryptMessage(String message)
+    public byte[] encryptMessage(byte[] message)
     {
         Validate.notNull(message, "Message cannot be null.");
         try
         {
-            byte[] messageBytes = message.getBytes(CHARSET);
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, aesKey);
-            byte[] encryptedBytes = cipher.doFinal(messageBytes);
-            return Base64.encode(encryptedBytes);
+            return cipher.doFinal(message);
         } 
-        catch (UnsupportedEncodingException | InvalidKeyException
-                | NoSuchAlgorithmException | BadPaddingException
-                | IllegalBlockSizeException | NoSuchPaddingException e)
+        catch ( InvalidKeyException | NoSuchAlgorithmException
+                | BadPaddingException | IllegalBlockSizeException
+                | NoSuchPaddingException e)
         {
             System.err.println("Error encrypting message: " + e.getMessage());
             System.err.println("Error type: " + e.getClass().getName());
@@ -187,23 +180,20 @@ public class SecuredAESKey
     /**
      * Decrypts a message using the AES key.
      * 
-     * @param message  A set of encrypted message bytes that have been base-64
-     *                 encoded into a string.
+     * @param message  A set of encrypted message bytes.
      * 
-     * @return         The decrypted message data, as a UTF-8 string. 
+     * @return         The decrypted message data array, or null if unable to
+     *                 decrypt the message. 
      */
-    public String decryptMessage(String message)
+    public byte[] decryptMessage(byte[] message)
     {
         try
         {
-            byte[] encryptedBytes = Base64.decode(message);      
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, aesKey);
-            byte[] messageBytes = cipher.doFinal(encryptedBytes);
-            return new String(messageBytes, CHARSET);   
+            return cipher.doFinal(message);
         }
-        catch (Base64DecodingException | UnsupportedEncodingException
-                | InvalidKeyException | NoSuchAlgorithmException
+        catch (InvalidKeyException | NoSuchAlgorithmException
                 | BadPaddingException | IllegalBlockSizeException
                 | NoSuchPaddingException e)
         {

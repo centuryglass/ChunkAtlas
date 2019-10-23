@@ -7,11 +7,10 @@ package com.centuryglass.chunk_atlas.webserver.security;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.crypto.SecretKey;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,6 +38,11 @@ public class SecuredAESKeyTest
             + "e velit esse cillum dolore eu fugiat nulla pariatur. Excepteur "
             + "sint occaecat cupidatat non proident, sunt in culpa qui officia"
             + "deserunt mollit anim id est laborum.";
+    private static final byte[] TEST_MESSAGE_BYTES;
+    static
+    {
+        TEST_MESSAGE_BYTES = TEST_MESSAGE.getBytes(Charset.forName("UTF8"));
+    }
     
     private static File createTemp() throws IOException
     {
@@ -95,14 +99,15 @@ public class SecuredAESKeyTest
                 "The secured key string should never be empty.");
         assertEquals(secured, SECURED_AES[LOCAL].getSecuredKeyString(),
                 "The exported secure key string should always be the same.");
-        String initialEncrypted = SECURED_AES[LOCAL].encryptMessage(
-                TEST_MESSAGE);
+        byte[] initialEncrypted = SECURED_AES[LOCAL].encryptMessage(
+                TEST_MESSAGE.getBytes(Charset.forName("UTF8")));
         try
         {
             SecuredAESKey remoteKey
                     = new SecuredAESKey(secured, KEY_SETS[REMOTE]);
-            String remoteEncrypted = remoteKey.encryptMessage(TEST_MESSAGE);
-            assertEquals(initialEncrypted, remoteEncrypted,
+            byte[] remoteEncrypted = remoteKey.encryptMessage(
+                    TEST_MESSAGE_BYTES);
+            assertArrayEquals(initialEncrypted, remoteEncrypted,
                     "Encrypted data created remotely doesn't match encrypted "
                     + "data created locally.");
             String remoteSecured = remoteKey.getSecuredKeyString();
@@ -115,8 +120,9 @@ public class SecuredAESKeyTest
                     + "equal the remotely signed and encrypted remotely.");
             SecuredAESKey duplicateKey 
                     = new SecuredAESKey(remoteSecured, KEY_SETS[LOCAL]);
-            String encryptedAgain = duplicateKey.encryptMessage(TEST_MESSAGE);
-            assertEquals(initialEncrypted, encryptedAgain,
+            byte[] encryptedAgain = duplicateKey.encryptMessage(
+                    TEST_MESSAGE_BYTES);
+            assertArrayEquals(initialEncrypted, encryptedAgain,
                     "The restored local key should encrypt messages the same "
                     + "way as the original secured key instance.");
         }
@@ -133,12 +139,12 @@ public class SecuredAESKeyTest
     @Test
     public void testEncryptAndDecryptMessage()
     {
-        String encryptedMessage = SECURED_AES[LOCAL].encryptMessage(
-                TEST_MESSAGE);
+        byte[] encryptedMessage = SECURED_AES[LOCAL].encryptMessage(
+                TEST_MESSAGE_BYTES);
         assertNotNull(encryptedMessage);
-        assertNotEquals("", encryptedMessage);
-        assertNotEquals(TEST_MESSAGE, encryptedMessage);
-        String decrypted = SECURED_AES[LOCAL].decryptMessage(encryptedMessage);
-        assertEquals(TEST_MESSAGE, decrypted);
+        assertFalse(encryptedMessage.length == 0,
+                "Encrypted message should not be empty.");
+        byte[] decrypted = SECURED_AES[LOCAL].decryptMessage(encryptedMessage);
+        assertArrayEquals(TEST_MESSAGE_BYTES, decrypted);
     }
 }
