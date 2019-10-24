@@ -25,8 +25,6 @@ import org.apache.commons.lang.Validate;
 
 public class RecentMapper extends Mapper
 {
-    private static final String TYPE_NAME = "recent";
-    private static final String DISPLAY_NAME = "Recent Activity Map";
     private static final double MIN_COLOR_INTENSITY = 0.2;
     
     /**
@@ -42,29 +40,6 @@ public class RecentMapper extends Mapper
         super(imageDir, regionName);
         updateTimes = new HashMap<>();
         key = new LinkedHashSet<>();
-    }
-    
-    /**
-     * Gets the base Mapper type name used when naming image files.
-     * 
-     * @return  An appropriate type name for use in naming image files.
-     */
-    @Override
-    public String getTypeName()
-    {
-        return TYPE_NAME;
-    }
-    
-    /**
-     * Gets the Mapper display name used to identify the mapper's maps to
-     * users.
-     * 
-     * @return  The MapType's display name. 
-     */
-    @Override
-    public String getDisplayName()
-    {
-        return DISPLAY_NAME;
     }
     
     /**

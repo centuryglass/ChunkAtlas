@@ -24,10 +24,7 @@ import org.apache.commons.lang.Validate;
  * worldinfo.Biome Enum, and documented in the project's mapKey.png file.
  */
 public class BiomeMapper extends Mapper
-{
-    private static final String TYPE_NAME = "biome";
-    private static final String DISPLAY_NAME = "Biome Map";
-        
+{       
     /**
      * Sets the mapper's base output directory and mapped region name on
      * construction.
@@ -41,29 +38,6 @@ public class BiomeMapper extends Mapper
         super(imageDir, regionName);
         textureData = new BiomeTextures();
         encounteredBiomes = new TreeSet<>();
-    }
-        
-    /**
-     * Gets the base Mapper type name used when naming image files.
-     * 
-     * @return  An appropriate type name for use in naming image files.
-     */
-    @Override
-    public String getTypeName()
-    {
-        return TYPE_NAME;
-    }
-    
-    /**
-     * Gets the Mapper display name used to identify the mapper's maps to
-     * users.
-     * 
-     * @return  The MapType's display name. 
-     */
-    @Override
-    public String getDisplayName()
-    {
-        return DISPLAY_NAME;
     }
     
     /**

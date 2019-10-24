@@ -21,10 +21,7 @@ import org.apache.commons.lang.Validate;
  * error type.
  */
 public class ErrorMapper extends Mapper
-{
-    private static final String TYPE_NAME = "error";
-    private static final String DISPLAY_NAME = "Chunk Error Map";
-    
+{   
     // Define colors used to represent each error type:
     private static final Map<ChunkData.ErrorFlag, Color> ERROR_COLORS;
     static
@@ -51,29 +48,6 @@ public class ErrorMapper extends Mapper
     public ErrorMapper(File imageDir, String regionName)
     {
         super(imageDir, regionName);
-    }
-        
-    /**
-     * Gets the base Mapper type name used when naming image files.
-     * 
-     * @return  An appropriate type name for use in naming image files.
-     */
-    @Override
-    public String getTypeName()
-    {
-        return TYPE_NAME;
-    }
-    
-    /**
-     * Gets the Mapper display name used to identify the mapper's maps to
-     * users.
-     * 
-     * @return  The MapType's display name. 
-     */
-    @Override
-    public String getDisplayName()
-    {
-        return DISPLAY_NAME;
     }
     
     /**

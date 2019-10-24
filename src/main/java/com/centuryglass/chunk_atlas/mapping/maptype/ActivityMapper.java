@@ -30,8 +30,6 @@ import org.apache.commons.lang.Validate;
 public class ActivityMapper extends Mapper
 {
     private static final double MIN_COLOR_INTENSITY = 0.25;
-    private static final String TYPE_NAME = "activity";
-    private static final String DISPLAY_NAME = "Total Activity Map";
         
     /**
      * Sets the mapper's base output directory and mapped region name on
@@ -46,29 +44,6 @@ public class ActivityMapper extends Mapper
         super(imageDir, regionName);
         inhabitedTimes = new HashMap<>();
         key = new LinkedHashSet<>();
-    } 
-    
-    /**
-     * Gets the base Mapper type name used when naming image files.
-     * 
-     * @return  An appropriate type name for use in naming image files.
-     */
-    @Override
-    public String getTypeName()
-    {
-        return TYPE_NAME;
-    }
-    
-    /**
-     * Gets the Mapper display name used to identify the mapper's maps to
-     * users.
-     * 
-     * @return  The MapType's display name. 
-     */
-    @Override
-    public String getDisplayName()
-    {
-        return DISPLAY_NAME;
     }
     
     /**

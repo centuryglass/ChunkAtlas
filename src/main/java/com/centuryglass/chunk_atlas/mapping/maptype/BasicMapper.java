@@ -20,10 +20,7 @@ import org.apache.commons.lang.Validate;
  * chunks have been generated.
  */
 public class BasicMapper extends Mapper
-{
-    private static final String TYPE_NAME = "basic";
-    private static final String DISPLAY_NAME = "Basic Map";
-    
+{   
     /**
      * Sets the mapper's base output directory and mapped region name on
      * construction.
@@ -35,29 +32,6 @@ public class BasicMapper extends Mapper
     public BasicMapper(File imageDir, String regionName)
     {
         super(imageDir, regionName);
-    }
-        
-    /**
-     * Gets the base Mapper type name used when naming image files.
-     * 
-     * @return  An appropriate type name for use in naming image files.
-     */
-    @Override
-    public final String getTypeName()
-    {
-        return TYPE_NAME;
-    }
-    
-    /**
-     * Gets the Mapper display name used to identify the mapper's maps to
-     * users.
-     * 
-     * @return  The MapType's display name. 
-     */
-    @Override
-    public String getDisplayName()
-    {
-        return DISPLAY_NAME;
     }
     
     /**

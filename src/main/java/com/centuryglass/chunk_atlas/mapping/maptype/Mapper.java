@@ -111,14 +111,6 @@ public abstract class Mapper
     }
     
     /**
-     * Gets the Mapper display name used to identify the mapper's maps to
-     * users.
-     * 
-     * @return  The MapType's display name. 
-     */
-    public abstract String getDisplayName();
-    
-    /**
      * Gets the type of map a mapper creates.
      *
      * @return  The Mapper's MapType.
