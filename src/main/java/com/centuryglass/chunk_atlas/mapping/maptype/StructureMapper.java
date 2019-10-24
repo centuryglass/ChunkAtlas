@@ -22,7 +22,7 @@ import org.apache.commons.lang.Validate;
 /**
  *  StructureMapper creates maps showing where different generated structures
  * can be found within the Minecraft world.  Individual structure colors are
- * defined in the worldinfo.Structure enum, and documented in the project's
+ * defined in the worldinfo.Structure Enum, and documented in the project's
  * mapKey.png file.
  */
 public class StructureMapper extends Mapper

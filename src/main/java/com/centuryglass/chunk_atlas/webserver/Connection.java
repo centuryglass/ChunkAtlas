@@ -7,6 +7,7 @@
 package com.centuryglass.chunk_atlas.webserver;
 
 import com.centuryglass.chunk_atlas.config.WebServerConfig;
+import com.centuryglass.chunk_atlas.util.JarResource;
 import com.centuryglass.chunk_atlas.webserver.security.AESGenerator;
 import com.centuryglass.chunk_atlas.webserver.security.KeySet;
 import com.centuryglass.chunk_atlas.webserver.security.SecuredAESKey;
@@ -263,12 +264,11 @@ public class Connection
     {
         Validate.notNull(imagePath, "Image path cannot be null.");
         // Locate the file, copying resources to temp storage if needed:
-        final File imageFile;
         final File savedFile = new File(imagePath);
         InputStream imageStream;
         if (! savedFile.isFile()) // Check if the path is to a resource:
         {
-            imageStream = Connection.class.getResourceAsStream(imagePath);
+            imageStream = JarResource.getResourceStream(imagePath);
         }
         else
         {
@@ -280,7 +280,6 @@ public class Connection
             {
                 imageStream = null;
             }
-            imageFile = savedFile;
         }
         if (imageStream == null)
         {

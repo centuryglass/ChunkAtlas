@@ -16,7 +16,7 @@ import org.apache.commons.lang.Validate;
 public class BiomeTextures
 {
     // Resource directory where all texture images are found:
-    private static final String TEXTURE_DIR = "/biomeTile/";
+    private static final String TEXTURE_DIR = "biomeTile/";
     
     /**
      * Loads all biome textures on construction.
