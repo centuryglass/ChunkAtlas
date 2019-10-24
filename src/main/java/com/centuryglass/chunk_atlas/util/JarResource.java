@@ -34,19 +34,20 @@ public class JarResource
      * 
      * @return              Extracted resource JSON data.
      * 
-     * @throws IOException  If the resource exists but cannot be read. 
+     * @throws IOException  If the resource cannot be read. 
      */
     public static JsonStructure readJsonResource(String resourcePath)
             throws IOException
     {
         ExtendedValidate.notNullOrEmpty(resourcePath, "JSON resource path");
         // Attempt to load default options:
-        InputStream optionStream = null;
-        try 
+        try (InputStream optionStream = getResourceStream(resourcePath))
         {
-            optionStream = JarResource.class.getResourceAsStream(
-                    resourcePath); 
-            assert (optionStream != null);
+            if (optionStream == null)
+            {
+                throw new IOException("No JSON jar file resource found at \""
+                        + resourcePath + "\".");
+            }
             try (JsonReader reader = Json.createReader(optionStream))
             {
                 return reader.read();
@@ -57,14 +58,27 @@ public class JarResource
                         + resourcePath + ": " + ex.getMessage());
             }
         }
-        finally
-        {
-            if (optionStream != null)
-            {
-                optionStream.close();
-            }
-        }
         return null;
+    }
+    
+    /**
+     * Gets a jar resource as an input stream.
+     * 
+     * @param resourcePath  The path to a resource stored in this application's
+     *                      jar file.
+     * 
+     * @return              An open InputStream for the requested resource, or
+     *                      null if the resource isn't found.
+     */
+    public static InputStream getResourceStream(String resourcePath)
+    {
+        // Resource paths should all start with a leading '/' character, add it
+        // if it's not already there.
+        if (! (resourcePath.charAt(0) == '/'))
+        {
+            resourcePath = "/" + resourcePath;
+        }
+        return JarResource.class.getResourceAsStream(resourcePath);
     }
     
     /**
@@ -81,6 +95,10 @@ public class JarResource
             throws IOException
     {
         ExtendedValidate.notNullOrEmpty(imagePath, "Resource image path");
+        if (! (imagePath.charAt(0) == '/'))
+        {
+            imagePath = "/" + imagePath;
+        }
         URL imageURL = JarResource.class.getResource(imagePath);
         if (imageURL == null)
         {
@@ -97,12 +115,10 @@ public class JarResource
      * 
      * @param outFile       The file where the resource should be copied.
      * 
-     * @return              Whether the resource was copied successfully.
-     * 
      * @throws IOException  If unable to read from the resource or write to the
      *                      output file.
      */
-    public static boolean copyResourceToFile(String resourcePath, File outFile)
+    public static void copyResourceToFile(String resourcePath, File outFile)
             throws IOException
     {
         ExtendedValidate.notNullOrEmpty(resourcePath, "Resource path");
@@ -113,18 +129,16 @@ public class JarResource
         {
             if (! outFile.exists() && ! outFile.createNewFile())
             {
-                System.err.println("Unable to create file at \""
+                throw new IOException("Unable to create file at \""
                         + outFile.toString() + "\" to copy resource \""
                         + resourcePath + "\".");
-                return false;
             }
-            resourceStream
-                    = JarResource.class.getResourceAsStream(resourcePath);
+            resourceStream = getResourceStream(resourcePath);
             if (resourceStream == null)
             {
-                System.err.println("Unable to copy resource \"" + resourcePath
+                throw new IOException("Unable to copy resource \""
+                        + resourcePath
                         + "\", to file: resource not found");
-                return false;
             }
             fileStream = new FileOutputStream(outFile);
             byte[] buffer = new byte[BUF_SIZE];
@@ -145,6 +159,5 @@ public class JarResource
                 fileStream.close();
             }
         }
-        return true;
     }
 }
