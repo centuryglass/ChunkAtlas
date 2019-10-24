@@ -14,7 +14,7 @@ public enum MapType
     /**
      * Maps total player activity using the ActivityMapper class.
      */
-    ACTIVITY,
+    TOTAL_ACTIVITY,
     /**
      * Maps generated chunks using the BasicMapper class.
      */
@@ -30,7 +30,7 @@ public enum MapType
     /**
      * Maps recent chunk updates using the RecentMapper class.
      */
-    RECENT,
+    RECENT_ACTIVITY,
     /**
      * Maps Minecraft structure generation using the StructureMapper class.
      */
@@ -39,11 +39,26 @@ public enum MapType
     /**
      * Gets the string used to represent a map type.
      * 
-     * @return  The type's name, in lowercase letters. 
+     * @return  The type's name, with only the first letter of each word
+     *          capitalized and with underscores replaced with spaces.
      */
     @Override
     public String toString()
     {
-        return super.toString().toLowerCase();
+        StringBuilder nameBuilder = new StringBuilder();
+        nameBuilder.append(super.toString().toLowerCase());
+        for (int i = 0; i < nameBuilder.length(); i++)
+        {
+            if (nameBuilder.charAt(i) == '_')
+            {
+                nameBuilder.setCharAt(i, ' ');
+            }
+            else if (i == 0 || nameBuilder.charAt(i - 1) == ' ')
+            {
+                nameBuilder.setCharAt(i, Character.toUpperCase(
+                        nameBuilder.charAt(i)));
+            }
+        }
+        return nameBuilder.toString();
     }
 }

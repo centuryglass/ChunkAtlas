@@ -357,7 +357,7 @@ public class MapCollector
         {
             switch (type)
             {
-                case ACTIVITY:
+                case TOTAL_ACTIVITY:
                     mappers.add(new ActivityMapper(imageDir, regionName));
                     break;
                 case BASIC:
@@ -371,7 +371,7 @@ public class MapCollector
                 case ERROR:
                     mappers.add(new ErrorMapper(imageDir, regionName));
                     break;
-                case RECENT:
+                case RECENT_ACTIVITY:
                     mappers.add(new RecentMapper(imageDir, regionName));
                     break;
             }   

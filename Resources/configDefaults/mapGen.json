@@ -30,11 +30,11 @@
         "createScaled": [128, 64, 32]
     },
     "mapTypes": {
-        "ACTIVITY": true,
+        "TOTAL_ACTIVITY": true,
         "BASIC": false,
         "BIOME": true,
         "ERROR": false,
-        "RECENT": true,
+        "RECENT_ACTIVITY": true,
         "STRUCTURE": true
     }
 }

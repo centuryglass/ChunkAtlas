@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.apache.commons.lang.Validate;
 
@@ -80,7 +79,7 @@ public class ActivityMapper extends Mapper
     @Override
     public MapType getMapType()
     {
-        return MapType.ACTIVITY;
+        return MapType.TOTAL_ACTIVITY;
     }
            
     /**

@@ -221,7 +221,7 @@ public final class MapCreator
                     break;
                 }
                 case ACTIVITY_MAPS_ENABLED:
-                    setMapTypeEnabled(MapType.ACTIVITY,
+                    setMapTypeEnabled(MapType.TOTAL_ACTIVITY,
                             option.boolOptionStatus());
                     break;
                 case BASIC_MAPS_ENABLED:
@@ -237,7 +237,7 @@ public final class MapCreator
                             option.boolOptionStatus());
                     break;
                 case RECENT_MAPS_ENABLED:
-                    setMapTypeEnabled(MapType.RECENT,
+                    setMapTypeEnabled(MapType.RECENT_ACTIVITY,
                             option.boolOptionStatus());
                     break;
                 case STRUCTURE_MAPS_ENABLED:
@@ -365,6 +365,7 @@ public final class MapCreator
                 createSingleImageMaps(region, regionImageOutDir);
             }  
         }
+        System.out.println("Map generation completed.");
     }
      
     /**

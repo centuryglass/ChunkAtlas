@@ -75,7 +75,7 @@ public class RecentMapper extends Mapper
     @Override
     public MapType getMapType()
     {
-        return MapType.RECENT;
+        return MapType.RECENT_ACTIVITY;
     }
     
     /**
