@@ -21,6 +21,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
 import org.apache.commons.lang.Validate;
 
 /**
@@ -121,7 +122,11 @@ public class ServerUpdate
                     "Failed to create update cache file.");
         }
         FileOutputStream outStream = new FileOutputStream(cacheFile);
-        try (JsonWriter writer = Json.createWriter(outStream))
+        Map<String, Object> config = new HashMap<>();
+        config.put("javax.json.stream.JsonGenerator.prettyPrinting",
+                Boolean.TRUE);
+        JsonWriterFactory factory = Json.createWriterFactory(config);
+        try (JsonWriter writer = factory.createWriter(outStream))
         {
             writer.write(message);
         }
