@@ -11,6 +11,8 @@ import org.apache.commons.lang.Validate;
 /**
  * Represents an option found in a list of command line arguments, possibly
  * with a set of parameter strings.
+ * 
+ * @param <ArgEnum>  An enumerator specifying all argument types.
  */
 public class ArgOption<ArgEnum>
 {
@@ -94,16 +96,16 @@ public class ArgOption<ArgEnum>
      * @return                           The numeric value of the chosen
      *                                   parameter.
      * 
-     * @throws InvalidArgumentException  If the index is invalid, the parameter
+     * @throws IllegalArgumentException  If the index is invalid, the parameter
      *                                   is non-numeric, or the value is
      *                                   rejected by the validator.
      */
     public int parseIntParam(int index, Predicate<Integer> validator)
-            throws InvalidArgumentException
+            throws IllegalArgumentException
     {
         if (getParamCount() <= index || index < 0)
         {
-            throw new InvalidArgumentException("Option " + getType().toString()
+            throw new IllegalArgumentException("Option " + getType().toString()
                     + ": Parameter index " + String.valueOf(index)
                     + " does not exist");
         } 
@@ -119,7 +121,7 @@ public class ArgOption<ArgEnum>
         }
         catch (NumberFormatException e)
         {
-            throw new InvalidArgumentException("Option " + getType().toString()
+            throw new IllegalArgumentException("Option " + getType().toString()
                     + ": Invalid parameter \"" + param + "\".");
         }
     }
@@ -133,10 +135,10 @@ public class ArgOption<ArgEnum>
      * 
      * @return                           The option's boolean value.
      * 
-     * @throws InvalidArgumentException  If the option has a first argument
+     * @throws IllegalArgumentException  If the option has a first argument
      *                                   that does not represent a boolean.
      */
-    public boolean boolOptionStatus() throws InvalidArgumentException
+    public boolean boolOptionStatus() throws IllegalArgumentException
     {
         if (parameters == null || parameters.length == 0)
         {
@@ -151,7 +153,7 @@ public class ArgOption<ArgEnum>
         {
             return false;
         }
-        throw new InvalidArgumentException(optionType.toString()
+        throw new IllegalArgumentException(optionType.toString()
                 + ": parameter \"" + param + "\" is not true/false.");
     }
     

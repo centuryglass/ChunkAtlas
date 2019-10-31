@@ -10,7 +10,6 @@ import com.centuryglass.chunk_atlas.config.MapGenConfig;
 import com.centuryglass.chunk_atlas.config.WebServerConfig;
 import com.centuryglass.chunk_atlas.util.args.ArgOption;
 import com.centuryglass.chunk_atlas.util.args.ArgParser;
-import com.centuryglass.chunk_atlas.util.args.InvalidArgumentException;
 import com.centuryglass.chunk_atlas.webserver.Connection;
 import com.centuryglass.chunk_atlas.webserver.ServerUpdate;
 import java.io.File;
@@ -89,9 +88,9 @@ public class MapUpdater
                     {
                         reuseCache = reuseUpdates.boolOptionStatus();
                     }
-                    catch (InvalidArgumentException e)
+                    catch (IllegalArgumentException e)
                     {
-                        System.err.println(e.getMessage());
+                        System.err.println(e.toString());
                     }
                 }
                 else if (webConfig != null)
@@ -124,7 +123,7 @@ public class MapUpdater
             {
                 mapCreator.applyArgOptions(argParser);
             }
-            catch (InvalidArgumentException | FileNotFoundException e)
+            catch (IllegalArgumentException | FileNotFoundException e)
             {
                 if (argParser != null)
                 {

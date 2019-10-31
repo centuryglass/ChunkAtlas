@@ -7,7 +7,6 @@ package com.centuryglass.chunk_atlas;
 
 import com.centuryglass.chunk_atlas.util.args.ArgOption;
 import com.centuryglass.chunk_atlas.util.args.ArgParser;
-import com.centuryglass.chunk_atlas.util.args.InvalidArgumentException;
 import com.centuryglass.chunk_atlas.webserver.security.RSAGenerator;
 import java.io.File;
 import java.io.IOException;
@@ -65,9 +64,9 @@ public class Main
                 return;
             }
         }
-        catch (InvalidArgumentException e)
+        catch (IllegalArgumentException e)
         {
-            System.err.println(e.getMessage());
+            System.err.println(e.toString());
             printHelpAndExit.run();
         }
         MapUpdater.update(argParser);

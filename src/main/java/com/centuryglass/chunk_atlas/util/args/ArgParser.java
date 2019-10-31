@@ -63,18 +63,18 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
      * @param args                       The set of command line arguments to
      *                                   process.
      * 
-     * @throws InvalidArgumentException  If invalid option flags are found in
+     * @throws IllegalArgumentException  If invalid option flags are found in
      *                                   the argument list, or expected option
      *                                   parameters are missing.
      */
-    public void parseArguments(String[] args) throws InvalidArgumentException
+    public void parseArguments(String[] args) throws IllegalArgumentException
     {    
         // Scan arguments for options and save option parameters:
         for(int i = 0; i < args.length; i++)
         {
             if (! optionFlags.containsKey(args[i]))
             {
-                throw new InvalidArgumentException("Invalid option "
+                throw new IllegalArgumentException("Invalid option "
                         + args[i]);
             }
             OptionParams<ArgEnum> option = optionFlags.get(args[i]);
@@ -99,7 +99,7 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
                 int paramsFound = maxParamIdx - i;
                 if (paramsFound < option.minParamCount)
                 {
-                    throw new InvalidArgumentException("Option "
+                    throw new IllegalArgumentException("Option "
                             + option.getType().toString()
                             + ": expected at least "
                             + String.valueOf(option.minParamCount)

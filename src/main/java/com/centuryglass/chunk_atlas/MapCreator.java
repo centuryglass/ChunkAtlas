@@ -19,7 +19,6 @@ import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import com.centuryglass.chunk_atlas.util.MapUnit;
 import com.centuryglass.chunk_atlas.util.args.ArgOption;
 import com.centuryglass.chunk_atlas.util.args.ArgParser;
-import com.centuryglass.chunk_atlas.util.args.InvalidArgumentException;
 import java.awt.Point;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -128,13 +127,13 @@ public final class MapCreator
      * @param parsedArgs                 An ArgParser that has already parsed
      *                                   the command line argument array.
      * 
-     * @throws InvalidArgumentException  If any option parameters are invalid.
+     * @throws IllegalArgumentException  If any option parameters are invalid.
      * 
      * @throws FileNotFoundException     If the region file directory does not
      *                                   exist.
      */
     public void applyArgOptions(ArgParser<MapArgOptions> parsedArgs)
-            throws InvalidArgumentException, FileNotFoundException
+            throws IllegalArgumentException, FileNotFoundException
     {
         Validate.notNull(parsedArgs, "Parsed argument object cannot be null");
         ArgOption<MapArgOptions>[] options = parsedArgs.getAllOptions();
