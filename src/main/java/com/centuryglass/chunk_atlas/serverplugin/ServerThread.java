@@ -16,9 +16,9 @@ import java.io.File;
 public class ServerThread extends Thread
 {   
     private static final String DEFAULT_SERVER_CONFIG
-            = "plugins/chunk_atlas_mapGen.json";
+            = "plugins/ChunkAtlas/mapGen.json";
     private static final String DEFAULT_CONNECTION_CONFIG
-            = "plugins/chunk_atlas_webConnect.json";
+            = "plugins/ChunkAtlas/webConnect.json";
     
     @Override
     public void run()
