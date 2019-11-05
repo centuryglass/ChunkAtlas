@@ -1,4 +1,5 @@
-# ChunkAtlas
+![ChunkAtlas](./banner.png?raw=true "ChunkAtlas: Create and view Minecraft server maps.")
+
 ChunkAtlas finds all loaded chunks in a Minecraft region directory and uses them to create different types of maps. ChunkAtlas can function as either a standalone command line application, or as a Minecraft server plugin. Optionally, ChunkAtlas will upload map images to a [Node.js Express web server](https://github.com/centuryglass/ChunkAtlas/tree/express), which provides a browser-based HTML5 viewer for the uploaded map data. See the project [GitHub Pages](https://centuryglass.github.io/ChunkAtlas/) to view a demo of the web viewer with example map data.
 
 ### Building ChunkAtlas
