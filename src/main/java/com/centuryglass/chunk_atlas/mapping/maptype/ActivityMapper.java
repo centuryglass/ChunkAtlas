@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import org.apache.commons.lang.Validate;
+import org.bukkit.World;
 
 /**
  * ActivityMapper a map showing the relative amount of time that players have
@@ -38,10 +39,13 @@ public class ActivityMapper extends Mapper
      * @param imageDir    The directory where the map image will be saved.
      * 
      * @param regionName  The name of the region this Mapper is mapping.
+     * 
+     * @param region      An optional bukkit World object, used to load extra
+     *                    map data if non-null.
      */
-    public ActivityMapper(File imageDir, String regionName)
+    public ActivityMapper(File imageDir, String regionName, World region)
     {
-        super(imageDir, regionName);
+        super(imageDir, regionName, region);
         inhabitedTimes = new HashMap<>();
         key = new LinkedHashSet<>();
     }

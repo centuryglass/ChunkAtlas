@@ -12,6 +12,7 @@ import com.centuryglass.chunk_atlas.mapping.maptype.MapType;
 import com.centuryglass.chunk_atlas.mapping.TileMap;
 import com.centuryglass.chunk_atlas.mapping.images.ImageStitcher;
 import com.centuryglass.chunk_atlas.savedata.MCAFile;
+import com.centuryglass.chunk_atlas.serverplugin.Plugin;
 import com.centuryglass.chunk_atlas.threads.MapperThread;
 import com.centuryglass.chunk_atlas.threads.ProgressThread;
 import com.centuryglass.chunk_atlas.threads.ReaderThread;
@@ -28,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
@@ -37,6 +39,9 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Server;
+import org.bukkit.World;
+import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * Stores map creation options, and applies them to generate Minecraft map
@@ -503,20 +508,46 @@ public final class MapCreator
     {
         ExtendedValidate.notNullOrEmpty(regionName, "Region name");
         ExtendedValidate.isDirectory(regionDirectory, "Region directory");
-        Region region = new Region(regionName, regionDirectory);
+        World regionWorld = null;
+        try
+        {
+            JavaPlugin plugin = JavaPlugin.getProvidingPlugin(Plugin.class);
+            Server server = plugin.getServer();
+            List<World> worlds = server.getWorlds();
+            for (World world : worlds)
+            {
+                if (world.getWorldFolder().equals(regionDirectory))
+                {
+                    regionWorld = world;
+                    break;
+                }
+            }
+        }
+        catch (NoClassDefFoundError e)
+        {
+            // If this exception is thrown, ChunkAtlas is not running as a 
+            // Minecraft server plugin, and therefore cannot get a server World
+            // object for the region. ChunkAtlas will continue forward without
+            // a World object, and take data directly from Minecraft region
+            // files.
+        }
+        Region region = new Region(regionName, regionDirectory, regionWorld);
         regionsToMap.add(region);
     }
     
-    // Immutably store a region directory with its region name:
+    // Immutably store a region directory with its region name and server
+    // World object:
     private class Region
     {
-        protected Region(String name, File directory)
+        protected Region(String name, File directory, World world)
         {
             this.name = name;
             this.directory = directory;
+            this.world = world;
         }  
         protected final String name;
         protected final File directory;
+        protected final World world; 
     }
     
     /**
@@ -584,8 +615,8 @@ public final class MapCreator
         ExtendedValidate.couldBeDirectory(outDir, "Tile output directory");
         ArrayList<File> regionFiles = new ArrayList<>(Arrays.asList(
                 mapRegion.directory.listFiles()));
-        mappers = new MapCollector(outDir, mapRegion.name, tileSize,
-                altTileSizes, pixelsPerChunk, enabledMapTypes);
+        mappers = new MapCollector(outDir, mapRegion.name, mapRegion.world,
+                tileSize, altTileSizes, pixelsPerChunk, enabledMapTypes);
         // If more than one tile fits in a region, sort regions by tile:
         if (tileSize > 32)
         {
@@ -670,8 +701,8 @@ public final class MapCreator
             System.out.println("Region was empty, no maps were created.");
             return;          
         }
-        mappers = new MapCollector(outDir, mapRegion.name, xMin, zMin, width,
-                height, pixelsPerChunk, enabledMapTypes);
+        mappers = new MapCollector(outDir, mapRegion.name, mapRegion.world,
+                xMin, zMin, width, height, pixelsPerChunk, enabledMapTypes);
         final int chunksMapped = mapRegion(mapRegion.name, regionFiles);
         if (chunksMapped > 0)
         {

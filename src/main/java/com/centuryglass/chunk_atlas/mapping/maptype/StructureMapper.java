@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.apache.commons.lang.Validate;
+import org.bukkit.World;
 
 /**
  *  StructureMapper creates maps showing where different generated structures
@@ -34,10 +35,13 @@ public class StructureMapper extends Mapper
      * @param imageDir    The directory where the map image will be saved.
      * 
      * @param regionName  The name of the region this Mapper is mapping.
+     * 
+     * @param region      An optional bukkit World object, used to load extra
+     *                    map data if non-null.
      */
-    public StructureMapper(File imageDir, String regionName)
+    public StructureMapper(File imageDir, String regionName, World region)
     {
-        super(imageDir, regionName);
+        super(imageDir, regionName, region);
         structureRefs = new HashMap<>();
         encounteredStructures = new TreeSet<>();
     }

@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.apache.commons.lang.Validate;
+import org.bukkit.World;
 
 /**
  *  BasicMapper creates a simple map that only displays which Minecraft map
@@ -28,10 +29,13 @@ public class BasicMapper extends Mapper
      * @param imageDir    The directory where the map image will be saved.
      * 
      * @param regionName  The name of the region this Mapper is mapping.
+     * 
+     * @param region      An optional bukkit World object, used to load extra
+     *                    map data if non-null.
      */
-    public BasicMapper(File imageDir, String regionName)
+    public BasicMapper(File imageDir, String regionName, World region)
     {
-        super(imageDir, regionName);
+        super(imageDir, regionName, region);
     }
     
     /**

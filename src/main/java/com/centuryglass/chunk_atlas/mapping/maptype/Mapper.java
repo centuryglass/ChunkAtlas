@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Set;
 import org.apache.commons.lang.Validate;
+import org.bukkit.World;
 
 /**
  *  Mapper classes are responsible for determining which color to apply to the
@@ -34,13 +35,17 @@ public abstract class Mapper
      * @param imageDir    The directory where the map image will be saved.
      * 
      * @param regionName  The name of the region this Mapper is mapping.
+     * 
+     * @param region      An optional bukkit World object, used to load extra
+     *                    map data if non-null.
      */
-    public Mapper(File imageDir, String regionName)
+    public Mapper(File imageDir, String regionName, World region)
     {
         ExtendedValidate.couldBeDirectory(imageDir, "Image output directory");
         ExtendedValidate.notNullOrEmpty(regionName, "Region name");
         this.imageDir = imageDir;
         this.regionName = regionName;
+        this.region = region;
     }
     
     /**
@@ -108,6 +113,17 @@ public abstract class Mapper
     public String getRegionName()
     {
         return regionName;
+    }
+    
+    /**
+     * Gets the mapped region's optional server World object.
+     * 
+     * @return  The region's World object, or null if no World was provided on
+     *          construction.
+     */
+    protected World getRegion()
+    {
+        return region;
     }
     
     /**
@@ -197,9 +213,11 @@ public abstract class Mapper
     protected void finalProcessing(WorldMap map) { }
     
     // All map image data:
-    WorldMap map = null;
+    private WorldMap map = null;
     // Base directory where images will be saved:
-    File imageDir;
+    private final File imageDir;
     // The mapped region name:
-    String regionName;
+    private final String regionName;
+    // The region's optional server data object:
+    private final World region;
 }

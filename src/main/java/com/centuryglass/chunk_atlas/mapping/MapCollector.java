@@ -28,6 +28,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang.Validate;
+import org.bukkit.World;
 
 /**
  * MapCollector creates and manages a set of Mapper subclasses through a single
@@ -44,6 +45,9 @@ public class MapCollector
      * 
      * @param regionName      The name of the mapped region.
      * 
+     * @param region          An optional bukkit World object, used to load
+     *                        extra map data if non-null.
+     * 
      * @param xMin            Lowest x-coordinate within the mapped area,
      *                        measured in chunks.
      * 
@@ -59,6 +63,7 @@ public class MapCollector
     public MapCollector(
             File imageDir,
             String regionName,
+            World region,
             int xMin,
             int zMin,
             int widthInChunks,
@@ -67,8 +72,9 @@ public class MapCollector
     {
         validateInitParams(imageDir, regionName, pixelsPerChunk);
         mappers = new ArrayList<>();
-        initImageMappers(imageDir, regionName, xMin, zMin, widthInChunks,
-                heightInChunks, pixelsPerChunk, getFullTypeSet());
+        initImageMappers(imageDir, regionName, region, xMin, zMin,
+                widthInChunks, heightInChunks, pixelsPerChunk,
+                getFullTypeSet());
     }
     
     /**
@@ -78,6 +84,9 @@ public class MapCollector
      * @param imageDir        The directory where map images will be saved.
      * 
      * @param regionName      The name of the mapped region.
+     * 
+     * @param region          An optional bukkit World object, used to load
+     *                        extra map data if non-null.
      * 
      * @param xMin            Lowest x-coordinate within the mapped area,
      *                        measured in chunks.
@@ -96,6 +105,7 @@ public class MapCollector
     public MapCollector(
             File imageDir,
             String regionName,
+            World region,
             int xMin,
             int zMin,
             int widthInChunks,
@@ -105,8 +115,8 @@ public class MapCollector
     {
         validateInitParams(imageDir, regionName, pixelsPerChunk);
         mappers = new ArrayList<>();
-        initImageMappers(imageDir, regionName, xMin, zMin, widthInChunks,
-                heightInChunks, pixelsPerChunk, mapTypes);
+        initImageMappers(imageDir, regionName, region, xMin, zMin,
+                widthInChunks, heightInChunks, pixelsPerChunk, mapTypes);
     }
     
     /**
@@ -115,6 +125,9 @@ public class MapCollector
      * @param imageDir       The directory where map images will be saved.
      * 
      * @param regionName      The name of the mapped region.
+     * 
+     * @param region          An optional bukkit World object, used to load
+     *                        extra map data if non-null.
      * 
      * @param tileSize        The width and height of each tile, measured in
      *                        chunks.
@@ -125,12 +138,12 @@ public class MapCollector
      * @param pixelsPerChunk  The width and height in pixels of each mapped
      *                        chunk.
      */
-    public MapCollector(File imageDir, String regionName, int tileSize,
-            int[] altSizes, int pixelsPerChunk)
+    public MapCollector(File imageDir, String regionName, World region,
+            int tileSize, int[] altSizes, int pixelsPerChunk)
     {
         validateInitParams(imageDir, regionName, pixelsPerChunk);
         mappers = new ArrayList<>();
-        initTileMappers(imageDir, regionName, tileSize, altSizes,
+        initTileMappers(imageDir, regionName, region, tileSize, altSizes,
                 pixelsPerChunk, getFullTypeSet());
     }
         
@@ -140,6 +153,9 @@ public class MapCollector
      * @param imageDir        The directory where map images will be saved.
      * 
      * @param regionName      The name of the mapped region.
+     * 
+     * @param region          An optional bukkit World object, used to load
+     *                        extra map data if non-null.
      * 
      * @param tileSize        The width of each tile, measured in chunks.
      * 
@@ -151,12 +167,17 @@ public class MapCollector
      * 
      * @param mapTypes        The set of Mapper types that should be used.
      */
-    public MapCollector(File imageDir, String regionName, int tileSize,
-            int[] altSizes, int pixelsPerChunk, Set<MapType> mapTypes)
+    public MapCollector(File imageDir,
+            String regionName,
+            World region,
+            int tileSize,
+            int[] altSizes,
+            int pixelsPerChunk,
+            Set<MapType> mapTypes)
     {
         validateInitParams(imageDir, regionName, pixelsPerChunk);
         mappers = new ArrayList<>();
-        initTileMappers(imageDir, regionName, tileSize, altSizes,
+        initTileMappers(imageDir, regionName, region, tileSize, altSizes,
                 pixelsPerChunk, mapTypes);
     }
     
@@ -168,6 +189,9 @@ public class MapCollector
      * 
      * @param regionName      The name of the mapped region. This cannot be
      *                        null or empty.
+     * 
+     * @param region          An optional bukkit World object, used to load
+     *                        extra map data if non-null.
      * 
      * @param pixelsPerChunk  The width and height in pixels of each mapped
      *                        chunk. This must be a positive value.
@@ -280,6 +304,9 @@ public class MapCollector
      * 
      * @param regionName      The name of the mapped region.
      * 
+     * @param region          An optional bukkit World object, used to load
+     *                        extra map data if non-null.
+     * 
      * @param xMin            Lowest x-coordinate within the mapped area,
      *                        measured in chunks.
      * 
@@ -297,6 +324,7 @@ public class MapCollector
     private void initImageMappers(
             File imageDir,
             String regionName,
+            World region,
             int xMin,
             int zMin,
             int widthInChunks,
@@ -304,7 +332,7 @@ public class MapCollector
             int pixelsPerChunk,
             Set<MapType> mapTypes)
     {
-        createMappers(imageDir, regionName, mapTypes);
+        createMappers(imageDir, regionName, region, mapTypes);
         mappers.forEach((mapper) ->
         {
             mapper.initImageMap(xMin, zMin, widthInChunks, heightInChunks,
@@ -319,6 +347,9 @@ public class MapCollector
      * 
      * @param regionName      The name of the mapped region.
      * 
+     * @param region          An optional bukkit World object, used to load
+     *                        extra map data if non-null.
+     * 
      * @param tileSize        The width of each tile, measured in chunks.
      * 
      * @param altSizes        The list of alternate scaled tile sizes to
@@ -329,11 +360,15 @@ public class MapCollector
      * 
      * @param mapTypes        The set of Mapper types that will be used.
      */
-    private void initTileMappers(File imageDir, String regionName,
-            int tileSize, int[] altSizes, int pixelsPerChunk,
+    private void initTileMappers(File imageDir,
+            String regionName,
+            World region,
+            int tileSize,
+            int[] altSizes,
+            int pixelsPerChunk,
             Set<MapType> mapTypes)
     {
-        createMappers(imageDir, regionName, mapTypes);
+        createMappers(imageDir, regionName, region, mapTypes);
         mappers.forEach((mapper) ->
         {
             mapper.initTileMap(tileSize, altSizes, pixelsPerChunk);
@@ -347,10 +382,13 @@ public class MapCollector
      * 
      * @param regionName  The name of the mapped region.
      * 
+     * @param region      An optional bukkit World object, used to load extra
+     *                    map data if non-null.
+     * 
      * @param mapTypes    The set of MapType values indicating which mappers
      *                    should be created.
      */
-    private void createMappers(File imageDir, String regionName,
+    private void createMappers(File imageDir, String regionName, World region,
             Set<MapType> mapTypes)
     {
         for (MapType type : mapTypes)
@@ -358,21 +396,23 @@ public class MapCollector
             switch (type)
             {
                 case TOTAL_ACTIVITY:
-                    mappers.add(new ActivityMapper(imageDir, regionName));
+                    mappers.add(new ActivityMapper(imageDir, regionName,
+                            region));
                     break;
                 case BASIC:
-                    mappers.add(new BasicMapper(imageDir, regionName));
+                    mappers.add(new BasicMapper(imageDir, regionName, region));
                 case BIOME:
-                    mappers.add(new BiomeMapper(imageDir, regionName));
+                    mappers.add(new BiomeMapper(imageDir, regionName, region));
                     break;
                 case STRUCTURE:
-                    mappers.add(new StructureMapper(imageDir, regionName));
+                    mappers.add(new StructureMapper(imageDir, regionName,
+                            region));
                     break;
                 case ERROR:
-                    mappers.add(new ErrorMapper(imageDir, regionName));
+                    mappers.add(new ErrorMapper(imageDir, regionName, region));
                     break;
                 case RECENT_ACTIVITY:
-                    mappers.add(new RecentMapper(imageDir, regionName));
+                    mappers.add(new RecentMapper(imageDir, regionName, region));
                     break;
             }   
         }

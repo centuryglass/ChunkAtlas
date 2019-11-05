@@ -17,11 +17,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.apache.commons.lang.Validate;
+import org.bukkit.World;
 
 /**
  * BiomeMapper draws a map showing the biomes of all generated chunks within
  * the mapped region. Individual structure colors are defined in the
- * worldinfo.Biome Enum, and documented in the project's mapKey.png file.
+ * worldinfo.Biome enum, and documented in the project's mapKey.png file.
  */
 public class BiomeMapper extends Mapper
 {       
@@ -32,10 +33,13 @@ public class BiomeMapper extends Mapper
      * @param imageDir    The directory where the map image will be saved.
      * 
      * @param regionName  The name of the region this Mapper is mapping.
+     * 
+     * @param region      An optional bukkit World object, used to load extra
+     *                    map data if non-null.
      */
-    public BiomeMapper(File imageDir, String regionName)
+    public BiomeMapper(File imageDir, String regionName, World region)
     {
-        super(imageDir, regionName);
+        super(imageDir, regionName, region);
         textureData = new BiomeTextures();
         encounteredBiomes = new TreeSet<>();
     }

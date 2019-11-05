@@ -8,9 +8,11 @@ Without this configuration present, some functionality in the IDE may be limited
 -->
     <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
         <word>biomes</word>
+        <word>bukkit</word>
         <word>Downscaler</word>
         <word>mca</word>
         <word>Minecraft</word>
+        <word>png</word>
         <word>worldinfo</word>
     </spellchecker-wordlist>
 </project-shared-configuration>
