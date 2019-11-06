@@ -9,7 +9,6 @@ package com.centuryglass.chunk_atlas.util;
 
 import java.awt.Point;
 
-
 public enum MapUnit 
 {
     BLOCK (1),
@@ -49,7 +48,6 @@ public enum MapUnit
         return new Point(point.x * inputUnit.scale / outputUnit.scale,
                 point.y * inputUnit.scale / outputUnit.scale);
     }
-    
     
     /**
      * Converts a value from a standard unit of measurement to an arbitrary
@@ -95,5 +93,4 @@ public enum MapUnit
     }
     
     private final int scale;
-    
 }
