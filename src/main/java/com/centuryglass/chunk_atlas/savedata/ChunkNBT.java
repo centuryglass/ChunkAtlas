@@ -8,6 +8,7 @@
  */
 package com.centuryglass.chunk_atlas.savedata;
 
+import com.centuryglass.chunk_atlas.serverplugin.Plugin;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import com.centuryglass.chunk_atlas.worldinfo.Biome;
 import com.centuryglass.chunk_atlas.worldinfo.ChunkData;
@@ -65,6 +66,13 @@ public class ChunkNBT
         SKIPPED_TAGS.add("ToB"); // ToBeTicked
         SKIPPED_TAGS.add("Car"); // CarvingMasks
         SKIPPED_TAGS.add("Pos"); // PostProcessing
+        if (Plugin.isRunning())
+        {
+            System.out.println("Running as server plugin, disabling structure "
+                    + "NBT scanning.");
+            SKIPPED_TAGS.add("Str"); // Structures
+            SKIPPED_TAGS.add("Ref"); // References
+        }
     }
     
     /** 

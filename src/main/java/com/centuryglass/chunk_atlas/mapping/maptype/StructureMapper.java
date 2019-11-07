@@ -7,17 +7,23 @@ package com.centuryglass.chunk_atlas.mapping.maptype;
 
 import com.centuryglass.chunk_atlas.mapping.KeyItem;
 import com.centuryglass.chunk_atlas.mapping.WorldMap;
+import com.centuryglass.chunk_atlas.serverplugin.StructureScanner;
+import com.centuryglass.chunk_atlas.util.MapUnit;
 import com.centuryglass.chunk_atlas.worldinfo.ChunkData;
 import com.centuryglass.chunk_atlas.worldinfo.Structure;
 import java.awt.Color;
 import java.awt.Point;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Chunk;
+import org.bukkit.Location;
+import org.bukkit.StructureType;
 import org.bukkit.World;
 
 /**
@@ -28,6 +34,10 @@ import org.bukkit.World;
  */
 public class StructureMapper extends Mapper
 {   
+    // Radius used when using the server plugin interface to scan for
+    // structures.
+    private static final int SCAN_RADIUS = 1;
+    
     /**
      * Sets the mapper's base output directory and mapped region name on
      * construction.
@@ -114,20 +124,38 @@ public class StructureMapper extends Mapper
             color = Structure.getStructureColor(highestPriority);
         }
         */
-        Map<Point, Structure> chunkStructureRefs = chunk.getStructureRefs();
-        chunkStructureRefs.entrySet().forEach((entry) ->
-        {
-            if (structureRefs.containsKey(entry.getKey()))
+        if (getRegion() == null) 
+        { 
+            Map<Point, Structure> chunkStructureRefs = chunk.getStructureRefs();
+            chunkStructureRefs.entrySet().forEach((entry) ->
             {
-                if (structureRefs.get(entry.getKey()).getPriority()
-                        >= entry.getValue().getPriority())
+                if (structureRefs.containsKey(entry.getKey()))
                 {
-                    return;
+                    if (structureRefs.get(entry.getKey()).getPriority()
+                            >= entry.getValue().getPriority())
+                    {
+                        return;
+                    }
                 }
+                encounteredStructures.add(entry.getValue());
+                structureRefs.put(entry.getKey(), entry.getValue());
+            });
+        }
+        else
+        {
+            Point chunkPt = chunk.getPos();
+            if (! getRegion().isChunkGenerated(chunkPt.x, chunkPt.y))
+            {
+                return color;
             }
-            encounteredStructures.add(entry.getValue());
-            structureRefs.put(entry.getKey(), entry.getValue());
-        });
+            StructureScanner scanner = StructureScanner.getWorldScanner(
+                    getRegion());
+            Point blockCoords = MapUnit.convertPoint(chunkPt, MapUnit.CHUNK,
+                    MapUnit.BLOCK);
+            Location chunkLocation = new Location(getRegion(), blockCoords.x,
+                    0, blockCoords.y);
+            scanner.scan(chunkLocation, SCAN_RADIUS);
+        }
         return color;
     }
     
@@ -139,7 +167,23 @@ public class StructureMapper extends Mapper
     @Override
     protected void finalProcessing(WorldMap map)
     {
-        double maxDistance = Math.sqrt(18);
+        if (getRegion() != null)
+        {
+            // Copy scanned structure areas into structure refs:
+            StructureScanner scanner = StructureScanner.getWorldScanner(
+                    getRegion());
+            Map<Point, StructureType> pts = scanner.getStructurePoints();
+            System.out.println("Adding " + pts.size()
+                    + " structures to the map:");
+            for (Map.Entry<Point, StructureType> entry : pts.entrySet())
+            {
+                Structure type = Structure.fromStructureType(entry.getValue());
+                Point chunkPt = MapUnit.convertPoint(entry.getKey(),
+                        MapUnit.BLOCK, MapUnit.CHUNK);
+                structureRefs.put(chunkPt, type);
+            }
+        }
+        final double maxDistance = Math.sqrt(18);
         for (Map.Entry<Point, Structure> entry : structureRefs.entrySet())
         {
             Color structColor = Structure.getStructureColor(entry.getValue());
