@@ -38,7 +38,7 @@ public class Plugin extends JavaPlugin
             JavaPlugin plugin = JavaPlugin.getProvidingPlugin(Plugin.class);
             return (Plugin) plugin;
         }
-        catch (NoClassDefFoundError e)
+        catch (NoClassDefFoundError | IllegalArgumentException e)
         {
             return null;
         }
