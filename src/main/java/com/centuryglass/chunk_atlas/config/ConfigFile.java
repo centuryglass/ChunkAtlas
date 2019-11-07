@@ -56,11 +56,15 @@ public class ConfigFile
             catch (FileNotFoundException | JsonException |
                     IllegalStateException ex) 
             {
-                System.err.println("Failed to load " + configFile.getName()
-                        + " using default configuration options.");
-                System.err.println("Error type encountered: "
-                        + ex.getMessage());
-                loadedOptions = null;
+                // If the file is empty, this exception is expected, and doesn't
+                // need to be printed.
+                if (configFile.length() > 0)
+                {
+                    System.err.println("Failed to load " + configFile.getName()
+                            + " using default configuration options.");
+                    System.err.println("Error encountered: " + ex.toString());
+                    loadedOptions = null;
+                }
             }
         }
         
