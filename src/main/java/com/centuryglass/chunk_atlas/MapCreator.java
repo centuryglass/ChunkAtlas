@@ -23,6 +23,7 @@ import com.centuryglass.chunk_atlas.util.args.ArgParser;
 import java.awt.Point;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -195,8 +196,8 @@ public final class MapCreator
                 {
                     setImageMapBounds(option.parseIntParam(0, null),
                             option.parseIntParam(1, null),
-                            option.parseIntParam(2, w -> w > 0),
-                            option.parseIntParam(3, h -> h > 0));
+                            option.parseIntParam(2, (w) -> w > 0),
+                            option.parseIntParam(3, (h) -> h > 0));
                 }
                 case TILE_MAP:
                 {
@@ -212,7 +213,10 @@ public final class MapCreator
                     }
                     break;
                 }
-                
+                case TILE_SIZE:
+                {
+                    tileSize = option.parseIntParam(0, (size) -> size > 0);   
+                }              
                 case TILE_ALT_SIZES:
                 {
                     int[] altSizes = new int[option.getParamCount()];
@@ -248,6 +252,9 @@ public final class MapCreator
                     setMapTypeEnabled(MapType.STRUCTURE,
                             option.boolOptionStatus());
                     break;
+                default:
+                    System.err.println("Unhandled option type "
+                            + option.getType().toString() + "!" );
             }
         }   
     }
@@ -266,6 +273,12 @@ public final class MapCreator
             // Ensure output directories are region-specific:
             Function<File, File> getRegionOutDir = regionOutDir->
             {
+                if (regionOutDir == null)
+                {
+                    System.out.println("Output directory not provided, using "
+                            + "current working directory.");
+                    regionOutDir = new File("./");
+                }
                 if (! regionOutDir.getName().equals(region.name))
                 {
                     regionOutDir = new File(regionOutDir, region.name);
@@ -509,27 +522,38 @@ public final class MapCreator
         ExtendedValidate.notNullOrEmpty(regionName, "Region name");
         ExtendedValidate.isDirectory(regionDirectory, "Region directory");
         World regionWorld = null;
-        try
+        if (Plugin.isRunning())
         {
-            JavaPlugin plugin = JavaPlugin.getProvidingPlugin(Plugin.class);
-            Server server = plugin.getServer();
+            Server server = Plugin.getRunningPlugin().getServer();
             List<World> worlds = server.getWorlds();
             for (World world : worlds)
             {
-                if (world.getWorldFolder().equals(regionDirectory))
+                boolean isRegionWorld = false;
+                try
                 {
-                    regionWorld = world;
-                    break;
+                    File worldFolder
+                            = world.getWorldFolder().getCanonicalFile();
+                    for (File iter = regionDirectory.getCanonicalFile();
+                            iter != null; iter = iter.getParentFile())
+                    {
+                        if (iter.equals(worldFolder))
+                        {
+                            isRegionWorld = true;
+                            break;
+                        }
+                    }
+                    if (isRegionWorld)
+                    {
+                        regionWorld = world;
+                        break;
+                    }
+                }
+                catch (IOException e)
+                {
+                    System.err.println("Error finding World object: "
+                            + e.toString());
                 }
             }
-        }
-        catch (NoClassDefFoundError e)
-        {
-            // If this exception is thrown, ChunkAtlas is not running as a 
-            // Minecraft server plugin, and therefore cannot get a server World
-            // object for the region. ChunkAtlas will continue forward without
-            // a World object, and take data directly from Minecraft region
-            // files.
         }
         Region region = new Region(regionName, regionDirectory, regionWorld);
         regionsToMap.add(region);
@@ -648,8 +672,8 @@ public final class MapCreator
         final int chunksMapped = mapRegion(mapRegion.name, regionFiles);
         if (chunksMapped > 0)
         {
-            int mapKM = MapUnit.convert(chunksMapped, MapUnit.CHUNK,
-                    MapUnit.BLOCK) / 1000000;
+            double mapKM = (double) MapUnit.convert(chunksMapped, MapUnit.CHUNK,
+                    MapUnit.BLOCK) / 1000000.0;
             System.out.println("Mapped " + chunksMapped
                     + " chunks, an area of " + mapKM + " km^2.");        
         }
@@ -698,7 +722,8 @@ public final class MapCreator
         int numRegionFiles = regionFiles.size();    
         if (numRegionFiles == 0)
         {
-            System.out.println("Region was empty, no maps were created.");
+            System.out.println("Region at \"" + mapRegion.directory.toString()
+                    + "\" was empty, no maps were created.");
             return;          
         }
         mappers = new MapCollector(outDir, mapRegion.name, mapRegion.world,
