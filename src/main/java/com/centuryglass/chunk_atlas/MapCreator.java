@@ -42,7 +42,6 @@ import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Server;
 import org.bukkit.World;
-import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * Stores map creation options, and applies them to generate Minecraft map
