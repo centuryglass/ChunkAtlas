@@ -36,13 +36,12 @@ public class RSAPrivateKey extends RSAKey
      */
     private static Key initKey(File keyFile) throws IOException
     {
-        Path keyPath = keyFile.toPath();
-        byte[] keyBytes = Files.readAllBytes(keyPath);
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
-        KeyFactory factory;
         try
         {
-            factory = KeyFactory.getInstance("RSA");
+            Path keyPath = keyFile.toPath();
+            byte[] keyBytes = Files.readAllBytes(keyPath);
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
+            KeyFactory factory = KeyFactory.getInstance("RSA");
             return factory.generatePrivate(keySpec);
         }
         catch (NoSuchAlgorithmException | InvalidKeySpecException e)
@@ -50,6 +49,10 @@ public class RSAPrivateKey extends RSAKey
             // Creating a RSA key should never actually throw these exceptions
             System.err.println(e.getMessage());
             System.exit(1);
+        }
+        catch (IOException e)
+        {
+            throw new IOException("Unable to read RSA private key file.");
         }
         return null;
     }
