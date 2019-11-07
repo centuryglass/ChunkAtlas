@@ -160,7 +160,38 @@ public class MapUpdater
      */
     public static void update(ArgParser<MapArgOptions> argParser)
     {
-        update(argParser, null, null);
+        // Attempt to get config files from argument paths. If paths are not
+        // defined, load default config using temporary files.
+        MapArgOptions[] configArgs =
+        {
+            MapArgOptions.MAP_CONFIG_PATH,
+            MapArgOptions.WEB_SERVER_CONFIG_PATH
+        };
+        File[] configFiles = { null, null };
+        for (int i = 0; i < configArgs.length; i++)
+        {
+            if (argParser.optionFound(configArgs[i]))
+            {
+                ArgOption<MapArgOptions> pathOptions
+                        = argParser.getOptionParams(configArgs[i]);
+                if (pathOptions.getParamCount() > 0)
+                {
+                    configFiles[i] = new File(pathOptions.getParameter(0));
+                    continue;
+                }
+            }
+            try
+            {
+                configFiles[i] = File.createTempFile("conf", ".json");
+            }
+            catch (IOException e)
+            {
+                System.err.println("Failed to create temporary config file.");
+            }
+        }
+        MapGenConfig genConfig = new MapGenConfig(configFiles[0]);
+        WebServerConfig serverConfig = new WebServerConfig(configFiles[1]);
+        update(argParser, genConfig, serverConfig);
     }
         
     /**
