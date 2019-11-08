@@ -8,8 +8,6 @@ package com.centuryglass.chunk_atlas.config;
 import com.centuryglass.chunk_atlas.serverplugin.Plugin;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.function.BiConsumer;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
@@ -32,7 +30,8 @@ public class LogConfig extends ConfigFile
     // All JSON keys used:
     private class JsonKeys
     {
-        protected static final String SERVER_LOG =  "minecraft server logging";
+        protected static final String SERVER_LOG
+                = "minecraft server logging enabled";
         protected static final String CONSOLE_LOG = "console logging";
         protected static final String FILE_LOGS =   "log files";
         protected static final String ENABLED =     "enabled";
@@ -57,19 +56,15 @@ public class LogConfig extends ConfigFile
             logger.warning("Logger was already initialized.");
             return;
         }
-        JsonObject pluginLogOptions = getObjectOption(JsonKeys.SERVER_LOG,
-                JsonObject.EMPTY_JSON_OBJECT);
         JsonObject consoleLogOptions = getObjectOption(JsonKeys.CONSOLE_LOG,
                 JsonObject.EMPTY_JSON_OBJECT);
         boolean useConsoleLogs = consoleLogOptions.getBoolean(JsonKeys.ENABLED,
                 false);
-        boolean usePluginLogs = pluginLogOptions.getBoolean(JsonKeys.ENABLED,
-                false);
+        boolean usePluginLogs = getBoolOption(JsonKeys.ENABLED, false);
         
         // Initializes a handler with a SimpleFormatter and a log level parsed
-        // from a String, and adds it to the logger. If the level is empty,
-        // null, or otherwise invalid, the handler's logging level will not be
-        // changed.
+        // from a String. If the level is empty, null, or otherwise invalid, the
+        // handler's logging level will not be changed.
         BiConsumer<Handler, String> initHandler = (handler, levelStr) ->
         {
             handler.setFormatter(new SimpleFormatter());
@@ -81,24 +76,21 @@ public class LogConfig extends ConfigFile
                 }
                 catch (IllegalArgumentException e)
                 {
-                    System.err.println("LogConfig.initLogger: invalid log level"
-                        + "\"" + levelStr + "\" defined in config file.");
+                    Logger.getGlobal().log(Level.WARNING,
+                            "Invalid log level \"{0}\" defined in config file.",
+                            levelStr);
                 }
             }
             else
             {
-                System.err.println("No log level set, using default level "
-                        + handler.getLevel().getName());
+                Logger.getGlobal().log(Level.WARNING,
+                        "No log level set, using default level {0}.",
+                        handler.getLevel().getName());
             }
-            logger.addHandler(handler);
         };
         if (usePluginLogs && Plugin.isRunning())
         {
             logger = new PluginLogger(Plugin.getRunningPlugin());
-            // Set the default handler's log level:
-            String level = pluginLogOptions.getString(JsonKeys.LOG_LEVEL, null);
-            assert (logger.getHandlers().length == 1);
-            initHandler.accept(logger.getHandlers()[0], level);
             useConsoleLogs = false; // Plugin logging replaces console logging.
         }
         if (logger == null)
@@ -135,8 +127,9 @@ public class LogConfig extends ConfigFile
             }
             catch (IOException e)
             {
-                System.err.println("LogConfig.initLogger: Failed to create "
-                        + "log file at \"" + logPath + "\".");   
+                Logger.getGlobal().log(Level.WARNING,
+                        "Failed to create logging config file at \"{0}\".",
+                        logPath); 
             }
         });
         logger.setLevel(Level.FINEST);
@@ -153,8 +146,8 @@ public class LogConfig extends ConfigFile
     {
         if (logger == null)
         {
-            System.out.println("LogConfig.getLogger: No LogConfig has been "
-                    + "loaded, creating logger from default options.");
+            Logger.getGlobal().config("No LogConfig has been loaded, creating "
+                    + "logger from default options.");
             LogConfig defaultOptions = new LogConfig(null);
         }
         return logger;

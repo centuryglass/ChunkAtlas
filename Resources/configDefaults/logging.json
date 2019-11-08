@@ -1,19 +1,12 @@
 {
-    "minecraft server logging" : {
-        "enabled"     : true,
-        "lowest level": "INFO"
-    },
+    "minecraft server logging enabled" : true,
     "console logging" : {
         "enabled"      : true,
         "lowest level" : "CONFIG"
     },
     "log files" : [
         {
-            "path"         : "./ChunkAtlas_FullLog",
-            "lowest level" : "FINEST"
-        },
-        {
-            "path"         : "./ChunkAtlas_Log",
+            "path"         : "./plugins/ChunkAtlas/Log",
             "lowest level" : "INFO"
         }
     ]
