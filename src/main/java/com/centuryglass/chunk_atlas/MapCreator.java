@@ -6,6 +6,7 @@
  */
 package com.centuryglass.chunk_atlas;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.config.MapGenConfig;
 import com.centuryglass.chunk_atlas.mapping.MapCollector;
 import com.centuryglass.chunk_atlas.mapping.maptype.MapType;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.logging.Level;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -49,6 +51,8 @@ import org.bukkit.World;
  */
 public final class MapCreator 
 {   
+    private static final String CLASSNAME = MapCreator.class.getName();
+    
     // Debug: Set whether to use multiple threads to scan region files:
     private static final boolean MULTI_REGION_THREADS = true;
     
@@ -87,6 +91,7 @@ public final class MapCreator
      */
     public void applyConfigOptions(MapGenConfig mapConfig)
     {
+        final String FN_NAME = "applyConfigOptions"; // for logging
         Validate.notNull(mapConfig, "Map config object cannot be null.");
         if (mapConfig != null)
         {
@@ -116,9 +121,10 @@ public final class MapCreator
                 }
                 catch (FileNotFoundException e)
                 {
-                    System.err.println("Warning: Cannot find directory \""
-                        + regionDir.toString() + "\" for region \""
-                        + name + "\", this region will be ignored.");
+                    LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
+                            FN_NAME, "Cannot find directory \"{0}\" for region"
+                            + " \"{1}\", this region will be ignored.",
+                            new Object[]{regionDir.toString(), name});
                 }
             });
             enabledMapTypes = mapConfig.getEnabledMapTypes();
@@ -140,6 +146,7 @@ public final class MapCreator
     public void applyArgOptions(ArgParser<MapArgOptions> parsedArgs)
             throws IllegalArgumentException, FileNotFoundException
     {
+        final String FN_NAME = "applyArgOptions"; // for logging
         Validate.notNull(parsedArgs, "Parsed argument object cannot be null");
         ArgOption<MapArgOptions>[] options = parsedArgs.getAllOptions();
         for (ArgOption<MapArgOptions> option : options)
@@ -166,6 +173,10 @@ public final class MapCreator
                         {
                             regionName = regionDir.getName();
                         }
+                        LogConfig.getLogger().logp(Level.FINE, CLASSNAME,
+                                FN_NAME,
+                                "Adding region \"{0}\" at \"{1}\".",
+                                new Object[]{regionName, regionPath});
                         addRegion(regionName, regionDir);                
                     }
                     break;
@@ -251,9 +262,16 @@ public final class MapCreator
                     setMapTypeEnabled(MapType.STRUCTURE,
                             option.boolOptionStatus());
                     break;
+                case USE_CACHED_UPDATE:
+                case MAP_CONFIG_PATH:
+                case WEB_SERVER_CONFIG_PATH:
+                    // No action needed for these options, MapUpdater should
+                    // have already handled them.
+                    break;
                 default:
-                    System.err.println("Unhandled option type "
-                            + option.getType().toString() + "!" );
+                    LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
+                            FN_NAME, "Unhandled option type {0}",
+                            option.getType().toString());
             }
         }   
     }
@@ -264,17 +282,21 @@ public final class MapCreator
      */
     public void createMaps()
     {
-        System.out.println("Creating " + enabledMapTypes.size() + " map types "
-                + "for " + regionsToMap.size() + " region(s).");
+        final String FN_NAME = "createMaps"; // for logging
+        LogConfig.getLogger().log(Level.INFO, //CLASSNAME, FN_NAME,
+                "Creating {0} map types for {1} region(s).",
+                new Object[] {enabledMapTypes.size(), regionsToMap.size()});
         for (Region region : regionsToMap)
         {
-            System.out.println("Mapping region " + region.name + ":");
+            LogConfig.getLogger().logp(Level.INFO, CLASSNAME, FN_NAME,
+                    "Mapping region {0}:", region.name);
             // Ensure output directories are region-specific:
             Function<File, File> getRegionOutDir = regionOutDir->
             {
                 if (regionOutDir == null)
                 {
-                    System.out.println("Output directory not provided, using "
+                    LogConfig.getLogger().logp(Level.CONFIG, CLASSNAME,
+                            FN_NAME, "Output directory not provided, using "
                             + "current working directory.");
                     regionOutDir = new File("./");
                 }
@@ -359,9 +381,12 @@ public final class MapCreator
                     {
                         File outFile = new File(regionImageOutDir,
                                 tileDir.getParentFile().getName() + ".png");
-                        System.out.println("Creating " + outFile.toString()
-                                + " from tiles at " + tileDir.toString()
-                                + ".");
+                        LogConfig.getLogger().logp(Level.CONFIG,
+                                CLASSNAME,
+                                FN_NAME, 
+                                "Creating \"{0}\" from tiles at \"{1}\".",
+                                new Object[]{outFile.toString(),
+                                tileDir.toString()});
                         try
                         {
                             ImageStitcher.stitch(tileDir, outFile, xMin, zMin,
@@ -370,8 +395,9 @@ public final class MapCreator
                         }
                         catch (FileNotFoundException e)
                         {
-                            System.err.println("Failed to create map: "
-                                    + e.getMessage());
+                            LogConfig.getLogger().logp(Level.WARNING,
+                                    CLASSNAME, FN_NAME,
+                                    "Failed to create map: {0}", e.toString());
                         }
                     });
                 }
@@ -381,7 +407,7 @@ public final class MapCreator
                 createSingleImageMaps(region, regionImageOutDir);
             }  
         }
-        System.out.println("Map generation completed.");
+        LogConfig.getLogger().info("Map generation completed.");
     }
      
     /**
@@ -518,6 +544,7 @@ public final class MapCreator
     public void addRegion(String regionName, File regionDirectory)
             throws FileNotFoundException
     {
+        final String FN_NAME = "addRegion"; // for logging
         ExtendedValidate.notNullOrEmpty(regionName, "Region name");
         ExtendedValidate.isDirectory(regionDirectory, "Region directory");
         World regionWorld = null;
@@ -549,8 +576,9 @@ public final class MapCreator
                 }
                 catch (IOException e)
                 {
-                    System.err.println("Error finding World object: "
-                            + e.toString());
+                    LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
+                            FN_NAME,"Error finding World object: {0}",
+                            e.toString());
                 }
             }
         }
@@ -634,6 +662,7 @@ public final class MapCreator
      */
     private void createTileMaps(Region mapRegion, File outDir)
     {
+        final String FN_NAME = "createTileMaps"; // for logging
         Validate.notNull(mapRegion, "Mapped region cannot be null.");
         ExtendedValidate.couldBeDirectory(outDir, "Tile output directory");
         ArrayList<File> regionFiles = new ArrayList<>(Arrays.asList(
@@ -668,13 +697,14 @@ public final class MapCreator
             }
             Collections.sort(regionFiles, new RegionSort());
         }
-        final int chunksMapped = mapRegion(mapRegion.name, regionFiles);
+        final Integer chunksMapped = mapRegion(mapRegion.name, regionFiles);
         if (chunksMapped > 0)
         {
-            double mapKM = (double) MapUnit.convert(chunksMapped, MapUnit.CHUNK,
-                    MapUnit.BLOCK) / 1000000.0;
-            System.out.println("Mapped " + chunksMapped
-                    + " chunks, an area of " + mapKM + " km^2.");        
+            final Double mapKM = (double) MapUnit.convert(chunksMapped,
+                    MapUnit.CHUNK, MapUnit.BLOCK) / 1000000.0;
+            LogConfig.getLogger().logp(Level.INFO, CLASSNAME, FN_NAME,
+                    "Mapped {0} chunks, an area of {1} km^2.",
+                    new Object[] {chunksMapped, mapKM});     
         }
     }
             
@@ -689,6 +719,7 @@ public final class MapCreator
      */
     private void createSingleImageMaps(Region mapRegion, File outDir)
     {
+        final String FN_NAME = "createSingleImageMaps"; // for logging
         Validate.notNull(mapRegion, "Mapped region cannot be null.");
         ExtendedValidate.couldBeDirectory(outDir, "Image output directory");
         ArrayList<File> regionFiles = new ArrayList<>();
@@ -718,11 +749,12 @@ public final class MapCreator
                 }
             }
         }
-        int numRegionFiles = regionFiles.size();    
+        final int numRegionFiles = regionFiles.size();    
         if (numRegionFiles == 0)
         {
-            System.out.println("Region at \"" + mapRegion.directory.toString()
-                    + "\" was empty, no maps were created.");
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Region at \"{0}\" was empty, no maps were created.",
+                    mapRegion.directory.toString());
             return;          
         }
         mappers = new MapCollector(outDir, mapRegion.name, mapRegion.world,
@@ -730,15 +762,17 @@ public final class MapCreator
         final int chunksMapped = mapRegion(mapRegion.name, regionFiles);
         if (chunksMapped > 0)
         {
-            int numChunks = width * height;
-            double explorePercent = (double) chunksMapped * 100 / numChunks;
-            System.out.println("Mapped " + chunksMapped
-                    + " chunks out of " + numChunks + ", map is "
-                    + explorePercent + "% explored.");
+            final int numChunks = width * height;
+            final double explorePercent = (double) chunksMapped * 100
+                    / numChunks;
+            LogConfig.getLogger().logp(Level.INFO, CLASSNAME, FN_NAME,
+                    "Mapped {0}/{1} chunks, map is {2}% explored.",
+                    new Object[] {chunksMapped, numChunks, explorePercent});
         }
         else
         {
-            System.out.println("Region was empty, no maps were created.");
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Region was empty, no maps were created.");
         }
     }
       
@@ -754,6 +788,7 @@ public final class MapCreator
      */
     private int mapRegion(String regionName, ArrayList<File> regionFiles)
     {
+        final String FN_NAME = "mapRegion"; // for logging
         ExtendedValidate.notNullOrEmpty(regionName, "Region name");
         Validate.notNull(regionFiles, "Region files cannot be null.");
         Validate.notNull(mappers, "MapCollector cannot be null.");
@@ -779,8 +814,9 @@ public final class MapCreator
         {
             numReaderThreads = numRegionFiles;
         }
-        System.out.println("Processing " + numRegionFiles
-                + " region files with " + numReaderThreads + " threads.");
+        LogConfig.getLogger().logp(Level.INFO, CLASSNAME, FN_NAME,
+                "Processing {0} region files with {1} threads.",
+                new Object[]{numRegionFiles, numReaderThreads});
         int filesPerThread = numRegionFiles / numReaderThreads;
         ArrayList<ReaderThread> threadList = new ArrayList<>();
         for (int i = 0; i < numReaderThreads; i++)

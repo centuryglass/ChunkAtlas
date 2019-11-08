@@ -6,6 +6,7 @@
  */
 package com.centuryglass.chunk_atlas;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.config.MapGenConfig;
 import com.centuryglass.chunk_atlas.config.WebServerConfig;
 import com.centuryglass.chunk_atlas.util.args.ArgOption;
@@ -15,6 +16,7 @@ import com.centuryglass.chunk_atlas.webserver.ServerUpdate;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.logging.Level;
 
 /**
  * Handles the process of generating map updates and sending those updates to
@@ -22,6 +24,8 @@ import java.io.IOException;
  */
 public class MapUpdater
 {
+    private static final String CLASSNAME = MapUpdater.class.getName();
+    
     /**
      * Attempts to load or generate update data, and optionally send that data
      * to a remote web server.
@@ -39,6 +43,7 @@ public class MapUpdater
     public static void update(ArgParser<MapArgOptions> argParser,
             MapGenConfig mapConfig, WebServerConfig webConfig)
     {
+        final String FN_NAME = "update"; // for logging
         boolean reuseCache = false;
         File updateJson = null;
         if (argParser != null)
@@ -90,7 +95,8 @@ public class MapUpdater
                     }
                     catch (IllegalArgumentException e)
                     {
-                        System.err.println(e.toString());
+                        LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME,
+                                FN_NAME, e.toString());
                     }
                 }
                 else if (webConfig != null)
@@ -103,8 +109,11 @@ public class MapUpdater
         // Generate or load update data:
         final MapCreator mapCreator;
         ServerUpdate updateManager = null;
-        if (reuseCache)
+        if (reuseCache && updateJson != null)
         {
+            LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                    "Loading pre-generated update data from \"{0}\".",
+                    updateJson.toString());
             try
             {
                 updateManager = new ServerUpdate(updateJson);
@@ -127,8 +136,9 @@ public class MapUpdater
             {
                 if (argParser != null)
                 {
-                    System.err.println("Error applying command line options: "
-                            + e.getMessage());
+                    LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
+                            "Error applying command line options: {0}",
+                            e.toString());
                 }
             }
             mapCreator.createMaps();
@@ -140,7 +150,8 @@ public class MapUpdater
                 }
                 catch (IOException e)
                 {
-                    System.err.println(e.getMessage());
+                    LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME,
+                            FN_NAME, e.toString());
                 }
             }
         }
@@ -177,16 +188,7 @@ public class MapUpdater
                 if (pathOptions.getParamCount() > 0)
                 {
                     configFiles[i] = new File(pathOptions.getParameter(0));
-                    continue;
                 }
-            }
-            try
-            {
-                configFiles[i] = File.createTempFile("conf", ".json");
-            }
-            catch (IOException e)
-            {
-                System.err.println("Failed to create temporary config file.");
             }
         }
         MapGenConfig genConfig = new MapGenConfig(configFiles[0]);

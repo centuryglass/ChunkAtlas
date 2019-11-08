@@ -66,7 +66,8 @@ public class Main
                 }
                 catch (IOException e)
                 {
-                    LogConfig.getLogger().log(Level.SEVERE,
+                    LogConfig.getLogger().logp(Level.SEVERE,
+                            Main.class.getName(), "main",
                             "Failed to write key files: {0}", e.getMessage());
                 }
                 LogConfig.getLogger().info("Keys generated successfully.");
