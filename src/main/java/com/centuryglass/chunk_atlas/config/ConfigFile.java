@@ -89,8 +89,10 @@ public class ConfigFile
             }
             catch (IOException e)
             {
-                System.err.println("Error copying default config: "
-                        + e.getMessage());
+                System.err.println("Error copying default config from "
+                        + defaultFilePath + ": "
+                        + e.toString());
+                e.printStackTrace();
             }
         }
     }
@@ -105,7 +107,7 @@ public class ConfigFile
      * @return         The requested value, or null if jsonKey isn't found in
      *                 the configuration file or in default options.
      */
-    protected JsonValue getSavedOrDefaultOptions(String jsonKey)
+    protected final JsonValue getSavedOrDefaultOptions(String jsonKey)
     {
         Validate.notNull(jsonKey, "JSONKey must not be null.");
         JsonValue defaultValue = defaultOptions.get(jsonKey);
@@ -154,7 +156,7 @@ public class ConfigFile
      * @return              The requested object if possible, the defaultValue
      *                      otherwise.
      */
-    protected JsonObject getObjectOption
+    protected final JsonObject getObjectOption
     (String jsonKey, JsonObject defaultValue)
     {
         Validate.notNull(jsonKey, "JSONKey must not be null.");
@@ -173,7 +175,8 @@ public class ConfigFile
      * @return              The requested array if possible, the defaultValue
      *                      otherwise.
      */
-    protected JsonArray getArrayOption(String jsonKey, JsonArray defaultValue)
+    protected final JsonArray getArrayOption
+    (String jsonKey, JsonArray defaultValue)
     {
         Validate.notNull(jsonKey, "JSONKey must not be null.");
         return (JsonArray) getTypedOption(jsonKey, ValueType.ARRAY,
@@ -192,7 +195,7 @@ public class ConfigFile
      * @return              The requested string if possible, the defaultValue
      *                      otherwise.
      */
-    protected String getStringOption
+    protected final String getStringOption
     (String jsonKey, String defaultValue)
     {
         Validate.notNull(jsonKey, "JSONKey must not be null.");
@@ -216,7 +219,7 @@ public class ConfigFile
      * @return              The requested integer if possible, the defaultValue
      *                      otherwise.
      */
-    protected int getIntOption
+    protected final int getIntOption
     (String jsonKey, int defaultValue)
     {
         Validate.notNull(jsonKey, "JSONKey must not be null.");
@@ -248,7 +251,7 @@ public class ConfigFile
      * @return              The requested long if possible, the defaultValue
      *                      otherwise.
      */
-    protected long getLongOption
+    protected final long getLongOption
     (String jsonKey, long defaultValue)
     {
         Validate.notNull(jsonKey, "JSONKey must not be null.");
@@ -281,7 +284,7 @@ public class ConfigFile
      * @return              The requested double if possible, the defaultValue
      *                      otherwise.
      */
-    protected double getDoubleOption
+    protected final double getDoubleOption
     (String jsonKey, double defaultValue)
     {
         Validate.notNull(jsonKey, "JSONKey must not be null.");
@@ -306,7 +309,7 @@ public class ConfigFile
      * @return              The requested boolean value if possible, the
      *                      defaultValue otherwise.
      */
-    protected boolean getBoolOption(String jsonKey, boolean defaultValue)
+    protected final boolean getBoolOption(String jsonKey, boolean defaultValue)
     {
         Validate.notNull(jsonKey, "JSONKey must not be null.");
         JsonValue configValue = getSavedOrDefaultOptions(jsonKey);
