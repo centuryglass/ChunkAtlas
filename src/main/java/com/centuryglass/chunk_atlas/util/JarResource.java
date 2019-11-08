@@ -123,23 +123,34 @@ public class JarResource
     {
         ExtendedValidate.notNullOrEmpty(resourcePath, "Resource path");
         ExtendedValidate.couldBeFile(outFile, "Resource output file");
-        InputStream resourceStream = null;
         FileOutputStream fileStream = null;
-        try
+        boolean outFileExists = outFile.exists();
+        if (! outFileExists)
         {
-            if (! outFile.exists() && ! outFile.createNewFile())
+            try
+            {
+                // Create parent directories if necessary:
+                File parentDir = outFile.getParentFile();
+                if (parentDir != null && ! parentDir.exists())
+                {
+                    parentDir.mkdirs();
+                }
+                outFileExists = outFile.createNewFile();
+            }
+            catch (IOException e)
+            {
+                outFileExists = false;
+            }
+            if (! outFileExists)
             {
                 throw new IOException("Unable to create file at \""
                         + outFile.toString() + "\" to copy resource \""
                         + resourcePath + "\".");
             }
-            resourceStream = getResourceStream(resourcePath);
-            if (resourceStream == null)
-            {
-                throw new IOException("Unable to copy resource \""
-                        + resourcePath
-                        + "\", to file: resource not found");
-            }
+        }
+        try (InputStream resourceStream = getResourceStream(resourcePath))
+        {
+            assert (resourceStream != null ) : "Resource stream was null!";
             fileStream = new FileOutputStream(outFile);
             byte[] buffer = new byte[BUF_SIZE];
             int bytesRead;
@@ -148,16 +159,11 @@ public class JarResource
                 fileStream.write(buffer, 0, bytesRead);   
             }
         }
-        finally
+        catch (IOException e)
         {
-            if (resourceStream != null)
-            {
-                resourceStream.close();
-            }
-            if (fileStream != null)
-            {
-                fileStream.close();
-            }
+            throw new IOException("Unable to copy resource \""
+                    + resourcePath
+                    + "\", to file: resource not found");
         }
     }
 }
