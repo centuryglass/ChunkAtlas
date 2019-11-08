@@ -5,11 +5,13 @@
  */
 package com.centuryglass.chunk_atlas;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.util.args.ArgOption;
 import com.centuryglass.chunk_atlas.util.args.ArgParser;
 import com.centuryglass.chunk_atlas.webserver.security.RSAGenerator;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 
 /**
  * Starts map generation, using command line options, options read from a
@@ -17,9 +19,6 @@ import java.io.IOException;
  */
 public class Main 
 {
-    // Default values:
-    private static final String DEFAULT_CONFIG_PATH = "mapGen.json";
-    
     /**
      * Starts map generation when the program is launched as an executable.
      * 
@@ -43,12 +42,22 @@ public class Main
             {
                 printHelpAndExit.run();
             }
+            if (argParser.optionFound(MapArgOptions.LOG_CONFIG_PATH))
+            {
+                final String logPath = argParser.getOptionParams(
+                        MapArgOptions.LOG_CONFIG_PATH).getParameter(0);
+                LogConfig logConfig = new LogConfig(new File(logPath));
+                LogConfig.getLogger().fine("Initialized logging config from "
+                        + " command line options.");
+                LogConfig.getLogger().log(Level.FINEST,
+                        "Custom logger path: {0}", logPath);
+            }
             ArgOption<MapArgOptions> keyGen = argParser.getOptionParams(
                     MapArgOptions.GENERATE_RSA_KEYPAIR);
             if (keyGen != null)
             {
-                System.out.println("Skipping map creation and generating web"
-                        + " server security keys.");
+                LogConfig.getLogger().info("Skipping map creation and"
+                        + " generating web server security keys.");
                 File publicKeyFile = new File(keyGen.getParameter(0));
                 File privateKeyFile = new File(keyGen.getParameter(1));
                 try
@@ -57,16 +66,16 @@ public class Main
                 }
                 catch (IOException e)
                 {
-                    System.err.println("Failed to write key files: "
-                            + e.getMessage());
+                    LogConfig.getLogger().log(Level.SEVERE,
+                            "Failed to write key files: {0}", e.getMessage());
                 }
-                System.out.println("Keys generated successfully.");
+                LogConfig.getLogger().info("Keys generated successfully.");
                 return;
             }
         }
         catch (IllegalArgumentException e)
         {
-            System.err.println(e.toString());
+            LogConfig.getLogger().severe(e.toString());
             printHelpAndExit.run();
         }
         MapUpdater.update(argParser);

@@ -27,6 +27,10 @@ public enum MapArgOptions
      */
     WEB_SERVER_CONFIG_PATH,
     /**
+     * Sets the path to the application logging configuration file.
+     */
+    LOG_CONFIG_PATH,
+    /**
      * Optionally sets a path where JSON server update messages will be cached.
      */
     UPDATE_CACHE_PATH,
@@ -129,6 +133,9 @@ public enum MapArgOptions
         parserFactory.setOptionProperties(WEB_SERVER_CONFIG_PATH, "-w",
                 "--web-config", 1, 1, "<path/to/webConfig.json>",
                 "Set the web server configuration file path.");
+        parserFactory.setOptionProperties(LOG_CONFIG_PATH, "-l",
+                "--log-config", 1, 1, "<path/to/logConfig.json>",
+                "Set the application logging configuration file path.");
         parserFactory.setOptionProperties(UPDATE_CACHE_PATH, "-u",
                 "--update-cache-path", 1, 1, "<path/to/updateCache.json>",
                 "Set a path where the latest web server update message will be"
