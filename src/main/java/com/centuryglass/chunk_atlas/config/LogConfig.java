@@ -51,17 +51,14 @@ public class LogConfig extends ConfigFile
     public LogConfig(File configFile)
     {
         super(configFile, DEFAULT_JSON_RESOURCE);
-        if (logger != null)
-        {
-            logger.logp(Level.INFO, LogConfig.class.getName(),
-                    "LogConfig", "Recreating logger with file \"{0}\".",
-                    configFile.toString());
-        }
+        getLogger().logp(Level.INFO, LogConfig.class.getName(),
+                "LogConfig", "Creating configured logger with file \"{0}\".",
+                ((configFile == null) ? "null" : configFile.toString()));
         JsonObject consoleLogOptions = getObjectOption(JsonKeys.CONSOLE_LOG,
                 JsonObject.EMPTY_JSON_OBJECT);
         boolean useConsoleLogs = consoleLogOptions.getBoolean(JsonKeys.ENABLED,
                 false);
-        boolean usePluginLogs = getBoolOption(JsonKeys.ENABLED, false);
+        boolean usePluginLogs = getBoolOption(JsonKeys.SERVER_LOG, false);
         
         // Initializes a handler with a SimpleFormatter and a log level parsed
         // from a String. If the level is empty, null, or otherwise invalid, the
@@ -93,7 +90,7 @@ public class LogConfig extends ConfigFile
         };
         if (usePluginLogs && Plugin.isRunning())
         {
-            logger = new PluginLogger(Plugin.getRunningPlugin());
+            logger = Plugin.getRunningPlugin().getLogger();
             useConsoleLogs = false; // Plugin logging replaces console logging.
         }
         if (logger == null)
