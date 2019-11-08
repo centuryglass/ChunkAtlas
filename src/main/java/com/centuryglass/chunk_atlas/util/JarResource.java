@@ -6,12 +6,14 @@
 package com.centuryglass.chunk_atlas.util;
 
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import javax.json.Json;
 import javax.json.JsonException;
@@ -23,6 +25,8 @@ import javax.json.JsonStructure;
  */
 public class JarResource
 {
+    private static final String CLASSNAME = JarResource.class.getName();
+    
     // Buffer size when copying resource files:
     private static final int BUF_SIZE = 50000;
     
@@ -39,14 +43,15 @@ public class JarResource
     public static JsonStructure readJsonResource(String resourcePath)
             throws IOException
     {
+        final String FN_NAME = "readJsonResource";
         ExtendedValidate.notNullOrEmpty(resourcePath, "JSON resource path");
         // Attempt to load default options:
         try (InputStream optionStream = getResourceStream(resourcePath))
         {
             if (optionStream == null)
             {
-                throw new IOException("No JSON jar file resource found at \""
-                        + resourcePath + "\".");
+                throw new IOException("No JSON jar file resource found at '"
+                        + resourcePath + "'.");
             }
             try (JsonReader reader = Json.createReader(optionStream))
             {
@@ -54,8 +59,9 @@ public class JarResource
             }
             catch (JsonException | IllegalStateException ex)
             {
-                System.err.println("Failed to load default JSON resource "
-                        + resourcePath + ": " + ex.getMessage());
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Failed to load default JSON resource '{0}': {1}",
+                        new Object[] { resourcePath, ex });
             }
         }
         return null;
@@ -143,9 +149,8 @@ public class JarResource
             }
             if (! outFileExists)
             {
-                throw new IOException("Unable to create file at \""
-                        + outFile.toString() + "\" to copy resource \""
-                        + resourcePath + "\".");
+                throw new IOException("Unable to create file at '" + outFile
+                        + "' to copy resource '" + resourcePath + "'.");
             }
         }
         try (InputStream resourceStream = getResourceStream(resourcePath))
@@ -161,9 +166,8 @@ public class JarResource
         }
         catch (IOException e)
         {
-            throw new IOException("Unable to copy resource \""
-                    + resourcePath
-                    + "\", to file: resource not found");
+            throw new IOException("Unable to copy resource '" + resourcePath
+                    + "', to file: resource not found");
         }
     }
 }

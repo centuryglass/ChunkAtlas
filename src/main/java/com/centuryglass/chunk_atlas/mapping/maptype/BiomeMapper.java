@@ -118,6 +118,10 @@ public class BiomeMapper extends Mapper
             blue /= biomeSum;
             color = new Color((int) red, (int) green, (int) blue, 255);
         }
+        else
+        {
+            color = new Color(255, 0, 0);
+        }
         return color;
     }
     

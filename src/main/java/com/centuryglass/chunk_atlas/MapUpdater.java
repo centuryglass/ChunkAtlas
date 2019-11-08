@@ -112,8 +112,7 @@ public class MapUpdater
         if (reuseCache && updateJson != null)
         {
             LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
-                    "Loading pre-generated update data from \"{0}\".",
-                    updateJson.toString());
+                    "Loading existing update data from '{0}'.", updateJson);
             try
             {
                 updateManager = new ServerUpdate(updateJson);
@@ -137,8 +136,7 @@ public class MapUpdater
                 if (argParser != null)
                 {
                     LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
-                            "Error applying command line options: {0}",
-                            e.toString());
+                            "Error applying command line options: {0}", e);
                 }
             }
             mapCreator.createMaps();

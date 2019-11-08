@@ -18,10 +18,14 @@ import java.util.logging.SimpleFormatter;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
-import org.bukkit.plugin.PluginLogger;
 
+/**
+ * Initializes the shared ChunkAtlas Logger object from JSON configuration data.
+ */
 public class LogConfig extends ConfigFile
 {
+    private static final String CLASSNAME = ConfigFile.class.getName();
+    
     // Path to the resource holding default configuration options:
     private static final String DEFAULT_JSON_RESOURCE
             = "/configDefaults/logging.json";
@@ -51,9 +55,10 @@ public class LogConfig extends ConfigFile
     public LogConfig(File configFile)
     {
         super(configFile, DEFAULT_JSON_RESOURCE);
-        getLogger().logp(Level.INFO, LogConfig.class.getName(),
-                "LogConfig", "Creating configured logger with file \"{0}\".",
-                ((configFile == null) ? "null" : configFile.toString()));
+        final String FN_NAME = "LogConfig";
+        getLogger().logp(Level.INFO, CLASSNAME, FN_NAME,
+                "Creating configured logger with file '{0}'.",
+                ((configFile == null) ? "null" : configFile));
         JsonObject consoleLogOptions = getObjectOption(JsonKeys.CONSOLE_LOG,
                 JsonObject.EMPTY_JSON_OBJECT);
         boolean useConsoleLogs = consoleLogOptions.getBoolean(JsonKeys.ENABLED,
@@ -74,16 +79,14 @@ public class LogConfig extends ConfigFile
                 }
                 catch (IllegalArgumentException e)
                 {
-                    Logger.getGlobal().logp(Level.WARNING,
-                            LogConfig.class.getName(), "LogConfig",
-                            "Invalid log level \"{0}\" defined in config file.",
+                    Logger.getGlobal().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                            "Invalid log level '{0}' defined in config file.",
                             levelStr);
                 }
             }
             else
             {
-                Logger.getGlobal().logp(Level.WARNING,
-                        LogConfig.class.getName(), "LogConfig",
+                Logger.getGlobal().logp(Level.WARNING, CLASSNAME, FN_NAME,
                         "No log level set, using default level {0}.",
                         handler.getLevel().getName());
             }
@@ -127,9 +130,8 @@ public class LogConfig extends ConfigFile
             }
             catch (IOException e)
             {
-                Logger.getGlobal().logp(Level.WARNING,
-                        LogConfig.class.getName(), "LogConfig",
-                        "Failed to create logging config file at \"{0}\".",
+                Logger.getGlobal().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Failed to create logging config file at '{0}'.",
                         logPath); 
             }
         });
@@ -145,10 +147,11 @@ public class LogConfig extends ConfigFile
      */
     public static Logger getLogger()
     {
+        final String FN_NAME = "getLogger";
         if (logger == null)
         {
-            Logger.getGlobal().logp(Level.FINEST, LogConfig.class.getName(),
-                    "getLogger", "No LogConfig loaded, using default.");
+            Logger.getGlobal().logp(Level.FINEST, CLASSNAME, FN_NAME,
+                    "No LogConfig loaded, using default.");
             return Logger.getGlobal();
         }
         return logger;

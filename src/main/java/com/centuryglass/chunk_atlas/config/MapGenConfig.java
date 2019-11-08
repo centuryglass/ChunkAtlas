@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
+import java.util.logging.Level;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import org.apache.commons.lang.Validate;
@@ -22,6 +23,8 @@ import org.apache.commons.lang.Validate;
  */
 public class MapGenConfig extends ConfigFile
 {
+    private static final String CLASSNAME = MapGenConfig.class.getName();
+    
     // Path to the resource holding default configuration options:
     private static final String DEFAULT_JSON_RESOURCE
             = "/configDefaults/mapGen.json";
@@ -53,6 +56,7 @@ public class MapGenConfig extends ConfigFile
      */
     public void forEachRegionPath(BiConsumer<File, String> action)
     {
+        final String FN_NAME = "forEachRegionPath";
         Validate.notNull(action, "Region path action must not be null.");
         JsonArray regions = (JsonArray) getSavedOrDefaultOptions(
                 JsonKeys.REGION_LIST);
@@ -62,8 +66,8 @@ public class MapGenConfig extends ConfigFile
             if (regionItem == null) { return; }
             if (! (regionItem instanceof JsonObject))
             {
-                System.err.println("Invalid region object "
-                        + regionItem.toString());
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Invalid region object: {0}", regionItem);
                 return; 
             }
             try
@@ -75,16 +79,19 @@ public class MapGenConfig extends ConfigFile
                 File regionDir = new File(regionPath);
                 if (! regionDir.isDirectory())
                 {
-                    System.err.println("Region directory path \""
-                            + regionPath + "\" either doesn't exist or is not"
-                            + " a directory.");
+                    LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
+                            FN_NAME,
+                            "Region directory path '{0}' either "
+                            + "doesn't exist or is not a directory.",
+                            regionPath);
                     return;
                 }
                 action.accept(regionDir, regionName);
             }
             catch (NullPointerException | ClassCastException e)
             {
-                System.err.println("Invalid region object: " + e.getMessage());
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Invalid region object: {0}", e);
             }
         });
     }
@@ -146,12 +153,13 @@ public class MapGenConfig extends ConfigFile
      */
     public SingleImage getSingleImageOptions()
     {
+        final String FN_NAME = "getSingleImageOptions";
         JsonObject imageOptions = (JsonObject) getObjectOption(
                 JsonKeys.IMAGE_MAP_OPTIONS, null);
         if (imageOptions == null)
         {
-            System.err.println("Single-image map generation"
-                    + INVALID_OPTION_MSG);
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Single-image map generation {0}", INVALID_OPTION_MSG);
             return null;
         }
         final boolean enabled = imageOptions.getBoolean(
@@ -224,11 +232,13 @@ public class MapGenConfig extends ConfigFile
      */
     public MapTiles getMapTileOptions()
     {
+        final String FN_NAME = "getMapTileOptions";
         JsonObject tileOptions = getObjectOption(JsonKeys.TILE_MAP_OPTIONS,
                 null);
         if (tileOptions == null)
         {
-            System.err.println("Tiled map generation" + INVALID_OPTION_MSG);
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Tiled map generation {0}", INVALID_OPTION_MSG);
             return null;
         }
         final boolean enabled = tileOptions.getBoolean(JsonKeys.GENERATE_MAPS);
@@ -253,11 +263,12 @@ public class MapGenConfig extends ConfigFile
      */
     public int getPixelsPerChunk()
     {
+        final String FN_NAME = "getPixelsPerChunk";
         int px = getIntOption(JsonKeys.CHUNK_PX, -1);
         if (px <= 0)
         {
-            System.err.println("Invalid pixels per chunk"
-                    + INVALID_OPTION_MSG);
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Invalid pixels per chunk {0}", INVALID_OPTION_MSG);
             return 1;
         }
         return px;
@@ -270,13 +281,14 @@ public class MapGenConfig extends ConfigFile
      */
     public Set<MapType> getEnabledMapTypes()
     {
+        final String FN_NAME = "getEnabledMapTypes";
         Set<MapType> typesUsed = new TreeSet<>();
         JsonObject typeSettings = getObjectOption(JsonKeys.MAP_TYPES_USED,
                 null);
         if (typeSettings == null)
         {
-            System.err.println("Invalid MapType selection"
-                    + INVALID_OPTION_MSG);
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Invalid MapType selection {0}", INVALID_OPTION_MSG);
             return typesUsed;
         }
         for (MapType type : MapType.values())

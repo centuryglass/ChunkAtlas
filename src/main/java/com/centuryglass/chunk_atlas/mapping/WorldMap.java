@@ -43,8 +43,7 @@ public abstract class WorldMap
         if (! mapDir.exists())
         {
             Validate.isTrue(mapDir.mkdirs(),
-                    "Couldn't create map directory at \""
-                    + mapDir.toString() + "\".");
+                    "Couldn't create map directory at '" + mapDir + "'.");
         }
         saveMapData(mapDir, fileName);
     }

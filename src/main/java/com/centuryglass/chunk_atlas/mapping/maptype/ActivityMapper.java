@@ -6,6 +6,7 @@
 
 package com.centuryglass.chunk_atlas.mapping.maptype;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.mapping.KeyItem;
 import com.centuryglass.chunk_atlas.mapping.WorldMap;
 import com.centuryglass.chunk_atlas.util.TickDuration;
@@ -21,6 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Level;
 import org.apache.commons.lang.Validate;
 import org.bukkit.World;
 
@@ -30,6 +32,8 @@ import org.bukkit.World;
  */
 public class ActivityMapper extends Mapper
 {
+    private static final String CLASSNAME = ActivityMapper.class.getName();
+    
     private static final double MIN_COLOR_INTENSITY = 0.25;
         
     /**
@@ -148,8 +152,9 @@ public class ActivityMapper extends Mapper
         });
         super.finalProcessing(map);
         TickDuration maxDuration = new TickDuration(maxTime);
-        System.out.println("The highest inhabited time of all chunks is "
-                + maxDuration.toString() + ".");
+        LogConfig.getLogger().log(Level.INFO,
+                "The highest inhabited time of all chunks is {0}.",
+                maxDuration);
     }
 
     // Inhabited times for all map chunks:

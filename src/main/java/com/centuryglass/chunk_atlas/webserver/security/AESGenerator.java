@@ -5,7 +5,9 @@
  */
 package com.centuryglass.chunk_atlas.webserver.security;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
@@ -14,6 +16,8 @@ import javax.crypto.SecretKey;
  */
 public class AESGenerator
 {
+    private static final String CLASSNAME = AESGenerator.class.getName();
+    
     /**
      * Generates and returns a new 256 bit symmetric encryption key using the
      * AES standard.
@@ -22,6 +26,7 @@ public class AESGenerator
      */
     public static SecretKey generate()
     {
+        final String FN_NAME = "generate";
         try
         {
             KeyGenerator generator = KeyGenerator.getInstance("AES");
@@ -32,7 +37,8 @@ public class AESGenerator
         {
             // This shouldn't ever actually be thrown, "AES" should always be
             // a valid algorithm.
-            System.err.println(e.getMessage());
+            LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
+                    e.toString());
             System.exit(1);
         }
         return null;

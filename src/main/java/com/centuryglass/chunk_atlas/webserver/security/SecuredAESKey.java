@@ -6,6 +6,7 @@
 package com.centuryglass.chunk_atlas.webserver.security;
 
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import com.sun.org.apache.xml.internal.security.exceptions
         .Base64DecodingException;
@@ -15,6 +16,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.Arrays;
+import java.util.logging.Level;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -41,6 +43,8 @@ import org.apache.commons.lang.Validate;
  */
 public class SecuredAESKey
 {
+    private static final String CLASSNAME = SecuredAESKey.class.getName();
+    
     // Expected size in bytes of secured key data:
     private static final int BYTE_SIZE = 512;
     
@@ -89,6 +93,7 @@ public class SecuredAESKey
     public SecuredAESKey(String securedKey, KeySet rsaKeys)
             throws InvalidKeyException, SignatureException
     {
+        final String FN_NAME = "SecuredAESKey";
         ExtendedValidate.notNullOrEmpty(securedKey, "Secured key string");
         Validate.notNull(rsaKeys, "RSA keys cannot be null.");
         byte[] keyData;
@@ -98,7 +103,8 @@ public class SecuredAESKey
         }
         catch (Base64DecodingException e)
         {
-            System.err.println("Error reading key bytes: " + e.getMessage());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Error reading key bytes: {0}", e);
             aesKey = null;
             signature = null;
             encryptedKey = null;
@@ -107,8 +113,7 @@ public class SecuredAESKey
         if (keyData.length != BYTE_SIZE)
         {
             throw new InvalidKeyException("Invalid key data of length "
-                + String.valueOf(keyData.length) + ", expected "
-                + String.valueOf(BYTE_SIZE) + ".");
+                + keyData.length + ", expected " + BYTE_SIZE + ".");
         }
         byte[] remoteSignature = Arrays.copyOfRange(keyData, 0, BYTE_SIZE / 2);
         byte[] remoteEncryptedKey = Arrays.copyOfRange(keyData, BYTE_SIZE / 2,
@@ -118,9 +123,8 @@ public class SecuredAESKey
                 remoteEncryptedKey))
         {
             throw new InvalidKeyException(
-                    "Failed to validate signature from "
-                    + String.valueOf(remoteSignature.length)
-                    + "-byte signature field");
+                    "Failed to validate signature from " 
+                    + remoteSignature.length + "-byte signature field");
         }
         try
         {
@@ -160,6 +164,7 @@ public class SecuredAESKey
      */
     public byte[] encryptMessage(byte[] message)
     {
+        final String FN_NAME = "encryptMessage";
         Validate.notNull(message, "Message cannot be null.");
         try
         {
@@ -171,8 +176,8 @@ public class SecuredAESKey
                 | BadPaddingException | IllegalBlockSizeException
                 | NoSuchPaddingException e)
         {
-            System.err.println("Error encrypting message: " + e.getMessage());
-            System.err.println("Error type: " + e.getClass().getName());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Error encrypting message: {0}", e);
         }
         return null;
     }
@@ -187,6 +192,7 @@ public class SecuredAESKey
      */
     public byte[] decryptMessage(byte[] message)
     {
+        final String FN_NAME = "decryptMessage";
         try
         {
             Cipher cipher = Cipher.getInstance("AES");
@@ -197,8 +203,8 @@ public class SecuredAESKey
                 | BadPaddingException | IllegalBlockSizeException
                 | NoSuchPaddingException e)
         {
-            System.err.println("Error decrypting message: " + e.getMessage());
-            System.err.println("Error type: " + e.getClass().getName());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Error decrypting message: {0}", e);
         }
         return null;
     }

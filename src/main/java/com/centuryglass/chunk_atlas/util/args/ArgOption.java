@@ -66,9 +66,8 @@ public class ArgOption<ArgEnum>
         if (parameters == null || index < 0 || index >= parameters.length)
         {
             throw new IndexOutOfBoundsException("Invalid parameter index "
-                    + String.valueOf(index) + " to command line option "
-                    + optionType.toString() + " with "
-                    + String.valueOf(parameters.length) + " parameters.");
+                    + index + " to command line option " + optionType + " with "
+                    + parameters.length + " parameters.");
         }
         return parameters[index];
     }
@@ -105,9 +104,8 @@ public class ArgOption<ArgEnum>
     {
         if (getParamCount() <= index || index < 0)
         {
-            throw new IllegalArgumentException("Option " + getType().toString()
-                    + ": Parameter index " + String.valueOf(index)
-                    + " does not exist");
+            throw new IllegalArgumentException("Option " + getType()
+                    + ": Parameter index " + index + " does not exist");
         } 
         String param = getParameter(index);
         try
@@ -121,8 +119,8 @@ public class ArgOption<ArgEnum>
         }
         catch (NumberFormatException e)
         {
-            throw new IllegalArgumentException("Option " + getType().toString()
-                    + ": Invalid parameter \"" + param + "\".");
+            throw new IllegalArgumentException("Option " + getType()
+                    + ": Invalid parameter '" + param + "'.");
         }
     }
     
@@ -154,7 +152,7 @@ public class ArgOption<ArgEnum>
             return false;
         }
         throw new IllegalArgumentException(optionType.toString()
-                + ": parameter \"" + param + "\" is not true/false.");
+                + ": parameter '" + param + "' is not true/false.");
     }
     
     private final ArgEnum optionType;

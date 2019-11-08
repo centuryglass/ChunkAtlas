@@ -64,7 +64,6 @@ public class MapperThread extends Thread
             }
             catch (InterruptedException e)
             {
-                System.out.println("Mapper thread interrupted");
                 // If interrupted, just continue on to check shouldExit
                 // again and go back to waiting.
             }

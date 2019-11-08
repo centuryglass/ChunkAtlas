@@ -100,11 +100,9 @@ public class ArgParser<ArgEnum extends Enum<ArgEnum>>
                 if (paramsFound < option.minParamCount)
                 {
                     throw new IllegalArgumentException("Option "
-                            + option.getType().toString()
-                            + ": expected at least "
-                            + String.valueOf(option.minParamCount)
-                            + " parameters, found "
-                            + String.valueOf(paramsFound) + ".");
+                            + option.getType() + ": expected at least "
+                            + option.minParamCount + " parameters, found "
+                            + paramsFound + ".");
                 }
                 String[] params = Arrays.copyOfRange(args, i + 1,
                         i + 1 + paramsFound);

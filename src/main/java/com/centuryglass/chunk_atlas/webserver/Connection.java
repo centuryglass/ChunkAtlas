@@ -6,6 +6,7 @@
  */
 package com.centuryglass.chunk_atlas.webserver;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.config.WebServerConfig;
 import com.centuryglass.chunk_atlas.util.JarResource;
 import com.centuryglass.chunk_atlas.webserver.security.AESGenerator;
@@ -25,6 +26,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonReader;
@@ -44,6 +46,8 @@ import org.apache.http.impl.client.HttpClients;
  */
 public class Connection
 {
+    private static final String CLASSNAME = Connection.class.getName();
+    
     // Stores HTML header key strings.
     private static class HTMLHeaderKeys
     {
@@ -68,7 +72,7 @@ public class Connection
         this.webOptions = webOptions;
         client = HttpClients.createDefault();
         serverAddress = webOptions.getServerAddress() + ":"
-                + String.valueOf(webOptions.getServerPort());
+                + webOptions.getServerPort();
     }
     
     /**
@@ -140,6 +144,7 @@ public class Connection
             String connectionSubPath) throws IOException,
             GeneralSecurityException
     {
+        final String FN_NAME = "sendJson";
         Validate.notNull(messageData, "JSON message data cannot be null.");
         
         // JSON response container, editable within lambdas:
@@ -162,8 +167,8 @@ public class Connection
             }
             catch (GeneralSecurityException e)
             {
-                System.out.println("Failed to sign and encrypt message data: "
-                        + e.toString());
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Failed to sign and encrypt message data: {0}", e);
             }
         }, (response) ->
         {
@@ -172,7 +177,8 @@ public class Connection
                 if (! response.containsHeader(
                         HTMLHeaderKeys.RESPONSE_SIGNATURE))
                 {
-                    System.err.println("Server response was not signed!");
+                    LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
+                            FN_NAME, "Ignoring unsigned server response.");
                     return;
                 }
                 HttpEntity responseData = response.getEntity();
@@ -189,17 +195,13 @@ public class Connection
                 }
                 Validate.isTrue(bytesRead == bodySize,
                         "Failed to read entire response message."
-                        + " Expected: " + String.valueOf(bodySize)
-                        + ", found: " + String.valueOf(bytesRead));
+                        + " Expected: " + bodySize + ", found: " + bytesRead);
                 byte [] signature = Base64.getDecoder().decode(
                         response.getFirstHeader(
                         HTMLHeaderKeys.RESPONSE_SIGNATURE).getValue());
-                
-                System.out.println("Checking "
-                        + String.valueOf(signature.length)
-                        + "-byte signature against "
-                        + String.valueOf(body.length)
-                        + "-byte response body...");
+                LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                        "Checking {0}-byte signature against {1}-byte response",
+                        new Object[] { signature.length, body.length });
                 boolean isValidResponse;
                 try
                 {
@@ -208,7 +210,8 @@ public class Connection
                 }
                 catch (InvalidKeyException | SignatureException e)
                 {
-                    System.err.println(e.toString());
+                    LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
+                            FN_NAME, "Response error: {0}", e);
                     isValidResponse = false;
                 }
                    
@@ -221,19 +224,15 @@ public class Connection
                 }
                 else
                 {
-                    System.err.println("Update response lacked a valid "
-                            + "signature, and will be ignored.");
+                    LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
+                            FN_NAME, "Update response lacked a valid signature"
+                            + " and will be ignored.");
                 }
             }
-            catch (IOException ex)
+            catch (IOException | JsonException e)
             {
-                System.err.println("Failed to read response content: "
-                        + ex.getMessage());
-            }
-            catch (JsonException ex)
-            {
-                System.err.println("Response was not valid JSON data: "
-                        + ex.getMessage());
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Failed to read response content: {0}", e);
             }
             
         }, connectionSubPath);
@@ -262,6 +261,7 @@ public class Connection
     public int sendPng(String imagePath, Map<String, String> headerStrings,
             String connectionSubPath) throws IOException
     {
+        final String FN_NAME = "sendPng";
         Validate.notNull(imagePath, "Image path cannot be null.");
         // Locate the file, copying resources to temp storage if needed:
         final File savedFile = new File(imagePath);
@@ -283,7 +283,7 @@ public class Connection
         }
         if (imageStream == null)
         {
-            throw new IOException("Unable to find image \"" + imagePath + "\"");
+            throw new IOException("Unable to find image '" + imagePath + "'");
         }
         byte[] imageBuffer = new byte[MAX_IMAGE_SIZE];
         int lastRead = imageStream.read(imageBuffer);
@@ -314,8 +314,8 @@ public class Connection
             }
             catch (GeneralSecurityException e)
             {
-                System.out.println("Failed to sign and encrypt message data: "
-                        + e.toString());
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Failed to sign and encrypt message data: {0}", e);
             }
             if (headerStrings != null)
             {
@@ -351,6 +351,7 @@ public class Connection
     private void sendMessage(Consumer<HttpPost> messageInit,
             Consumer<HttpResponse> responseHandler, String connectionSubPath)
     {
+        final String FN_NAME = "sendMessage";
         Validate.notNull(messageInit, "Message initializer cannot be null.");
         Validate.notNull(responseHandler, "Response handler cannot be null.");
         String postAddress = serverAddress;
@@ -372,10 +373,10 @@ public class Connection
                 responseHandler.accept(response);
             }
         } 
-        catch (IOException ex)
+        catch (IOException e)
         {
-            System.err.println("Error sending/receiving data: "
-                    + ex.getMessage());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Error sending/receiving data: {0}", e);
         }
         finally
         {

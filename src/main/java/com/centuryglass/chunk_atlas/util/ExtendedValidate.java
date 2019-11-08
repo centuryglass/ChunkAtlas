@@ -47,9 +47,8 @@ public class ExtendedValidate
         fileNotNull(file, messagePrefix);
         if (! file.exists())
         {
-            throw new FileNotFoundException(messagePrefix + " path \""
-                    + file.toString() 
-                    + "\" does not exist on the file system.");
+            throw new FileNotFoundException(messagePrefix + " path '"
+                    + file + "' does not exist on the file system.");
         }
     }
     
@@ -65,8 +64,7 @@ public class ExtendedValidate
     {
         fileNotNull(file, messagePrefix);
         Validate.isTrue(! file.isDirectory(), messagePrefix
-                + " at \"" + file.toString() + "\" cannot be a file, it is a "
-                + "directory.");
+                + " at '" + file + "' cannot be a file, it is a directory.");
     }
     
     /**
@@ -81,9 +79,8 @@ public class ExtendedValidate
     public static void couldBeDirectory(File file, String messagePrefix)
     {
         fileNotNull(file, messagePrefix);
-        Validate.isTrue(! file.isFile(), messagePrefix
-                + " at \"" + file.toString() + "\" cannot be a directory, it "
-                + "already exists as a file.");
+        Validate.isTrue(! file.isFile(), messagePrefix + " at '" + file
+                + "' cannot be a directory, it already exists as a file.");
     }
     
     /**
@@ -101,8 +98,8 @@ public class ExtendedValidate
             throws FileNotFoundException
     {
         fileExists(file, messagePrefix);
-        Validate.isTrue(file.isFile(), messagePrefix
-                + " at \"" + file.toString() + "\" exists but is not a file.");
+        Validate.isTrue(file.isFile(), messagePrefix + " at '" + file
+                + "' exists but is not a file.");
     }
     
     /**
@@ -121,9 +118,8 @@ public class ExtendedValidate
             throws FileNotFoundException
     {
         fileExists(file, messagePrefix);
-        Validate.isTrue(file.isDirectory(), messagePrefix
-                + " at \"" + file.toString()
-                + "\" exists but is not a directory.");
+        Validate.isTrue(file.isDirectory(), messagePrefix + " at '" + file
+                + "' exists but is not a directory.");
     }
     
     /**
@@ -138,7 +134,7 @@ public class ExtendedValidate
     {
         assert (messagePrefix != null);
         Validate.isTrue(value > 0, messagePrefix + " should be positive,"
-                + "found " + String.valueOf(value) + ".");
+                + "found " + value + ".");
     }
     
         
@@ -154,7 +150,7 @@ public class ExtendedValidate
     {
         assert (messagePrefix != null);
         Validate.isTrue(value >= 0, messagePrefix + " should not be negative,"
-                + " found " + String.valueOf(value) + ".");
+                + " found " + value + ".");
     }
     
     /**
@@ -175,9 +171,8 @@ public class ExtendedValidate
     {
         assert (messagePrefix != null);
         Validate.isTrue(value >= min && value <= max, messagePrefix
-            + " should have been at least " + String.valueOf(min)
-            + " and no more than " + String.valueOf(max) + ", found "
-            + String.valueOf(value));
+            + " should have been at least " + min + " and no more than " + max
+            + ", found " + value + ".");
     }
  
     /**
@@ -198,9 +193,8 @@ public class ExtendedValidate
     {
         assert (messagePrefix != null);
         Validate.isTrue(value >= min && value <= max, messagePrefix
-            + " should have been at least " + String.valueOf(min)
-            + " and no more than " + String.valueOf(max) + ", found "
-            + String.valueOf(value));
+            + " should have been at least " + min + " and no more than " + max
+            + ", found " + value + ".");
     }
     
     /**
@@ -221,9 +215,8 @@ public class ExtendedValidate
         if (index < 0 || index >= containerSize)
         {
             throw new IndexOutOfBoundsException(messagePrefix
-                    + " out of bounds at " + String.valueOf(index)
-                    + ", indexed container is size "
-                    + String.valueOf(containerSize));
+                    + " out of bounds at " + index
+                    + ", indexed container is size " + containerSize + ".");
         }
     }
     

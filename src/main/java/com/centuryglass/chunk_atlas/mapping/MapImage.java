@@ -5,6 +5,7 @@
  */
 
 package com.centuryglass.chunk_atlas.mapping;
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.mapping.images.MapBackground;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import java.awt.Color;
@@ -13,10 +14,9 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import org.apache.commons.lang.Validate;
 
@@ -30,6 +30,8 @@ import org.apache.commons.lang.Validate;
  */
 public class MapImage extends WorldMap
 {   
+    private static final String CLASSNAME = "MapImage";
+    
     /**
      * Loads image properties on construction, and optionally draws the default
      * background and border.
@@ -282,6 +284,7 @@ public class MapImage extends WorldMap
     @Override
     protected void saveMapData(File mapDir, String baseName)
     {
+        final String FN_NAME = "saveMapData";
         ExtendedValidate.couldBeDirectory(mapDir, "Image output directory");
         ExtendedValidate.notNullOrEmpty(baseName, "Map image name");
         try
@@ -292,12 +295,14 @@ public class MapImage extends WorldMap
             {
                 mapFiles.add(imageFile);
             }
-            System.out.println("Saved map to " + imageFile.toString());
+            LogConfig.getLogger().log(Level.CONFIG, "Saved map to '{0}'.",
+                    imageFile);
         }
         catch (IOException e)
         {
-            System.err.println("Failed to save " + mapDir.toString() + "/"
-                    + baseName + ": " + e.getMessage());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Failed to save '{0}/{1}': {2}",
+                    new Object[] { mapDir, baseName, e });
         }
     }
     

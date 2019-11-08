@@ -6,15 +6,19 @@
 
 package com.centuryglass.chunk_atlas.mapping.images;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import com.centuryglass.chunk_atlas.worldinfo.Biome;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import org.apache.commons.lang.Validate;
 
 public class BiomeTextures
 {
+    private static final String CLASSNAME = BiomeTextures.class.getName();
+    
     // Resource directory where all texture images are found:
     private static final String TEXTURE_DIR = "biomeTile/";
     
@@ -60,13 +64,14 @@ public class BiomeTextures
      */
     public Color getPixel(Biome biome, int x, int y, int scale)
     {
+        final String FN_NAME = "getPixel";
         Validate.notNull(biome, "Biome cannot be null.");
         ExtendedValidate.isPositive(scale, "Texture scale");
         Texture texture = textures.get(biome);
         if (texture == null)
         {
-            System.err.println("BiomeTextures.getPixel: No texture found for "
-                    + biome.toString());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "No texture found for biome {0}.", biome);
             return null;
         }
         return texture.getPixel(x, y, scale);

@@ -6,6 +6,7 @@
 
 package com.centuryglass.chunk_atlas.mapping.maptype;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.mapping.KeyItem;
 import com.centuryglass.chunk_atlas.mapping.WorldMap;
 import com.centuryglass.chunk_atlas.util.TickDuration;
@@ -21,11 +22,14 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Level;
 import org.apache.commons.lang.Validate;
 import org.bukkit.World;
 
 public class RecentMapper extends Mapper
 {
+    private static final String CLASSNAME = RecentMapper.class.getName();
+    
     private static final double MIN_COLOR_INTENSITY = 0.2;
     
     /**
@@ -135,8 +139,9 @@ public class RecentMapper extends Mapper
         
         TickDuration max = new TickDuration(latestTime);
         TickDuration difference = new TickDuration(latestTime - earliestTime);
-        System.out.println("Latest update time: " + max.toString());
-        System.out.println("Update time range: " + difference.toString());
+        LogConfig.getLogger().log(Level.INFO, "Latest update time: {0}", max);
+        LogConfig.getLogger().log(Level.INFO, "Update time range: {0}",
+                difference);
         
         // Initialize map key from ranges:
         if (key.isEmpty())

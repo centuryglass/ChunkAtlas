@@ -5,6 +5,7 @@
  */
 package com.centuryglass.chunk_atlas.webserver.security;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,12 +19,15 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.logging.Level;
 
 /** 
  * Manages the public key in an RSA encryption key pair.
  */
 public class RSAPublicKey extends RSAKey
 {
+    private static final String CLASSNAME = RSAPublicKey.class.getName();
+    
     /**
      * Initializes a public key from saved key values.
      * 
@@ -36,6 +40,7 @@ public class RSAPublicKey extends RSAKey
      */
     private static Key initKey(File keyFile) throws IOException
     {
+        final String FN_NAME = "initKey";
         try
         {
             Path keyPath = keyFile.toPath();
@@ -47,7 +52,8 @@ public class RSAPublicKey extends RSAKey
         catch (NoSuchAlgorithmException | InvalidKeySpecException e)
         {
             // Creating a RSA key should never actually throw these exceptions
-            System.err.println(e.getMessage());
+            LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
+                    e.toString());
             System.exit(1);
         }
         catch (IOException e)
@@ -89,6 +95,7 @@ public class RSAPublicKey extends RSAKey
             throws InvalidKeyException, SignatureException
     
     {
+        final String FN_NAME = "verify";
         Signature sign;
         try
         {
@@ -100,7 +107,8 @@ public class RSAPublicKey extends RSAKey
         catch (NoSuchAlgorithmException e)
         {
             // This should never run, "SHA256withRSA" should always be valid.
-            System.err.println(e.getMessage());
+            LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
+                    e.toString());
             System.exit(1);
         }
         return false;

@@ -50,7 +50,6 @@ public class Plugin extends JavaPlugin
     @Override
     public void onEnable()
     {
-        System.out.println("ChunkAtlas enabled, starting scan:");
         ServerThread serverThread = new ServerThread();
         serverThread.start();
     }

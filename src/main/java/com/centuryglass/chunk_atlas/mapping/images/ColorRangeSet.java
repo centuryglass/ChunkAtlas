@@ -5,10 +5,12 @@
  */
 package com.centuryglass.chunk_atlas.mapping.images;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.BiFunction;
+import java.util.logging.Level;
 import org.apache.commons.lang.Validate;
 
 /**
@@ -16,6 +18,8 @@ import org.apache.commons.lang.Validate;
  */
 public final class ColorRangeSet
 {
+    private final String CLASSNAME = ColorRangeSet.class.getName();
+    
     /**
      * Selects whether values in a range fade to black, or to the color of the
      * next range.
@@ -53,8 +57,7 @@ public final class ColorRangeSet
         {
             Validate.isTrue(maxValue >= minValue,
                     "Minimum must not exceed maximum, but maximum = "
-                    + String.valueOf(maxValue) + " and minimum = "
-                    + String.valueOf(minValue) + ".");
+                    + maxValue + " and minimum = " + minValue + ".");
             Validate.notNull(maxColor, "Max. color cannot be null.");
             Validate.notNull(minColor, "Min. color cannot be null.");
             this.maxValue = maxValue;
@@ -113,7 +116,7 @@ public final class ColorRangeSet
         Validate.notNull(fadeType, "Fade type cannot be null.");
         Validate.isTrue(maxFade >= 0 && maxFade <= 1,
                 "Minimum color intensity must be between zero and one"
-                + " inclusive, but maxFade = " + String.valueOf(maxFade));
+                + " inclusive, but maxFade = " + maxFade);
         ranges = new ArrayList<>();
         addColorRange(maxValue, color, fadeType, maxFade);
     }
@@ -140,7 +143,7 @@ public final class ColorRangeSet
         ranges.forEach((internalRange) ->
         {
             Validate.isTrue(internalRange.value != maxValue,
-                    "The range with max value " + String.valueOf(maxValue)
+                    "The range with max value " + maxValue
                     + " has already been added.");
             
         });
@@ -148,7 +151,7 @@ public final class ColorRangeSet
         Validate.notNull(fadeType, "Fade type cannot be null.");
         Validate.isTrue(maxFade >= 0 && maxFade <= 1,
                 "Minimum color intensity must be between zero and one"
-                + " inclusive, but maxFade = " + String.valueOf(maxFade));
+                + " inclusive, but maxFade = " + maxFade);
         ranges.add(new InternalRange(maxValue, color, fadeType, maxFade));
         Collections.sort(ranges);
     }
@@ -164,6 +167,7 @@ public final class ColorRangeSet
      */
     public Color getValueColor(long value)
     {
+        final String FN_NAME = "getValueColor";
         for (int i = 0; i < ranges.size(); i++)
         {
             final InternalRange range = ranges.get(i);
@@ -203,9 +207,9 @@ public final class ColorRangeSet
                     getComp.apply(range.color.getGreen(), endColor.getGreen()),
                     getComp.apply(range.color.getBlue(), endColor.getBlue()));
         }
-        System.err.println("Failed to find color for value "
-                + String.valueOf(value)
-                + " within " + String.valueOf(ranges.size()) + " ranges.");
+        LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                "Failed to find color for value {0} within {1} ranges.",
+                new Object[]{value, ranges.size()});
         return null;
     }
     
@@ -264,7 +268,7 @@ public final class ColorRangeSet
             Validate.notNull(fadeType, "Fade type cannot be null.");
             Validate.isTrue(maxFade >= 0 && maxFade <= 1,
                 "Minimum color intensity must be between zero and one"
-                + " inclusive, but maxFade = " + String.valueOf(maxFade));
+                + " inclusive, but maxFade = " + maxFade);
             this.value = value;
             this.color = color;
             this.fadeType = fadeType;

@@ -6,12 +6,12 @@
  */
 package com.centuryglass.chunk_atlas.mapping.images;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import com.centuryglass.chunk_atlas.util.JarResource;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.URL;
-import javax.imageio.ImageIO;
+import java.util.logging.Level;
 
 /**
  * Loads and draws the Minecraft map background image that may be used behind
@@ -19,6 +19,8 @@ import javax.imageio.ImageIO;
  */
 public class MapBackground 
 {
+    private static final String CLASSNAME = MapBackground.class.getName();
+    
     // Image width / BORDER_DIVISOR = the width of each map border.
     private static final int BORDER_DIVISOR = 19;
     // Map background image resource.
@@ -47,14 +49,16 @@ public class MapBackground
      */
     public static BufferedImage getBackgroundImage()
     {
+        final String FN_NAME = "getBackgroundImage";
         try
         {
             return JarResource.readImageResource(BACKGROUND_PATH);
         }
         catch (IOException e)
         {
-            System.err.println("Opening background image " + BACKGROUND_PATH
-                    + " failed.");
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Opening background image '{0}' failed.",
+                    BACKGROUND_PATH);
         }
         return null;
     }  

@@ -8,11 +8,10 @@ package com.centuryglass.chunk_atlas.worldinfo;
 import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import org.apache.commons.lang.Validate;
 
 public class ChunkData
-{  
+{   
     // Lists possible chunk data errors.
     public enum ErrorFlag
     {
@@ -39,7 +38,6 @@ public class ChunkData
         lastUpdate = updateTime;
         biomeCounts = new HashMap<>();
         structureRefs = new HashMap<>();
-        structures = new TreeSet<>();
         errorType = ErrorFlag.NONE;
     }
     
@@ -57,7 +55,6 @@ public class ChunkData
         lastUpdate = 0;
         biomeCounts = new HashMap<>();
         structureRefs = new HashMap<>();
-        structures = new TreeSet<>();
         this.errorType = errorType;
     }
       
@@ -68,11 +65,7 @@ public class ChunkData
      */
     public void addBiome(Biome biome)
     {
-        if (biome == null)
-        {
-            System.err.println("ChunkData: tried to add null biome!");
-            return;
-        }
+        Validate.notNull(biome, "Biome cannot be null.");
         Integer currentCount = biomeCounts.get(biome);
         if (currentCount == null)
         {
@@ -82,16 +75,6 @@ public class ChunkData
         {
             biomeCounts.put(biome, currentCount + 1);
         }
-    }
-
-    /**
-     * Adds a structure to the set of chunk structures.
-     *
-     * @param structure  A Minecraft generated structure type.
-     */
-    public void addStructure(Structure structure)
-    {
-        structures.add(structure);
     }
     
     /**
@@ -156,16 +139,6 @@ public class ChunkData
     {
         return biomeCounts;
     }
-
-    /**
-     *  Get the chunk's structure list.
-     *
-     * @return  All structures present within the chunk.
-     */
-    public Set<Structure> getStructures()
-    {
-        return structures;
-    }
     
     /**
      * Gets this chunk's list of references to nearby structures.
@@ -195,5 +168,4 @@ public class ChunkData
     private final long lastUpdate;
     private final Map<Biome, Integer> biomeCounts;
     private final Map<Point, Structure> structureRefs;
-    private final Set<Structure> structures;
 }

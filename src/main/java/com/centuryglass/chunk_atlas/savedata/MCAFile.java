@@ -6,6 +6,7 @@
 
 package com.centuryglass.chunk_atlas.savedata;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import com.centuryglass.chunk_atlas.worldinfo.ChunkData;
 import java.awt.Point;
@@ -14,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.function.Function;
+import java.util.logging.Level;
 import org.apache.commons.lang.Validate;
 
 /**
@@ -21,6 +23,8 @@ import org.apache.commons.lang.Validate;
  */
 public class MCAFile 
 {
+    private static final String CLASSNAME = MCAFile.class.getName();
+    
     // width/height in chunks of a region file:
     private static final int DIM_IN_CHUNKS = 32;
     
@@ -33,14 +37,15 @@ public class MCAFile
      */
     public MCAFile(File mcaFile) throws FileNotFoundException
     {
+        final String FN_NAME = "MCAFile";
         ExtendedValidate.isFile(mcaFile, "Minecraft region file");
         loadedChunks = new ArrayList<>();
         // read the region file's base coordinates from the file name:
         Point regionPt = getChunkCoords(mcaFile);
         if (regionPt.x == -1 && regionPt.y == -1)
         {
-            System.err.println("Can't parse coordinates from file "
-                    + mcaFile.toString());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Can't parse coordinates from file {0}.", mcaFile);
             return;
         }
         
@@ -51,12 +56,14 @@ public class MCAFile
         }
         catch (FileNotFoundException e)
         {
-            System.err.println("Failed to find file " + mcaFile.toString());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Failed to find file '{0}'.", mcaFile);
             return;
         }
         catch (IOException e)
         {
-            System.err.println("Error reading region file: " + e.getMessage());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Error reading region file: {0}", e);
             return;
         }
              
@@ -85,8 +92,8 @@ public class MCAFile
             }
             catch (ArrayIndexOutOfBoundsException e)
             {
-                System.err.println(e.getMessage());
-                System.exit(1);
+                LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
+                        e.toString());
             }
             if (sectorOffset == 0 && sectorCount == 0)
             {
@@ -120,9 +127,9 @@ public class MCAFile
             byte[] chunkBytes = regionBuffer.readBytes(chunkByteSize);
             if (chunkBytes.length != chunkByteSize)
             {
-                System.err.println("Unexpected EOF: Read only "
-                        + chunkBytes.length + " bytes, expected "
-                        + chunkByteSize);
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Unexpected EOF: Read only {0} bytes, expected {1}.",
+                        new Object[] { chunkBytes.length, chunkByteSize });
                 invalidChunks++;
                 continue;
             }
@@ -138,8 +145,9 @@ public class MCAFile
         }
         if (invalidChunks > 0)
         {
-            System.err.println("Warning: " + invalidChunks + " chunks in "
-                    + mcaFile.getName() + " could not be loaded.");
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "{0} chunks in region file '{1}' could not be loaded.",
+                    new Object[] { invalidChunks, mcaFile });
         }
     }
 
@@ -177,10 +185,11 @@ public class MCAFile
      */
     public ArrayList<ChunkData> getLoadedChunks()
     {
+        final String FN_NAME = "getLoadedChunks";
         if (loadedChunks.isEmpty())
         {
-            System.err.println(mcaFile.getName() + " had zero chunks!");
-            System.exit(1);
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "'{0}' had zero map chunks.", mcaFile);
         }
         return new ArrayList<>(loadedChunks);
     }

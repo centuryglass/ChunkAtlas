@@ -5,10 +5,12 @@
  */
 package com.centuryglass.chunk_atlas.webserver.security;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 
@@ -17,6 +19,8 @@ import javax.crypto.NoSuchPaddingException;
  */
 public abstract class RSAKey
 {
+    private static final String CLASSNAME = RSAKey.class.getName();
+    
     /**
      * Creates a RSAKey object for a particular key value.
      * 
@@ -94,6 +98,7 @@ public abstract class RSAKey
     private byte[] encryptOrDecrypt(byte[] data, int mode)
             throws InvalidKeyException, GeneralSecurityException
     {
+        final String FN_NAME = "encryptOrDecrypt";
         try
         {
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
@@ -103,7 +108,8 @@ public abstract class RSAKey
         catch (NoSuchAlgorithmException | NoSuchPaddingException e)
         {
             // Getting and using the RSA cipher shouldn't ever fail!
-            System.err.println(e.getMessage());
+            LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
+                    e.toString());
             System.exit(1);
         }
         return null;

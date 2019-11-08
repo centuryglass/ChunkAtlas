@@ -6,6 +6,7 @@
 
 package com.centuryglass.chunk_atlas.mapping;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -19,6 +20,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import org.apache.commons.lang.Validate;
 
@@ -32,6 +34,8 @@ import org.apache.commons.lang.Validate;
  */
 public class TileMap extends WorldMap
 {
+    private static final String CLASSNAME = TileMap.class.getName();
+    
     // Usual number of tiles to keep loaded at once:
     private static final int BASE_TILES_IN_MEMORY = 100;
     // Maximum number of tiles to keep loaded:
@@ -311,6 +315,7 @@ public class TileMap extends WorldMap
      */
     private void saveTileToDisk(Point tilePt)
     {
+        final String FN_NAME = "saveTileToDisk";
         Validate.notNull(tilePt, "Tile point cannot be null.");
         BufferedImage tileImage = mapTiles.get(tilePt);
         mapTiles.remove(tilePt);
@@ -336,8 +341,9 @@ public class TileMap extends WorldMap
         }
         catch (IOException e)
         {
-            System.err.println("TileMap: Failed to save tile "
-                    + imageFile.getName() + " to disk: " + e.getMessage());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Failed to save tile '{0}' to disk: {1}",
+                    new Object[] { imageFile, e });
         } 
         
     }
@@ -392,6 +398,7 @@ public class TileMap extends WorldMap
      */
     private BufferedImage getTileImage(Point tilePt)
     {
+        final String FN_NAME = "getTileImage";
         Validate.notNull(tilePt, "Chunk coordinate cannot be null.");
         BufferedImage tileImage = mapTiles.get(tilePt);
         if (tileImage != null)
@@ -408,8 +415,9 @@ public class TileMap extends WorldMap
             }
             catch (IOException e)
             {
-                System.err.println("Opening tile image "+ tileFile.getName()
-                        + " failed, tile data may be lost");
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Opening tile image '{0}' failed, tile data may be"
+                        + " lost.", tileFile);
             }
         }
         if (tileImage == null)
@@ -443,8 +451,8 @@ public class TileMap extends WorldMap
     private File getTileFile(Point tilePt)
     {
         Validate.notNull(tilePt, "Chunk coordinate cannot be null.");
-        String filename = getFileName() + "." + String.valueOf(tilePt.x)
-                + "." + String.valueOf(tilePt.y) + ".png";
+        String filename = getFileName() + "." + tilePt.x + "." + tilePt.y
+                + ".png";
         return new File(getTileSizeDir(tileSize), filename);
     }
     
@@ -464,7 +472,7 @@ public class TileMap extends WorldMap
         if (! tileSizeDir.exists())
         {
             Validate.isTrue(tileSizeDir.mkdirs(), "Failed to create tile "
-                    + "size directory \"" + tileSizeDir.toString() + "\".");
+                    + "size directory '" + tileSizeDir + "'.");
         }
         return tileSizeDir;
     }   

@@ -5,6 +5,7 @@
  */
 package com.centuryglass.chunk_atlas.webserver.security;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,12 +19,15 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.logging.Level;
 
 /** 
  * Manages the public key in an RSA encryption key pair.
  */
 public class RSAPrivateKey extends RSAKey
 {
+    private static final String CLASSNAME = RSAPrivateKey.class.getName();
+    
     /**
      * Initializes a private key from saved key values.
      * 
@@ -36,6 +40,7 @@ public class RSAPrivateKey extends RSAKey
      */
     private static Key initKey(File keyFile) throws IOException
     {
+        final String FN_NAME = "initKey";
         try
         {
             Path keyPath = keyFile.toPath();
@@ -47,7 +52,8 @@ public class RSAPrivateKey extends RSAKey
         catch (NoSuchAlgorithmException | InvalidKeySpecException e)
         {
             // Creating a RSA key should never actually throw these exceptions
-            System.err.println(e.getMessage());
+            LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
+                    e.toString());
             System.exit(1);
         }
         catch (IOException e)
@@ -84,6 +90,7 @@ public class RSAPrivateKey extends RSAKey
     public byte[] sign(byte[] message) throws InvalidKeyException,
             SignatureException
     {
+        final String FN_NAME = "sign";
         Signature sign;
         try
         {
@@ -95,7 +102,8 @@ public class RSAPrivateKey extends RSAKey
         catch (NoSuchAlgorithmException e)
         {
             // This should never run, "SHA256withRSA" should always be valid.
-            System.err.println(e.getMessage());
+            LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
+                    e.toString());
             System.exit(1);
         }
         return null;

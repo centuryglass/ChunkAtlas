@@ -122,9 +122,9 @@ public final class MapCreator
                 catch (FileNotFoundException e)
                 {
                     LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
-                            FN_NAME, "Cannot find directory \"{0}\" for region"
-                            + " \"{1}\", this region will be ignored.",
-                            new Object[]{regionDir.toString(), name});
+                            FN_NAME, "Cannot find directory '{0}' for region"
+                            + " '{1}', this region will be ignored.",
+                            new Object[] { regionDir, name });
                 }
             });
             enabledMapTypes = mapConfig.getEnabledMapTypes();
@@ -175,7 +175,7 @@ public final class MapCreator
                         }
                         LogConfig.getLogger().logp(Level.FINE, CLASSNAME,
                                 FN_NAME,
-                                "Adding region \"{0}\" at \"{1}\".",
+                                "Adding region '{0}' at '{1}'.",
                                 new Object[]{regionName, regionPath});
                         addRegion(regionName, regionDir);                
                     }
@@ -271,7 +271,7 @@ public final class MapCreator
                 default:
                     LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
                             FN_NAME, "Unhandled option type {0}",
-                            option.getType().toString());
+                            option.getType());
             }
         }   
     }
@@ -381,23 +381,20 @@ public final class MapCreator
                     {
                         File outFile = new File(regionImageOutDir,
                                 tileDir.getParentFile().getName() + ".png");
-                        LogConfig.getLogger().logp(Level.CONFIG,
-                                CLASSNAME,
-                                FN_NAME, 
-                                "Creating \"{0}\" from tiles at \"{1}\".",
-                                new Object[]{outFile.toString(),
-                                tileDir.toString()});
+                        LogConfig.getLogger().logp(Level.CONFIG, CLASSNAME,
+                                FN_NAME, "Creating '{0}' from tiles at '{1}'.",
+                                new Object[] { outFile, tileDir });
                         try
                         {
                             ImageStitcher.stitch(tileDir, outFile, xMin, zMin,
                                     width, height, pixelsPerChunk, tileSize,
                                     drawBackgrounds);
                         }
-                        catch (FileNotFoundException e)
+                        catch (IOException e)
                         {
                             LogConfig.getLogger().logp(Level.WARNING,
                                     CLASSNAME, FN_NAME,
-                                    "Failed to create map: {0}", e.toString());
+                                    "Failed to create map: {0}", e);
                         }
                     });
                 }
@@ -577,8 +574,7 @@ public final class MapCreator
                 catch (IOException e)
                 {
                     LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
-                            FN_NAME,"Error finding World object: {0}",
-                            e.toString());
+                            FN_NAME,"Error finding World object: {0}", e);
                 }
             }
         }
@@ -740,8 +736,7 @@ public final class MapCreator
         {
             for (int z = regionZMin; z < regionZMax; z++)
             {
-                String filename = "r." + String.valueOf(x) + "."
-                        + String.valueOf(z) + ".mca";
+                String filename = "r." + x + "." + z + ".mca";
                 File regionFile = new File(mapRegion.directory, filename);
                 if (regionFile.exists())
                 {
@@ -753,8 +748,8 @@ public final class MapCreator
         if (numRegionFiles == 0)
         {
             LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                    "Region at \"{0}\" was empty, no maps were created.",
-                    mapRegion.directory.toString());
+                    "Region at '{0}' was empty, no maps were created.",
+                    mapRegion.directory);
             return;          
         }
         mappers = new MapCollector(outDir, mapRegion.name, mapRegion.world,
@@ -767,7 +762,7 @@ public final class MapCreator
                     / numChunks;
             LogConfig.getLogger().logp(Level.INFO, CLASSNAME, FN_NAME,
                     "Mapped {0}/{1} chunks, map is {2}% explored.",
-                    new Object[] {chunksMapped, numChunks, explorePercent});
+                    new Object[] { chunksMapped, numChunks, explorePercent });
         }
         else
         {

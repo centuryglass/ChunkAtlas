@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.function.Function;
+import java.util.logging.Level;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
@@ -29,6 +30,8 @@ import org.apache.commons.lang.Validate;
  */
 public class ConfigFile
 {
+    private static final String CLASSNAME = ConfigFile.class.getName();
+    
     /**
      * Loads or initializes options on construction.
      * 
@@ -44,6 +47,7 @@ public class ConfigFile
      */
     protected ConfigFile(File configFile, String defaultFilePath)
     {
+        final String FN_NAME = "ConfigFile";
         Validate.notNull(defaultFilePath, "Default path must not be null.");
         // Attempt to load JSON options:
         if (configFile != null && configFile.isFile())
@@ -60,9 +64,10 @@ public class ConfigFile
                 // need to be printed.
                 if (configFile.length() > 0)
                 {
-                    System.err.println("Failed to load " + configFile.getName()
-                            + " using default configuration options.");
-                    System.err.println("Error encountered: " + ex.toString());
+                    LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
+                            FN_NAME, "Failed to load '{0}' using default "
+                                    + "configuration options: {1}",
+                            new Object[] { configFile, ex });
                     loadedOptions = null;
                 }
             }
@@ -76,7 +81,9 @@ public class ConfigFile
         }
         catch (IOException e)
         {
-            System.err.println("Default config error: " + e.getMessage());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Error loading default options from '{0}': {1}",
+                    new Object[] { defaultFilePath, e });
         }
         
         // Copy defaults if appropriate:
@@ -89,10 +96,9 @@ public class ConfigFile
             }
             catch (IOException e)
             {
-                System.err.println("Error copying default config from "
-                        + defaultFilePath + ": "
-                        + e.toString());
-                e.printStackTrace();
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Error copying default options from '{0}': {1}",
+                    new Object[] { defaultFilePath, e });
             }
         }
     }
@@ -109,6 +115,7 @@ public class ConfigFile
      */
     protected final JsonValue getSavedOrDefaultOptions(String jsonKey)
     {
+        final String FN_NAME = "getSavedOrDefaultOptions";
         Validate.notNull(jsonKey, "JSONKey must not be null.");
         JsonValue defaultValue = defaultOptions.get(jsonKey);
         if (loadedOptions == null)
@@ -134,11 +141,15 @@ public class ConfigFile
         };
         if (! compType.apply(defaultValue).equals(compType.apply(configValue)))
         {
-            System.err.println("Warning: expected config value of type "
-                    + defaultValue.getValueType().toString() + " for key "
-                    + jsonKey + ", but found value of type "
-                    + configValue.getValueType().toString() + ".");
-            System.err.println("Invalid value: " + configValue.toString());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Excepcted config value of type {0} for key '{1}', but"
+                    + " found value '{2}' with type {3}",
+                    new Object[]{
+                        defaultValue.getValueType(),
+                        jsonKey, 
+                        configValue,
+                        configValue.getValueType()
+                    });
             return defaultValue; 
         }
         return configValue;

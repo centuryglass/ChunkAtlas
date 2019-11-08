@@ -6,14 +6,18 @@
 
 package com.centuryglass.chunk_atlas.mapping.images;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import com.centuryglass.chunk_atlas.util.JarResource;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.logging.Level;
 
 public class Texture 
 {
+    private static final String CLASSNAME = Texture.class.getName();
+    
     /**
      * Loads a texture on construction.
      * 
@@ -22,6 +26,7 @@ public class Texture
      */
     public Texture(String texturePath)
     {
+        final String FN_NAME = "Texture";
         ExtendedValidate.notNullOrEmpty(texturePath, "Texture path");
         final BufferedImage textureImage;
         try
@@ -30,8 +35,8 @@ public class Texture
         }
         catch (IOException e)
         {
-            System.err.println("Texture: Opening texture image "
-                    + texturePath + " failed.");
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Opening texture image '{0}' failed.", texturePath);
             textureData = null;
             width = 0;
             height = 0;

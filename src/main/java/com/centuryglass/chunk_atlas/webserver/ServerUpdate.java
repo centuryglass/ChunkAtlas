@@ -6,6 +6,7 @@
 package com.centuryglass.chunk_atlas.webserver;
 
 import com.centuryglass.chunk_atlas.MapCreator;
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -29,6 +31,8 @@ import org.apache.commons.lang.Validate;
  */
 public class ServerUpdate
 {
+    private static final String CLASSNAME = ServerUpdate.class.getName();
+    
     /**
      * Constructs an update message from map creation data.
      * 
@@ -69,6 +73,7 @@ public class ServerUpdate
      */
     public void sendUpdate(Connection webConnection)
     {
+        final String FN_NAME = "sendUpdate";
         JsonArray response = null;
         try 
         {
@@ -77,17 +82,19 @@ public class ServerUpdate
         }
         catch (IOException | GeneralSecurityException e)
         {
-            System.err.println("Failed to send update to web server: "
-                    + e.getMessage());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Failed to send update to web server: {0}", e);
             return;
         }
         if (response == null)
         {
-            System.out.println("No response from web server.");
+            LogConfig.getLogger().logp(Level.INFO, CLASSNAME, FN_NAME,
+                    "No response from web server.");
             return;
         }
-        System.out.println("Sending " + response.size()
-                + " requested images to the web server.");
+        LogConfig.getLogger().log(Level.INFO,
+                "Sending {0} requested images to the web server.",
+                response.size());
         for (int i = 0; i < response.size(); i++)
         {
             String requestedImage = response.getString(i);
@@ -100,8 +107,9 @@ public class ServerUpdate
             }
             catch (IOException e)
             {
-                System.err.println("Error sending \"" + requestedImage + "\": "
-                        + e.toString());
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Error sending '{0}': {1}",
+                        new Object[] { requestedImage, e });
             }
         }   
     }

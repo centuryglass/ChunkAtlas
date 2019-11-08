@@ -5,6 +5,7 @@
  */
 package com.centuryglass.chunk_atlas.mapping.maptype;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.mapping.KeyItem;
 import com.centuryglass.chunk_atlas.mapping.WorldMap;
 import com.centuryglass.chunk_atlas.serverplugin.StructureScanner;
@@ -14,14 +15,13 @@ import com.centuryglass.chunk_atlas.worldinfo.Structure;
 import java.awt.Color;
 import java.awt.Point;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import org.apache.commons.lang.Validate;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.StructureType;
 import org.bukkit.World;
@@ -33,7 +33,9 @@ import org.bukkit.World;
  * mapKey.png file.
  */
 public class StructureMapper extends Mapper
-{   
+{
+    private static final String CLASSNAME = StructureMapper.class.getName();
+    
     // Radius used when using the server plugin interface to scan for
     // structures.
     private static final int SCAN_RADIUS = 1;
@@ -108,22 +110,6 @@ public class StructureMapper extends Mapper
         }
         final Color emptyChunkColor = new Color(0);
         Color color = emptyChunkColor;
-        /*
-        TODO: fix false positives in chunk structures
-        Set<Structure> chunkStructures = chunk.getStructures();
-        Structure highestPriority = Structure.UNKNOWN;
-        for (Structure structure : chunkStructures)
-        {
-            if (structure.getPriority() > highestPriority.getPriority())
-            {
-                highestPriority = structure;
-            }
-        }
-        if (highestPriority != Structure.UNKNOWN)
-        {
-            color = Structure.getStructureColor(highestPriority);
-        }
-        */
         if (getRegion() == null) 
         { 
             Map<Point, Structure> chunkStructureRefs = chunk.getStructureRefs();
@@ -167,14 +153,15 @@ public class StructureMapper extends Mapper
     @Override
     protected void finalProcessing(WorldMap map)
     {
+        final String FN_NAME = "finalProcessing";
         if (getRegion() != null)
         {
             // Copy scanned structure areas into structure refs:
             StructureScanner scanner = StructureScanner.getWorldScanner(
                     getRegion());
             Map<Point, StructureType> pts = scanner.getStructurePoints();
-            System.out.println("Adding " + pts.size()
-                    + " structures to the map:");
+            LogConfig.getLogger().logp(Level.CONFIG, CLASSNAME, FN_NAME,
+                    "Adding {0} structures to the map.", pts.size());
             for (Map.Entry<Point, StructureType> entry : pts.entrySet())
             {
                 Structure type = Structure.fromStructureType(entry.getValue());

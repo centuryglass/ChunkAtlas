@@ -6,6 +6,7 @@
  */
 package com.centuryglass.chunk_atlas.mapping.images;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -17,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import org.apache.commons.lang.Validate;
 
@@ -26,6 +28,8 @@ import org.apache.commons.lang.Validate;
  */
 public class ImageStitcher
 {
+    private static final String CLASSNAME = ImageStitcher.class.getName();
+    
     /**
      * Read a tile's chunk coordinates from its file name.
      * 
@@ -95,6 +99,9 @@ public class ImageStitcher
      *                                images.
      * 
      * @throws FileNotFoundException  If the tile directory doesn't exist.
+     * 
+     * @throws IOException            If unable to write the image to the
+     *                                output file.
      */
     public static void stitch(File tileDir,
             File outFile,
@@ -104,8 +111,9 @@ public class ImageStitcher
             int height,
             int pixelsPerChunk,
             int tileSize,
-            boolean drawBackground) throws FileNotFoundException
+            boolean drawBackground) throws FileNotFoundException, IOException
     {
+        final String FN_NAME = "stitch";
         ExtendedValidate.isDirectory(tileDir, "Tile source directory");
         ExtendedValidate.couldBeFile(outFile, "Image output path");
         ExtendedValidate.isPositive(width, "Width");
@@ -159,8 +167,9 @@ public class ImageStitcher
             }
             catch (IOException e)
             {
-                System.err.println("Error opening tile " + tile.getName()
-                        + ": " + e.getMessage());
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Error opening tile '{0}': {1}",
+                        new Object[] { tile.getName(), e });
                 continue;
             }
             mapPainter.drawImage(tileImage,
@@ -201,14 +210,6 @@ public class ImageStitcher
                     null);
             combinedMap = imageFrame;
         }
-        try
-        {
-            ImageIO.write(combinedMap, "png", outFile);
-        }
-        catch (IOException e)
-        {
-            System.err.println("Failed to save composite map image to \""
-                    + outFile.getPath() + "\"");
-        }  
+        ImageIO.write(combinedMap, "png", outFile);  
     }
 }

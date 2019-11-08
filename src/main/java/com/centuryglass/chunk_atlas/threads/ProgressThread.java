@@ -6,15 +6,19 @@
  */
 package com.centuryglass.chunk_atlas.threads;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 
 
 public class ProgressThread extends Thread
 {
+    private static final String CLASSNAME = ProgressThread.class.getName();
+    
     // Duration the thread will wait for new progress updates before pausing
     // to check if it should exit:
     private static final long TIMEOUT = 1; // seconds
@@ -112,11 +116,15 @@ public class ProgressThread extends Thread
                             || (regionCount == numRegionFiles);
                     if (printUpdate)
                     {
-                        System.out.println(String.valueOf(newPercentage)
-                                + "% complete, finished file " + regionCount
-                                + "/" + numRegionFiles + ", " + chunkCount
-                                + " chunks read.");
-                        System.out.flush();
+                        LogConfig.getLogger().log(Level.INFO,
+                                "{0}% complete, finished file {1}/{2}, "
+                                + "{3} chunks remaining.",
+                                new Object[] {
+                                    newPercentage,
+                                    regionCount,
+                                    numRegionFiles,
+                                    chunkCount
+                                });
                     }
                     lastPercentage = newPercentage;
                 }

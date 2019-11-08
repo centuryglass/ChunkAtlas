@@ -6,9 +6,11 @@
 
 package com.centuryglass.chunk_atlas.worldinfo;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import org.apache.commons.lang.Validate;
 import org.bukkit.StructureType;
 
@@ -34,6 +36,8 @@ public enum Structure
     FORTRESS (3),
     UNKNOWN (-1);
     
+    private static final String CLASSNAME = Structure.class.getName();
+    
     /**
      *  Gets a structure's name value.
      *
@@ -44,8 +48,15 @@ public enum Structure
         return structureToName.get(this);
     }
     
+    /**
+     * Converts a ChunkAtlas Structure to its corresponding
+     * org.bukkit.StructureType value.
+     * 
+     * @return  The StructureType that matches this Structure. 
+     */
     public StructureType toStructureType()
     {
+        final String FN_NAME = "toStructureType";
         switch (this)
         {
             case BURIED_TREASURE:
@@ -79,19 +90,28 @@ public enum Structure
             case VILLAGE:
                 return StructureType.VILLAGE;
             default:
-                System.err.println("Structure.toStructureType: Unhandled type "
-                        + this.toString());
+                LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
+                        "Unhandled structure type '{0}'.", this);
                 return null;
         }
     }
     
+    /**
+     * Converts a bukkit.StructureType value to its corresponding ChunkAtlas
+     * structure.
+     * 
+     * @param structure  A bukkit StructureType value.
+     * 
+     * @return           The equivalent Structure value. 
+     */
     public static Structure fromStructureType(StructureType structure)
     {
+        final String FN_NAME = "fromStructureType";
         Structure s = typeMap.get(structure);
         if (s == null)
         {
-            System.err.println("Structure.fromStructureType: Unhandled "
-                    + "StructureType " + structure.getName());
+            LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
+                    "Unhandled StructureType '{0}'.", structure.getName());
         }
         return s;
     }

@@ -4,8 +4,6 @@ import java.io.File;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,7 +27,6 @@ public class KeySetTest
     @BeforeAll
     public static void setUpClass() throws Exception
     {
-        System.out.println("Starting test init.");
         int numKeys = Keys.values().length;
         keyFiles = new File[numKeys];
         for (int i = 0; i < numKeys; i++)

@@ -8,6 +8,7 @@
  */
 package com.centuryglass.chunk_atlas.savedata;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.serverplugin.Plugin;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import com.centuryglass.chunk_atlas.worldinfo.Biome;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 import javax.json.Json;
@@ -41,6 +43,8 @@ import org.apache.commons.lang.Validate;
  */
 public class ChunkNBT
 {
+    private static final String CLASSNAME = ChunkNBT.class.getName();
+    
     // For roughly 97% of chunks, inflated chunk data will take up no more than
     // 14x as much space as compressed data. Using this to set inflation buffer
     // size increases performance by reducing the number of reallocations 
@@ -68,8 +72,8 @@ public class ChunkNBT
         SKIPPED_TAGS.add("Pos"); // PostProcessing
         if (Plugin.isRunning())
         {
-            System.out.println("Running as server plugin, disabling structure "
-                    + "NBT scanning.");
+            LogConfig.getLogger().log(Level.CONFIG, "Running as server plugin,"
+                    + " disabling structure NBT scanning.");
             SKIPPED_TAGS.add("Str"); // Structures
             SKIPPED_TAGS.add("Ref"); // References
         }
@@ -82,6 +86,7 @@ public class ChunkNBT
      */
     public ChunkNBT(byte[] compressedData)
     {
+        final String FN_NAME = "ChunkNBT";
         Validate.notNull(compressedData, "Data cannot be null.");
         Validate.isTrue(compressedData.length != 0,
                 "Data cannot be length 0.");
@@ -110,7 +115,8 @@ public class ChunkNBT
             }
             catch(DataFormatException e)
             {
-                System.err.println("Invalid zlib data!");
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Invalid zlib-compressed chunk data.");
                 return;
             }
         }
@@ -147,6 +153,8 @@ public class ChunkNBT
         // Reads miscellaneous data from the chunk data stream:
         class Reader
         {
+            private final String CLASSNAME = Reader.class.getName();
+            
             // Read a character string:
             public String readString() throws IOException
             {
@@ -178,6 +186,7 @@ public class ChunkNBT
             // Read an object/compound:
             public JsonObjectBuilder readObject() throws IOException
             {
+                final String FN_NAME = "readObject";
                 JsonObjectBuilder builder = factory.createObjectBuilder();
                 NBTTag tag;
                 do
@@ -203,20 +212,17 @@ public class ChunkNBT
                     }
                     if (skipTag)
                     {
-                        /*
-                        System.out.println("Skipping " +name + ", type="
-                                + tag.toString() + " available= "
-                                + chunkStream.available());
-                        */
+                        LogConfig.getLogger().logp(Level.FINER, CLASSNAME,
+                                FN_NAME, "Skipping '{0}', type = {1}.",
+                                new Object[] { name, tag });
+                        
                         parsers.get(tag).skipData();
                     }
                     else
                     {
-                        /*
-                        System.out.println("Reading " + name + ", type="
-                                + tag.toString() + " available= "
-                                + chunkStream.available());
-                        */
+                        LogConfig.getLogger().logp(Level.FINEST, CLASSNAME,
+                                FN_NAME, "Reading '{0}', type = {1}.",
+                                new Object[] { name, tag });
                         parsers.get(tag).parseData(name, builder);
                     }
                 }
@@ -432,9 +438,11 @@ public class ChunkNBT
                     }
                     catch (IOException e)
                     {
-                        System.err.println("ChunkNBT: Tried to skip " + length
-                                + " tags of type " + type.toString()
-                                + ", but failed at index " + i);
+                        LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
+                                FN_NAME,
+                                "Tried to skip {0} tags of type {1}, but failed"
+                                + " at index {2}.",
+                                new Object[] { length, type, i });
                         throw e;
                     }
                 }
@@ -540,10 +548,8 @@ public class ChunkNBT
         }
         catch (IOException e)
         {
-            System.err.println("ChunkNBT: error encountered while parsing"
-                    + " NBT data:");
-            System.err.println(e.getMessage());
-            System.exit(0);
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Error parsing NBT data: {0}.", e);
         }
     }
     
@@ -569,6 +575,7 @@ public class ChunkNBT
      */
     public ChunkData getChunkData()
     {
+        final String FN_NAME = "getChunkData";
         if (chunkJSON == null)
         {
             return new ChunkData(new Point(0, 0),
@@ -601,8 +608,8 @@ public class ChunkNBT
             final Biome biome = Biome.fromCode(biomeCode);
             if (biome == null)
             {
-                System.err.println("ChunkNBT.getChunkData: Found illegal "
-                        + "biome code " + biomeCode);
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Found invalid biome code {0}.", biomeCode);
             }
             else
             {
@@ -621,7 +628,6 @@ public class ChunkNBT
                         : newStructures.entrySet())
                 {
                     Structure structure = Structure.parse(entry.getKey());
-                    chunk.addStructure(structure);
                     JsonObject structObject = (JsonObject) entry.getValue();
                     if (structObject.containsKey(Keys.STRUCT_BOUNDS))
                     {
@@ -633,16 +639,9 @@ public class ChunkNBT
                         int zMin = bounds.getInt(2) / 16;
                         int xMax = bounds.getInt(3) / 16;
                         int zMax = bounds.getInt(5) / 16;
-                        for (int x = xMin; x <= xMax; x++)
-                        {
-                            for (int z = zMin; z <= zMax; z++)
-                            {
-                                if(x != pos.x || z != pos.y)
-                                {
-                                    chunk.addStructureRef(pos, structure);
-                                }
-                            }
-                        }
+                        Point midPt = new Point(xMin + (xMax - xMin) / 2,
+                                zMin + (zMax - zMin) / 2);
+                        chunk.addStructureRef(midPt, structure);
                     }   
                 }
             }
@@ -678,6 +677,7 @@ public class ChunkNBT
      */
     public final void saveToFile(String path)
     {
+        final String FN_NAME = "saveToFile";
         ExtendedValidate.notNullOrEmpty(path, "JSON path");
         OutputStream jsonOut;
         try
@@ -686,8 +686,9 @@ public class ChunkNBT
         }
         catch (FileNotFoundException e)
         {
-            System.err.println("ChunkNBT: Error writing to " + path + ":");
-            System.err.println(e.getMessage());
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Error writing to '{0}': {1}",
+                    new Object[] { path, e });
             return;
         }
         try (JsonWriter writer = Json.createWriter(jsonOut))

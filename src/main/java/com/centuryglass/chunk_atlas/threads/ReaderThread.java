@@ -5,18 +5,18 @@
  */
 package com.centuryglass.chunk_atlas.threads;
 
+import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.savedata.MCAFile;
-import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import com.centuryglass.chunk_atlas.worldinfo.ChunkData;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.lang.Validate;
 
 public class ReaderThread extends Thread
 {
+    private static final String CLASSNAME = ReaderThread.class.getName();
+    
     /**
      *  Sets the list of paths this thread will process and the objects
      *         where it will send processed data.
@@ -57,7 +57,7 @@ public class ReaderThread extends Thread
             }
             catch (FileNotFoundException e)
             {
-                System.err.println(e.getMessage());
+                LogConfig.getLogger().warning(e.toString());
                 continue;
             }
             ArrayList<ChunkData> regionChunks = regionFile.getLoadedChunks();

@@ -7,6 +7,7 @@
 package com.centuryglass.chunk_atlas.config;
 
 import java.io.File;
+import java.util.logging.Level;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
@@ -17,6 +18,8 @@ import javax.json.JsonValue;
  */
 public class WebServerConfig extends ConfigFile
 {
+    private static final String CLASSNAME = WebServerConfig.class.getName();
+    
     // Path to the resource holding default configuration options:
     private static final String DEFAULT_JSON_RESOURCE
             = "/configDefaults/webServer.json";
@@ -48,10 +51,12 @@ public class WebServerConfig extends ConfigFile
      */
     public String getServerAddress()
     {
+        final String FN_NAME = "getServerAddress";
         String address = getStringOption(JsonKeys.ADDRESS, "");
         if (address.isEmpty())
         {
-            System.err.println("Web server address" + INVALID_OPTION_MSG);
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Web server address {0}", INVALID_OPTION_MSG);
         }
         return address;
     }
@@ -64,10 +69,12 @@ public class WebServerConfig extends ConfigFile
      */
     public int getServerPort()
     {
+        final String FN_NAME = "getServerPort";
         int port = getIntOption(JsonKeys.PORT, -1);
         if (port <= 0 || port > MAX_PORT)
         {
-            System.err.println("Web server port" + INVALID_OPTION_MSG);
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Web server port {0}", INVALID_OPTION_MSG);
             return -1;
         }
         return port;
