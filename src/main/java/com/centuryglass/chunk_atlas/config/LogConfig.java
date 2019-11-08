@@ -53,8 +53,9 @@ public class LogConfig extends ConfigFile
         super(configFile, DEFAULT_JSON_RESOURCE);
         if (logger != null)
         {
-            logger.warning("Logger was already initialized.");
-            return;
+            logger.logp(Level.INFO, LogConfig.class.getName(),
+                    "LogConfig", "Recreating logger with file \"{0}\".",
+                    configFile.toString());
         }
         JsonObject consoleLogOptions = getObjectOption(JsonKeys.CONSOLE_LOG,
                 JsonObject.EMPTY_JSON_OBJECT);
@@ -76,14 +77,16 @@ public class LogConfig extends ConfigFile
                 }
                 catch (IllegalArgumentException e)
                 {
-                    Logger.getGlobal().log(Level.WARNING,
+                    Logger.getGlobal().logp(Level.WARNING,
+                            LogConfig.class.getName(), "LogConfig",
                             "Invalid log level \"{0}\" defined in config file.",
                             levelStr);
                 }
             }
             else
             {
-                Logger.getGlobal().log(Level.WARNING,
+                Logger.getGlobal().logp(Level.WARNING,
+                        LogConfig.class.getName(), "LogConfig",
                         "No log level set, using default level {0}.",
                         handler.getLevel().getName());
             }
@@ -127,7 +130,8 @@ public class LogConfig extends ConfigFile
             }
             catch (IOException e)
             {
-                Logger.getGlobal().log(Level.WARNING,
+                Logger.getGlobal().logp(Level.WARNING,
+                        LogConfig.class.getName(), "LogConfig",
                         "Failed to create logging config file at \"{0}\".",
                         logPath); 
             }
@@ -146,9 +150,9 @@ public class LogConfig extends ConfigFile
     {
         if (logger == null)
         {
-            Logger.getGlobal().config("No LogConfig has been loaded, creating "
-                    + "logger from default options.");
-            LogConfig defaultOptions = new LogConfig(null);
+            Logger.getGlobal().logp(Level.FINEST, LogConfig.class.getName(),
+                    "getLogger", "No LogConfig loaded, using default.");
+            return Logger.getGlobal();
         }
         return logger;
     }

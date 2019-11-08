@@ -4,7 +4,8 @@
         "enabled"      : true,
         "lowest level" : "CONFIG"
     },
-    "log files" : [
+    "log files" : [],
+    "//log file format example" : [
         {
             "path"         : "./plugins/ChunkAtlas/Log",
             "lowest level" : "INFO"
