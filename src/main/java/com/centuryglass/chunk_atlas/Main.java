@@ -52,6 +52,11 @@ public class Main
                 LogConfig.getLogger().log(Level.FINEST,
                         "Custom logger path: {0}", logPath);
             }
+            else
+            {
+                // Initialize logger with default options:
+                LogConfig logConfig = new LogConfig(null);
+            }
             ArgOption<MapArgOptions> keyGen = argParser.getOptionParams(
                     MapArgOptions.GENERATE_RSA_KEYPAIR);
             if (keyGen != null)
