@@ -6,6 +6,7 @@
 package com.centuryglass.chunk_atlas.config;
 
 import com.centuryglass.chunk_atlas.serverplugin.Plugin;
+import com.centuryglass.chunk_atlas.util.LogLineFormatter;
 import java.io.File;
 import java.io.IOException;
 import java.util.function.BiConsumer;
@@ -14,7 +15,6 @@ import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -56,21 +56,24 @@ public class LogConfig extends ConfigFile
     {
         super(configFile, DEFAULT_JSON_RESOURCE);
         final String FN_NAME = "LogConfig";
-        getLogger().logp(Level.INFO, CLASSNAME, FN_NAME,
-                "Creating configured logger with file '{0}'.",
-                ((configFile == null) ? "null" : configFile));
+        if (configFile != null)
+        {
+            getLogger().logp(Level.CONFIG, CLASSNAME, FN_NAME,
+                    "Creating configured logger with file '{0}'.",
+                    configFile);
+        }
         JsonObject consoleLogOptions = getObjectOption(JsonKeys.CONSOLE_LOG,
                 JsonObject.EMPTY_JSON_OBJECT);
         boolean useConsoleLogs = consoleLogOptions.getBoolean(JsonKeys.ENABLED,
                 false);
         boolean usePluginLogs = getBoolOption(JsonKeys.SERVER_LOG, false);
         
-        // Initializes a handler with a SimpleFormatter and a log level parsed
+        // Initializes a handler with a LogLineFormatter and a log level parsed
         // from a String. If the level is empty, null, or otherwise invalid, the
         // handler's logging level will not be changed.
         BiConsumer<Handler, String> initHandler = (handler, levelStr) ->
         {
-            handler.setFormatter(new SimpleFormatter());
+            handler.setFormatter(new LogLineFormatter());
             if (levelStr != null && ! levelStr.isEmpty())
             {
                 try
