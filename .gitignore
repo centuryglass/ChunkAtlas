@@ -7,7 +7,7 @@ gzstream/*.o
 gzstream/*.a
 testMapGen.json
 testServerConf.json
-testUpdate
+testUpdate.json
 generatorTestKeys
 *.pub
 *.key
