@@ -43,7 +43,7 @@ public class MapUpdater
     public static void update(ArgParser<MapArgOptions> argParser,
             MapGenConfig mapConfig, WebServerConfig webConfig)
     {
-        final String FN_NAME = "update"; // for logging
+        final String FN_NAME = "update";
         boolean reuseCache = false;
         File updateJson = null;
         if (argParser != null)
@@ -136,7 +136,7 @@ public class MapUpdater
                 if (argParser != null)
                 {
                     LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
-                            "Error applying command line options: {0}", e);
+                            "Error applying command line options:", e);
                 }
             }
             mapCreator.createMaps();

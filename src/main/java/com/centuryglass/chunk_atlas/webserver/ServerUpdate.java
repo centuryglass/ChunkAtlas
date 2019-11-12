@@ -83,7 +83,7 @@ public class ServerUpdate
         catch (IOException | GeneralSecurityException e)
         {
             LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                    "Failed to send update to web server: {0}", e);
+                    "Failed to send update to web server:", e);
             return;
         }
         if (response == null)

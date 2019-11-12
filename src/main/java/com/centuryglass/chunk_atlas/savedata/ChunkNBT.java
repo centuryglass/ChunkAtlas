@@ -549,7 +549,7 @@ public class ChunkNBT
         catch (IOException e)
         {
             LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                    "Error parsing NBT data: {0}.", e);
+                    "Error parsing NBT data:", e);
         }
     }
     

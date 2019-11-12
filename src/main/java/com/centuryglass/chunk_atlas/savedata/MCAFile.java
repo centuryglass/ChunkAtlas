@@ -63,7 +63,7 @@ public class MCAFile
         catch (IOException e)
         {
             LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                    "Error reading region file: {0}", e);
+                    "Error reading region file:", e);
             return;
         }
              

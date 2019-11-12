@@ -104,7 +104,7 @@ public class SecuredAESKey
         catch (Base64DecodingException e)
         {
             LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                    "Error reading key bytes: {0}", e);
+                    "Error reading key bytes:", e);
             aesKey = null;
             signature = null;
             encryptedKey = null;
@@ -177,7 +177,7 @@ public class SecuredAESKey
                 | NoSuchPaddingException e)
         {
             LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                    "Error encrypting message: {0}", e);
+                    "Error encrypting message:", e);
         }
         return null;
     }
@@ -204,7 +204,7 @@ public class SecuredAESKey
                 | NoSuchPaddingException e)
         {
             LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                    "Error decrypting message: {0}", e);
+                    "Error decrypting message:", e);
         }
         return null;
     }

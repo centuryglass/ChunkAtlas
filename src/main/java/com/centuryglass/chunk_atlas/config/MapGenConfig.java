@@ -91,7 +91,7 @@ public class MapGenConfig extends ConfigFile
             catch (NullPointerException | ClassCastException e)
             {
                 LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                        "Invalid region object: {0}", e);
+                        "Invalid region object:", e);
             }
         });
     }

@@ -91,7 +91,7 @@ public final class MapCreator
      */
     public void applyConfigOptions(MapGenConfig mapConfig)
     {
-        final String FN_NAME = "applyConfigOptions"; // for logging
+        final String FN_NAME = "applyConfigOptions";
         Validate.notNull(mapConfig, "Map config object cannot be null.");
         if (mapConfig != null)
         {
@@ -146,7 +146,7 @@ public final class MapCreator
     public void applyArgOptions(ArgParser<MapArgOptions> parsedArgs)
             throws IllegalArgumentException, FileNotFoundException
     {
-        final String FN_NAME = "applyArgOptions"; // for logging
+        final String FN_NAME = "applyArgOptions";
         Validate.notNull(parsedArgs, "Parsed argument object cannot be null");
         ArgOption<MapArgOptions>[] options = parsedArgs.getAllOptions();
         for (ArgOption<MapArgOptions> option : options)
@@ -282,8 +282,8 @@ public final class MapCreator
      */
     public void createMaps()
     {
-        final String FN_NAME = "createMaps"; // for logging
-        LogConfig.getLogger().log(Level.INFO, //CLASSNAME, FN_NAME,
+        final String FN_NAME = "createMaps";
+        LogConfig.getLogger().log(Level.INFO,
                 "Creating {0} map types for {1} region(s).",
                 new Object[] {enabledMapTypes.size(), regionsToMap.size()});
         for (Region region : regionsToMap)
@@ -394,7 +394,7 @@ public final class MapCreator
                         {
                             LogConfig.getLogger().logp(Level.WARNING,
                                     CLASSNAME, FN_NAME,
-                                    "Failed to create map: {0}", e);
+                                    "Failed to create map:", e);
                         }
                     });
                 }
@@ -541,7 +541,7 @@ public final class MapCreator
     public void addRegion(String regionName, File regionDirectory)
             throws FileNotFoundException
     {
-        final String FN_NAME = "addRegion"; // for logging
+        final String FN_NAME = "addRegion";
         ExtendedValidate.notNullOrEmpty(regionName, "Region name");
         ExtendedValidate.isDirectory(regionDirectory, "Region directory");
         World regionWorld = null;
@@ -574,7 +574,7 @@ public final class MapCreator
                 catch (IOException e)
                 {
                     LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
-                            FN_NAME,"Error finding World object: {0}", e);
+                            FN_NAME,"Error finding World object:", e);
                 }
             }
         }
@@ -658,7 +658,7 @@ public final class MapCreator
      */
     private void createTileMaps(Region mapRegion, File outDir)
     {
-        final String FN_NAME = "createTileMaps"; // for logging
+        final String FN_NAME = "createTileMaps";
         Validate.notNull(mapRegion, "Mapped region cannot be null.");
         ExtendedValidate.couldBeDirectory(outDir, "Tile output directory");
         ArrayList<File> regionFiles = new ArrayList<>(Arrays.asList(
@@ -715,7 +715,7 @@ public final class MapCreator
      */
     private void createSingleImageMaps(Region mapRegion, File outDir)
     {
-        final String FN_NAME = "createSingleImageMaps"; // for logging
+        final String FN_NAME = "createSingleImageMaps";
         Validate.notNull(mapRegion, "Mapped region cannot be null.");
         ExtendedValidate.couldBeDirectory(outDir, "Image output directory");
         ArrayList<File> regionFiles = new ArrayList<>();
@@ -783,7 +783,7 @@ public final class MapCreator
      */
     private int mapRegion(String regionName, ArrayList<File> regionFiles)
     {
-        final String FN_NAME = "mapRegion"; // for logging
+        final String FN_NAME = "mapRegion";
         ExtendedValidate.notNullOrEmpty(regionName, "Region name");
         Validate.notNull(regionFiles, "Region files cannot be null.");
         Validate.notNull(mappers, "MapCollector cannot be null.");

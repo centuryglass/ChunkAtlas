@@ -168,7 +168,7 @@ public class Connection
             catch (GeneralSecurityException e)
             {
                 LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                        "Failed to sign and encrypt message data: {0}", e);
+                        "Failed to sign and encrypt message data:", e);
             }
         }, (response) ->
         {
@@ -211,7 +211,7 @@ public class Connection
                 catch (InvalidKeyException | SignatureException e)
                 {
                     LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
-                            FN_NAME, "Response error: {0}", e);
+                            FN_NAME, "Response error:", e);
                     isValidResponse = false;
                 }
                    
@@ -232,7 +232,7 @@ public class Connection
             catch (IOException | JsonException e)
             {
                 LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                        "Failed to read response content: {0}", e);
+                        "Failed to read response content:", e);
             }
             
         }, connectionSubPath);
@@ -315,7 +315,7 @@ public class Connection
             catch (GeneralSecurityException e)
             {
                 LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                        "Failed to sign and encrypt message data: {0}", e);
+                        "Failed to sign and encrypt message data:", e);
             }
             if (headerStrings != null)
             {
@@ -376,7 +376,7 @@ public class Connection
         catch (IOException e)
         {
             LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                    "Error sending/receiving data: {0}", e);
+                    "Error sending/receiving data:", e);
         }
         finally
         {
