@@ -110,8 +110,8 @@ public class StructureMapper extends Mapper
         }
         final Color emptyChunkColor = new Color(0);
         Color color = emptyChunkColor;
-        if (getRegion() == null) 
-        { 
+        //if (getRegion() == null) 
+        //{ 
             Map<Point, Structure> chunkStructureRefs = chunk.getStructureRefs();
             chunkStructureRefs.entrySet().forEach((entry) ->
             {
@@ -126,7 +126,10 @@ public class StructureMapper extends Mapper
                 encounteredStructures.add(entry.getValue());
                 structureRefs.put(entry.getKey(), entry.getValue());
             });
-        }
+        //}
+        /*
+        // Structure scanning through the bukkit/spigot interface is painfully
+        // slow in larger servers, disabling it for now.
         else
         {
             Point chunkPt = chunk.getPos();
@@ -142,6 +145,7 @@ public class StructureMapper extends Mapper
                     0, blockCoords.y);
             scanner.scan(chunkLocation, SCAN_RADIUS);
         }
+        */
         return color;
     }
     

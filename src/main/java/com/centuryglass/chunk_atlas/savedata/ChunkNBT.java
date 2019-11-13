@@ -70,6 +70,9 @@ public class ChunkNBT
         SKIPPED_TAGS.add("ToB"); // ToBeTicked
         SKIPPED_TAGS.add("Car"); // CarvingMasks
         SKIPPED_TAGS.add("Pos"); // PostProcessing
+        /*
+        // Structure scanning through the bukkit/spigot interface is painfully
+        // slow in larger servers, disabling it for now.
         if (Plugin.isRunning())
         {
             LogConfig.getLogger().log(Level.CONFIG, "Running as server plugin,"
@@ -77,6 +80,7 @@ public class ChunkNBT
             SKIPPED_TAGS.add("Str"); // Structures
             SKIPPED_TAGS.add("Ref"); // References
         }
+        */
     }
     
     /** 
