@@ -31,4 +31,29 @@ public class StringUtil
         }
         return colorBuilder.toString();
     }
+    
+    /**
+     * Converts an enum value's string representation to an equivalent display
+     * string.
+     * 
+     * @param enumValue  An enum value's name, formatted in all uppercase, words
+     *                   separated by underscores.
+     * 
+     * @return           The same name with only the first letter of each word
+     *                   capitalized, words separated by spaces.
+     */
+    public static String enumToDisplayString(String enumValue)
+    {
+        StringBuilder formattedName
+                = new StringBuilder(enumValue.toLowerCase());
+        for (int i = 0; i < formattedName.length(); i++)
+        {
+            if (i == 0 || formattedName.charAt(i - 1) == ' ')
+            {
+                formattedName.setCharAt(i, Character.toUpperCase(
+                        formattedName.charAt(i)));
+            }
+        }
+        return formattedName.toString();
+    }
 }

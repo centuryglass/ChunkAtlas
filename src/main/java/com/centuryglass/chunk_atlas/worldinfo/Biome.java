@@ -5,6 +5,7 @@
  */
 package com.centuryglass.chunk_atlas.worldinfo;
 
+import com.centuryglass.chunk_atlas.util.StringUtil;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
@@ -304,16 +305,7 @@ public enum Biome
         {
             biome = biome.substring(modified.length()) + "+";
         }
-        biome = biome.replace('_', ' ').toLowerCase();
-        char[] biomeChars = biome.toCharArray();
-        for (int i = 0; i < biomeChars.length; i++)
-        {
-            if (i == 0 || biomeChars[i - 1] == ' ')
-            {
-                biomeChars[i] = Character.toUpperCase(biomeChars[i]);
-            }
-        }
-        return new String(biomeChars);
+        return StringUtil.enumToDisplayString(biome);
     }
     
     private Biome(int code)

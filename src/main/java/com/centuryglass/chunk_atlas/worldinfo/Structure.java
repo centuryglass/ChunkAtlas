@@ -7,6 +7,7 @@
 package com.centuryglass.chunk_atlas.worldinfo;
 
 import com.centuryglass.chunk_atlas.config.LogConfig;
+import com.centuryglass.chunk_atlas.util.StringUtil;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
@@ -160,6 +161,17 @@ public enum Structure
     public int getPriority()
     {
         return structureCode;
+    }
+    
+    /**
+     * Gets a structure's display name.
+     * 
+     * @return  The formatted display name. 
+     */
+    @Override
+    public String toString()
+    {
+        return StringUtil.enumToDisplayString(name());
     }
 
     private static final Map<Structure, String> structureToName;
