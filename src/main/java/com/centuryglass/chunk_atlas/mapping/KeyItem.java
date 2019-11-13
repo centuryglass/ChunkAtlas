@@ -8,6 +8,7 @@ package com.centuryglass.chunk_atlas.mapping;
 
 import com.centuryglass.chunk_atlas.mapping.maptype.MapType;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
+import com.centuryglass.chunk_atlas.util.StringUtil;
 import java.awt.Color;
 import java.util.function.Function;
 import javax.json.Json;
@@ -155,19 +156,7 @@ public class KeyItem
         }
         if (color != null)
         {
-            Function<Integer, String> hexComponent = (intVal) ->
-            {
-                String hex = Integer.toHexString(intVal);
-                if (hex.length() == 1)
-                {
-                    return "0" + hex;
-                }
-                return hex;
-            };
-            String colorString = hexComponent.apply(color.getRed())
-                    + hexComponent.apply(color.getGreen())
-                    + hexComponent.apply(color.getBlue());
-            builder.add(JsonKeys.COLOR, colorString);
+            builder.add(JsonKeys.COLOR, StringUtil.colorHex(color));
         }
         return builder.build();
     }
