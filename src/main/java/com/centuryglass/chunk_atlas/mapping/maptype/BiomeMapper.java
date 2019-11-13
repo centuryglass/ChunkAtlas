@@ -120,7 +120,7 @@ public class BiomeMapper extends Mapper
         }
         else
         {
-            color = new Color(255, 0, 0);
+            color = new Color(0, 0, 0);
         }
         return color;
     }
