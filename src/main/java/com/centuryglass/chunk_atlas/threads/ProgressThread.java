@@ -118,7 +118,7 @@ public class ProgressThread extends Thread
                     {
                         LogConfig.getLogger().log(Level.INFO,
                                 "{0}% complete, finished file {1}/{2}, "
-                                + "{3} chunks remaining.",
+                                + "{3} chunks scanned.",
                                 new Object[] {
                                     newPercentage,
                                     regionCount,

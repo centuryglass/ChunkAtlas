@@ -11,6 +11,7 @@ import com.centuryglass.chunk_atlas.worldinfo.ChunkData;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import org.apache.commons.lang.Validate;
 
 public class ReaderThread extends Thread
@@ -21,7 +22,7 @@ public class ReaderThread extends Thread
      *  Sets the list of paths this thread will process and the objects
      *         where it will send processed data.
      * 
-     * @param regionFiles     The list of all region files the thread will
+     * @param regionFiles     The queue of all region files the thread will
      *                        process.
      * 
      * @param regionMapper    The object responsible for creating maps from
@@ -30,11 +31,10 @@ public class ReaderThread extends Thread
      * @param threadProgress  The object used to track region file processing
      *                        progress.
      */
-    public ReaderThread(ArrayList<File> regionFiles, MapperThread regionMapper,
+    public ReaderThread(ReaderFileQueue regionFiles, MapperThread regionMapper,
             ProgressThread threadProgress)
     {
         Validate.notNull(regionFiles, "Region file list cannot be null.");
-        Validate.notEmpty(regionFiles, "Region file list cannot be empty.");
         Validate.notNull(regionMapper, "Region mapper cannot be null.");
         Validate.notNull(threadProgress, "Progress thread cannot be null.");
         this.regionFiles = regionFiles;
@@ -48,8 +48,15 @@ public class ReaderThread extends Thread
     @Override
     public void run()
     {
-        for (File file : regionFiles)
+        final String FN_NAME = "run";
+        LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                "Starting reader thread {0}.", getId());
+        for (File file = regionFiles.getNextFile(); file != null;
+                file = regionFiles.getNextFile())
         {
+            LogConfig.getLogger().logp(Level.FINEST, CLASSNAME, FN_NAME,
+                    "Reading region file {0}, {1} files remaining.",
+                    new Object[] { file, regionFiles.size() });
             MCAFile regionFile;
             try
             {
@@ -72,10 +79,12 @@ public class ReaderThread extends Thread
             }
             threadProgress.addToCounts(1, chunkCount);
         }
+        LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                "Stopping reader thread {0}.", getId());
     }
     
-    // Region file paths to process:
-    private final ArrayList<File> regionFiles;
+    // Region file queue to process:
+    private final ReaderFileQueue regionFiles;
     // Mapper thread that will be passed processed region data:
     private final MapperThread regionMapper;
     // Shared progress tracker:

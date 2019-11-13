@@ -54,6 +54,8 @@ public class MapUpdater
                     MapArgOptions.MAP_CONFIG_PATH);
             if (mapConfigOption != null)
             {
+                LogConfig.getLogger().logp(Level.CONFIG, CLASSNAME, FN_NAME,
+                        "Using MapGenConfig path from command line args.");
                 mapConfig = new MapGenConfig(new File(
                         mapConfigOption.getParameter(0)));
             }
@@ -62,6 +64,8 @@ public class MapUpdater
                     MapArgOptions.WEB_SERVER_CONFIG_PATH);
             if (webConfigOption != null)
             {
+                LogConfig.getLogger().logp(Level.CONFIG, CLASSNAME, FN_NAME,
+                        "Using WebServerConfig path from command line args.");
                 webConfig = new WebServerConfig(new File(
                         webConfigOption.getParameter(0)));
             }
@@ -112,7 +116,7 @@ public class MapUpdater
         if (reuseCache && updateJson != null)
         {
             LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
-                    "Loading existing update data from '{0}'.", updateJson);
+                    "Reusing existing update data from '{0}'.", updateJson);
             try
             {
                 updateManager = new ServerUpdate(updateJson);
@@ -126,6 +130,8 @@ public class MapUpdater
         }
         else
         {
+            LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                    "Config files loaded, applying options to MapCreator");
             mapCreator = new MapCreator(mapConfig);
             try
             {
@@ -139,10 +145,14 @@ public class MapUpdater
                             "Error applying command line options:", e);
                 }
             }
+            LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                    "Options loaded, creating new server maps.");
             mapCreator.createMaps();
             updateManager = new ServerUpdate(mapCreator);
             if (updateJson != null)
             {
+                LogConfig.getLogger().logp(Level.CONFIG, CLASSNAME, FN_NAME,
+                        "Saving map update data to '{1}'.", updateJson);
                 try {
                     updateManager.exportUpdate(updateJson);
                 }
@@ -153,12 +163,23 @@ public class MapUpdater
                 }
             }
         }
+        LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                "Map generation complete.");
         // Send the update data if server options were provided:
         if (updateManager != null && webConfig != null)
         {
+            LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                    "Sending update data to ChunkAtlas-Viewer web server.");
             Connection serverConnection = new Connection(webConfig);
             updateManager.sendUpdate(serverConnection);
-        }   
+        }
+        else
+        {
+            LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                    "No valid server to connect to, updated maps will not be"
+                    + " transmitted.");
+            
+        }
     }
 
     /**

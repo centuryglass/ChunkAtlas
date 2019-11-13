@@ -16,6 +16,7 @@ import com.centuryglass.chunk_atlas.savedata.MCAFile;
 import com.centuryglass.chunk_atlas.serverplugin.Plugin;
 import com.centuryglass.chunk_atlas.threads.MapperThread;
 import com.centuryglass.chunk_atlas.threads.ProgressThread;
+import com.centuryglass.chunk_atlas.threads.ReaderFileQueue;
 import com.centuryglass.chunk_atlas.threads.ReaderThread;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import com.centuryglass.chunk_atlas.util.MapUnit;
@@ -314,6 +315,7 @@ public final class MapCreator
             File regionImageOutDir = getRegionOutDir.apply(imageOutDir);
             // Remove old map images:
             Deque<File> toDelete = new ArrayDeque<>();
+            int filesDeleted = 0;
             if (tilesEnabled) 
             { 
                 toDelete.add(regionTileOutDir);
@@ -331,12 +333,17 @@ public final class MapCreator
                 }
                 else if (top.isFile() && top.getName().endsWith(".png"))
                 {
+                    filesDeleted++;
                     top.delete();
                 }
             }
+            LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                    "Deleted {0} old map images.", filesDeleted);
             if (tilesEnabled)
             {
                 createTileMaps(region, regionTileOutDir);
+                LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                        "Region tile maps created.");
                 // Find and store all tile map directories:
                 ArrayList<File> tileDirs = new ArrayList<>();
                 Deque<File> toSearch = new ArrayDeque<>();
@@ -377,11 +384,13 @@ public final class MapCreator
                 // stitching together tile images:
                 if (imageMapsEnabled)
                 {
+                    LogConfig.getLogger().logp(Level.CONFIG, CLASSNAME, FN_NAME,
+                            "Creating full region maps from map tiles.");
                     tileDirs.forEach((tileDir) ->
                     {
                         File outFile = new File(regionImageOutDir,
                                 tileDir.getParentFile().getName() + ".png");
-                        LogConfig.getLogger().logp(Level.CONFIG, CLASSNAME,
+                        LogConfig.getLogger().logp(Level.FINE, CLASSNAME,
                                 FN_NAME, "Creating '{0}' from tiles at '{1}'.",
                                 new Object[] { outFile, tileDir });
                         try
@@ -579,6 +588,9 @@ public final class MapCreator
             }
         }
         Region region = new Region(regionName, regionDirectory, regionWorld);
+        LogConfig.getLogger().logp(Level.FINER, CLASSNAME, FN_NAME,
+                "Added region {0} at {1}.",
+                new Object[] { regionName, regionDirectory});
         regionsToMap.add(region);
     }
     
@@ -661,6 +673,8 @@ public final class MapCreator
         final String FN_NAME = "createTileMaps";
         Validate.notNull(mapRegion, "Mapped region cannot be null.");
         ExtendedValidate.couldBeDirectory(outDir, "Tile output directory");
+        LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                "Creating tile maps for region {0}.", mapRegion.name);
         ArrayList<File> regionFiles = new ArrayList<>(Arrays.asList(
                 mapRegion.directory.listFiles()));
         mappers = new MapCollector(outDir, mapRegion.name, mapRegion.world,
@@ -718,6 +732,8 @@ public final class MapCreator
         final String FN_NAME = "createSingleImageMaps";
         Validate.notNull(mapRegion, "Mapped region cannot be null.");
         ExtendedValidate.couldBeDirectory(outDir, "Image output directory");
+        LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                "Creating single-image maps for region {0}.", mapRegion.name);
         ArrayList<File> regionFiles = new ArrayList<>();
         int regionChunks = MapUnit.convert(1, MapUnit.REGION, MapUnit.CHUNK);
         // Valid region files within the given bounds will all be named
@@ -799,7 +815,7 @@ public final class MapCreator
         if (MULTI_REGION_THREADS)
         {
             numReaderThreads = Math.max(1,
-                    Runtime.getRuntime().availableProcessors());
+                    Runtime.getRuntime().availableProcessors() - 2);
         }
         else
         {
@@ -812,16 +828,11 @@ public final class MapCreator
         LogConfig.getLogger().logp(Level.INFO, CLASSNAME, FN_NAME,
                 "Processing {0} region files with {1} threads.",
                 new Object[]{numRegionFiles, numReaderThreads});
-        int filesPerThread = numRegionFiles / numReaderThreads;
         ArrayList<ReaderThread> threadList = new ArrayList<>();
+        ReaderFileQueue mapFileQueue = new ReaderFileQueue(regionFiles);
         for (int i = 0; i < numReaderThreads; i++)
         {
-            int regionStart = i * filesPerThread;
-            int regionEnd = (i == (numReaderThreads - 1))
-                    ? numRegionFiles : (regionStart + filesPerThread);
-            threadList.add(new ReaderThread(new ArrayList<>(
-                    regionFiles.subList(regionStart, regionEnd)),
-                    mapperThread,
+            threadList.add(new ReaderThread(mapFileQueue, mapperThread,
                     progressThread));
             threadList.get(i).start();
         }
@@ -839,6 +850,9 @@ public final class MapCreator
                 }
             }
         });
+        LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME, 
+                "All reader threads finished, waiting on mapper and progress "
+                + "threads.");
         mapperThread.requestStop();
         while (mapperThread.isAlive())
         {
@@ -857,8 +871,12 @@ public final class MapCreator
             }
             catch (InterruptedException e) { }
         }
+        LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME, 
+                "All support threads joined, saving map image files.");
         mappers.saveMapFile();
         JsonArray regionKey = mappers.getMapKeys();
+        LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME, 
+                "Saving {0} region map key items.", regionKey.size());
         for (int i = 0; i < regionKey.size(); i++)
         {
             keyBuilder.add(regionKey.get(i));

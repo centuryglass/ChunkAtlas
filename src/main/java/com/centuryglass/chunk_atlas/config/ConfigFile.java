@@ -52,6 +52,8 @@ public class ConfigFile
         // Attempt to load JSON options:
         if (configFile != null && configFile.isFile())
         {
+            LogConfig.getLogger().logp(Level.CONFIG, CLASSNAME, FN_NAME,
+                    "Loading JSON log file '{0}'.", configFile);
             try (JsonReader reader 
                     = Json.createReader(new FileInputStream(configFile)))
             {
