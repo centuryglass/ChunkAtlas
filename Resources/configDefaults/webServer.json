@@ -1,6 +1,5 @@
 {
     "address"       : "http://localhost",
-    "port"          : 8080,
     "cached update" : "",
     "send cached"   : false,
     "key paths"     : {

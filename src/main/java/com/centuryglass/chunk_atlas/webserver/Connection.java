@@ -71,8 +71,7 @@ public class Connection
                 "Web configuration object cannot be null.");
         this.webOptions = webOptions;
         client = HttpClients.createDefault();
-        serverAddress = webOptions.getServerAddress() + ":"
-                + webOptions.getServerPort();
+        serverAddress = webOptions.getServerAddress();
     }
     
     /**
@@ -363,6 +362,8 @@ public class Connection
             }
             postAddress += connectionSubPath;
         }
+        LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+                "Sending POST message to {0}.", postAddress);
         HttpPost post = new HttpPost(postAddress);
         messageInit.accept(post);
         try

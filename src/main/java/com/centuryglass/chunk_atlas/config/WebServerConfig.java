@@ -62,25 +62,6 @@ public class WebServerConfig extends ConfigFile
     }
     
     /**
-     * Gets the port used by the web server.
-     * 
-     * @return  The web server's port, or -1 if the port is not defined or not
-     *          a valid port number.
-     */
-    public int getServerPort()
-    {
-        final String FN_NAME = "getServerPort";
-        int port = getIntOption(JsonKeys.PORT, -1);
-        if (port <= 0 || port > MAX_PORT)
-        {
-            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                    "Web server port {0}", INVALID_OPTION_MSG);
-            return -1;
-        }
-        return port;
-    }
-    
-    /**
      * Gets the path where cached update data should be saved.
      * 
      * @return  The path to a JSON cache file, or the empty string if update
@@ -146,7 +127,6 @@ public class WebServerConfig extends ConfigFile
     private class JsonKeys
     {
         public static final String ADDRESS = "address";
-        public static final String PORT = "port";
         public static final String CACHE = "cached update";
         public static final String SEND_CACHE = "send cached";
         public static final String KEY_PATHS = "key paths";
