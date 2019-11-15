@@ -49,11 +49,7 @@ public enum MapType
         nameBuilder.append(super.toString().toLowerCase());
         for (int i = 0; i < nameBuilder.length(); i++)
         {
-            if (nameBuilder.charAt(i) == '_')
-            {
-                nameBuilder.setCharAt(i, ' ');
-            }
-            else if (i == 0 || nameBuilder.charAt(i - 1) == ' ')
+            if (i == 0 || nameBuilder.charAt(i - 1) == '_')
             {
                 nameBuilder.setCharAt(i, Character.toUpperCase(
                         nameBuilder.charAt(i)));
