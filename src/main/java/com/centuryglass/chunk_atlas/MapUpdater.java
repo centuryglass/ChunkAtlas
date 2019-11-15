@@ -152,7 +152,7 @@ public class MapUpdater
             if (updateJson != null)
             {
                 LogConfig.getLogger().logp(Level.CONFIG, CLASSNAME, FN_NAME,
-                        "Saving map update data to '{1}'.", updateJson);
+                        "Saving map update data to '{0}'.", updateJson);
                 try {
                     updateManager.exportUpdate(updateJson);
                 }
