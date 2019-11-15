@@ -48,7 +48,11 @@ public class StringUtil
                 = new StringBuilder(enumValue.toLowerCase());
         for (int i = 0; i < formattedName.length(); i++)
         {
-            if (i == 0 || formattedName.charAt(i - 1) == ' ')
+            if (formattedName.charAt(i) == '_')
+            {
+                formattedName.setCharAt(i, ' ');
+            }
+            else if (i == 0 || formattedName.charAt(i - 1) == ' ')
             {
                 formattedName.setCharAt(i, Character.toUpperCase(
                         formattedName.charAt(i)));
