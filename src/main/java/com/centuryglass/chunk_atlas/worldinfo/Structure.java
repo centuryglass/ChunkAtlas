@@ -7,12 +7,8 @@
 package com.centuryglass.chunk_atlas.worldinfo;
 
 import com.centuryglass.chunk_atlas.config.LogConfig;
-import com.centuryglass.chunk_atlas.util.StringUtil;
 import java.awt.Color;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
-import org.apache.commons.lang.Validate;
 import org.bukkit.StructureType;
 
 
@@ -20,22 +16,37 @@ import org.bukkit.StructureType;
 // values than larger structure types.
 public enum Structure
 {
-    MONUMENT (4),
-    MANSION (5),
-    SWAMP_HUT (10),
-    MINESHAFT (0),
-    IGLOO (11),
-    STRONGHOLD (6),
-    DESERT_PYRAMID (7),
-    JUNGLE_PYRAMID (8),
-    PILLAGER_OUTPOST (9),
-    VILLAGE (1),
-    OCEAN_RUIN (12),
-    SHIPWRECK (13),
-    BURIED_TREASURE (14),
-    END_CITY (2),
-    FORTRESS (3),
-    UNKNOWN (-1);
+    MONUMENT (4, "monument", StructureType.OCEAN_MONUMENT,
+            0x00, 0xe2, 0xaa),
+    MANSION (5, "mansion", StructureType.WOODLAND_MANSION,
+            0xae, 0x5c, 0x28),
+    SWAMP_HUT (10, "swamp_hut", StructureType.SWAMP_HUT,
+            0x05, 0x4c, 0x3e),
+    MINESHAFT (0, "mineshaft", StructureType.MINESHAFT,
+            0x85, 0x06, 0x03),
+    IGLOO (11, "igloo", StructureType.IGLOO,
+            0x0d, 0xe0, 0xec),
+    STRONGHOLD (6, "stronghold", StructureType.STRONGHOLD,
+            0xa3, 0x0c, 0xcc),
+    DESERT_PYRAMID (7, "desert_pyramid", StructureType.DESERT_PYRAMID,
+            0xd0, 0xff, 0x00),
+    JUNGLE_PYRAMID (8, "jungle_pyramid", StructureType.JUNGLE_PYRAMID,
+            0x51, 0x5f, 0x49),
+    PILLAGER_OUTPOST (9, "pillager_outpost", StructureType.PILLAGER_OUTPOST,
+            0x9d, 0x97, 0x09),
+    VILLAGE (1, "village", StructureType.VILLAGE,
+            0xb1, 0xae, 0xae),
+    OCEAN_RUIN (12, "ocean_ruin", StructureType.OCEAN_RUIN,
+            0x00, 0x0d, 0x55),
+    SHIPWRECK (13, "shipwreck", StructureType.SHIPWRECK,
+            0x5c, 0x25, 0x3e),
+    BURIED_TREASURE (14, "buried_treasure", StructureType.BURIED_TREASURE,
+            0xff, 0xb6, 0x00),
+    END_CITY (2, "endcity", StructureType.END_CITY,
+            0xe5, 0xd7, 0xd7),
+    FORTRESS (3, "fortress", StructureType.NETHER_FORTRESS,
+            0xa0, 0x4e, 0x44),
+    UNKNOWN (-1,  "unknown", null, 0x00, 0x00, 0x00);
     
     private static final String CLASSNAME = Structure.class.getName();
     
@@ -46,7 +57,7 @@ public enum Structure
      */
     public String structureName()
     {
-        return structureToName.get(this);
+        return structureName;
     }
     
     /**
@@ -57,44 +68,7 @@ public enum Structure
      */
     public StructureType toStructureType()
     {
-        final String FN_NAME = "toStructureType";
-        switch (this)
-        {
-            case BURIED_TREASURE:
-                return StructureType.BURIED_TREASURE;
-            case DESERT_PYRAMID:
-                return StructureType.DESERT_PYRAMID;
-            case END_CITY:
-                return StructureType.END_CITY;
-            case FORTRESS:
-                return StructureType.NETHER_FORTRESS;
-            case IGLOO:
-                return StructureType.IGLOO;
-            case JUNGLE_PYRAMID:
-                return StructureType.JUNGLE_PYRAMID;
-            case MINESHAFT:
-                return StructureType.MINESHAFT;
-            case MANSION:
-                return StructureType.WOODLAND_MANSION;
-            case MONUMENT:
-                return StructureType.OCEAN_MONUMENT;
-            case OCEAN_RUIN:
-                return StructureType.OCEAN_RUIN;
-            case PILLAGER_OUTPOST:
-                return StructureType.PILLAGER_OUTPOST;
-            case SHIPWRECK:
-                return StructureType.SHIPWRECK;
-            case STRONGHOLD:
-                return StructureType.STRONGHOLD;
-            case SWAMP_HUT:
-                return StructureType.SWAMP_HUT;
-            case VILLAGE:
-                return StructureType.VILLAGE;
-            default:
-                LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
-                        "Unhandled structure type '{0}'.", this);
-                return null;
-        }
+        return bukkitType;
     }
     
     /**
@@ -107,14 +81,17 @@ public enum Structure
      */
     public static Structure fromStructureType(StructureType structure)
     {
-        final String FN_NAME = "fromStructureType";
-        Structure s = typeMap.get(structure);
-        if (s == null)
+        for (Structure struct : Structure.values())
         {
-            LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
-                    "Unhandled StructureType '{0}'.", structure.getName());
+            if (struct.bukkitType == structure)
+            {
+                return struct;
+            }
         }
-        return s;
+        final String FN_NAME = "fromStructureType";
+        LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
+                    "Unhandled StructureType '{0}'.", structure.getName());
+        return null;
     }
 
     /**
@@ -127,29 +104,29 @@ public enum Structure
      */
     public static Structure parse(String name)
     {
-        Structure namedStruct = nameToStructure.get(name);
-        if (namedStruct == null)
+        name = name.toLowerCase();
+        for (Structure struct : Structure.values())
         {
-            assert false;
-            return UNKNOWN;
+            if(name.equals(struct.structureName))
+            {
+                return struct;
+            }
         }
-        return namedStruct;
+        
+        final String FN_NAME = "parse";
+        LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
+                    "Unknown structure name " + name);
+        assert false;
+        return UNKNOWN;
     }
 
     /**
      *  Gets a color value to represent a Minecraft structure.
-     *
-     * @param structure  The structure type to represent.
-     *
      * @return           An appropriate color to represent that structure.
      */
-    public static Color getStructureColor(Structure structure)
+    public Color getColor()
     {
-        Validate.notNull(structure, "Structure cannot be null.");
-        Color color = structureColors.get(structure);
-        Validate.notNull(color, "No color found for structure "
-                + structure.toString());
-        return color;
+        return structureColor;
     }
     
     /**
@@ -171,78 +148,21 @@ public enum Structure
     @Override
     public String toString()
     {
-        return StringUtil.enumToDisplayString(name());
+        return structureName;
     }
 
-    private static final Map<Structure, String> structureToName;
-    private static final Map<String, Structure> nameToStructure;
-    private static final Map<Structure, Color> structureColors;
-    private static final Map<StructureType, Structure> typeMap;
-    static
-    {
-        structureToName = new HashMap<>();
-        structureToName.put(BURIED_TREASURE, "Buried_Treasure");
-        structureToName.put(DESERT_PYRAMID, "Desert_Pyramid");
-        structureToName.put(END_CITY, "EndCity");
-        structureToName.put(FORTRESS, "Fortress");
-        structureToName.put(IGLOO, "Igloo");
-        structureToName.put(JUNGLE_PYRAMID, "Jungle_Pyramid");
-        structureToName.put(MANSION, "Mansion");
-        structureToName.put(MINESHAFT, "Mineshaft");
-        structureToName.put(MONUMENT, "Monument");
-        structureToName.put(OCEAN_RUIN, "Ocean_Ruin");
-        structureToName.put(PILLAGER_OUTPOST, "Pillager_Outpost");
-        structureToName.put(SHIPWRECK, "Shipwreck");
-        structureToName.put(STRONGHOLD, "Stronghold");
-        structureToName.put(SWAMP_HUT, "Swamp_Hut");
-        structureToName.put(VILLAGE, "Village");
-
-        nameToStructure = new HashMap<>();
-        for (Map.Entry<Structure, String> entry : structureToName.entrySet())
-        {
-            nameToStructure.put(entry.getValue(), entry.getKey());
-        }
-
-        structureColors = new HashMap<>();
-        structureColors.put(BURIED_TREASURE,  new Color(0xff, 0xb6, 0x00));
-        structureColors.put(DESERT_PYRAMID,   new Color(0xd0, 0xff, 0x00));
-        structureColors.put(END_CITY,         new Color(0xe5, 0xd7, 0xd7));
-        structureColors.put(FORTRESS,         new Color(0xa0, 0x4e, 0x44));
-        structureColors.put(IGLOO,            new Color(0x0d, 0xe0, 0xec));
-        structureColors.put(JUNGLE_PYRAMID,   new Color(0x51, 0x5f, 0x49));
-        structureColors.put(MANSION,          new Color(0xae, 0x5c, 0x28));
-        structureColors.put(MINESHAFT,        new Color(0x85, 0x06, 0x03));
-        structureColors.put(MONUMENT,         new Color(0x00, 0xe2, 0xaa));
-        structureColors.put(OCEAN_RUIN,       new Color(0x00, 0x0d, 0x55));
-        structureColors.put(PILLAGER_OUTPOST, new Color(0x9d, 0x97, 0x09));
-        structureColors.put(SHIPWRECK,        new Color(0x5c, 0x25, 0x3e));
-        structureColors.put(STRONGHOLD,       new Color(0xa3, 0x0c, 0xcc));
-        structureColors.put(SWAMP_HUT,        new Color(0x05, 0x4c, 0x3e));
-        structureColors.put(VILLAGE,          new Color(0xb1, 0xae, 0xae));
-        
-        
-        typeMap = new HashMap<>();
-        typeMap.put(StructureType.BURIED_TREASURE,  BURIED_TREASURE);
-        typeMap.put(StructureType.DESERT_PYRAMID,   DESERT_PYRAMID);
-        typeMap.put(StructureType.END_CITY,         END_CITY);
-        typeMap.put(StructureType.NETHER_FORTRESS,  FORTRESS);
-        typeMap.put(StructureType.IGLOO,            IGLOO);
-        typeMap.put(StructureType.JUNGLE_PYRAMID,   JUNGLE_PYRAMID);
-        typeMap.put(StructureType.WOODLAND_MANSION, MANSION);
-        typeMap.put(StructureType.MINESHAFT,        MINESHAFT);
-        typeMap.put(StructureType.OCEAN_MONUMENT,   MONUMENT);
-        typeMap.put(StructureType.OCEAN_RUIN,       OCEAN_RUIN);
-        typeMap.put(StructureType.PILLAGER_OUTPOST, PILLAGER_OUTPOST);
-        typeMap.put(StructureType.SHIPWRECK,        SHIPWRECK);
-        typeMap.put(StructureType.STRONGHOLD,       STRONGHOLD);
-        typeMap.put(StructureType.SWAMP_HUT,        SWAMP_HUT);
-        typeMap.put(StructureType.VILLAGE,          VILLAGE);
-    }
     
-    private Structure(int code)
+    private Structure(int code, String name, StructureType type,
+            int R, int G, int B)
     {
         structureCode = code;
+        structureName = name;
+        bukkitType = type;
+        structureColor = new Color(R, G, B);
     }
     
     private final int structureCode;
+    StructureType bukkitType;
+    private final String structureName;
+    private final Color structureColor;
 }

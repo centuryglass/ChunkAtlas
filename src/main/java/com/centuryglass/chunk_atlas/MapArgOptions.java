@@ -145,7 +145,7 @@ public enum MapArgOptions
                 "If available, send cached update data to the web server "
                 + "without generating new maps.");
         parserFactory.setOptionProperties(REGION_DIRS, "-r", "--regionDirs",
-                1, Integer.MAX_VALUE, "<regionName=RegionPath>...",
+                1, Integer.MAX_VALUE / 10, "<regionName=RegionPath>...",
                 "Set Minecraft region data directory paths.");
         parserFactory.setOptionProperties(CHUNK_PIXELS, "-p", "--pixels", 1, 1,
                 "<size>",
@@ -171,7 +171,7 @@ public enum MapArgOptions
                 "Sets the size in Minecraft chunks to use when creating map"
                  + "tiles.");
         parserFactory.setOptionProperties(TILE_ALT_SIZES, "-a",
-                "--alt-tile-sizes", 1, Integer.MAX_VALUE, "<size>...",
+                "--alt-tile-sizes", 1, Integer.MAX_VALUE / 10, "<size>...",
                 "Sets one or more alternate sizes of tile image to create.");
         parserFactory.setOptionProperties(GENERATE_RSA_KEYPAIR, "-g",
                 "--generate-rsa", 2, 2,

@@ -12,92 +12,165 @@ import java.util.Map;
 
 public enum Biome
 {
-    OCEAN (0),
-    DEEP_OCEAN (24),
-    FROZEN_OCEAN (10),
-    DEEP_FROZEN_OCEAN (50),
-    COLD_OCEAN (46),
-    DEEP_COLD_OCEAN (49),
-    LUKEWARM_OCEAN (45),
-    DEEP_LUKEWARM_OCEAN (48),
-    WARM_OCEAN (44),
-    DEEP_WARM_OCEAN (47),
-    RIVER (7),
-    FROZEN_RIVER (11),
-    BEACH (16),
-    STONE_SHORE (25),
-    SNOWY_BEACH (26),
-    FOREST (4),
-    WOODED_HILLS (18),
-    FLOWER_FOREST (132),
-    BIRCH_FOREST (27),
-    BIRCH_FOREST_HILLS (28),
-    TALL_BIRCH_FOREST (155),
-    TALL_BIRCH_HILLS (156),
-    DARK_FOREST (29),
-    DARK_FOREST_HILLS (157),
-    JUNGLE (21),
-    JUNGLE_HILLS (22),
-    MODIFIED_JUNGLE (149),
-    JUNGLE_EDGE (23),
-    MODIFIED_JUNGLE_EDGE (151),
-    BAMBOO_JUNGLE (168),
-    BAMBOO_JUNGLE_HILLS (169),
-    TAIGA (5),
-    TAIGA_HILLS (19),
-    TAIGA_MOUNTAINS (133),
-    SNOWY_TAIGA (30),
-    SNOWY_TAIGA_HILLS (31),
-    SNOWY_TAIGA_MOUNTAINS (158),
-    GIANT_TREE_TAIGA (32),
-    GIANT_TREE_TAIGA_HILLS (33),
-    GIANT_SPRUCE_TAIGA (160),
-    GIANT_SPRUCE_TAIGA_HILLS (161),
-    MUSHROOM_FIELDS (14),
-    MUSHROOM_FIELDS_SHORE (15),
-    SWAMP (6),
-    SWAMP_HILLS (134),
-    SAVANNA (35),
-    SAVANNA_PLATEAU (36),
-    SHATTERED_SAVANNA (163),
-    SHATTERED_SAVANNA_PLATEAU (164),
-    PLAINS (1),
-    SUNFLOWER_PLAINS (129),
-    DESERT (2),
-    DESERT_HILLS (17),
-    DESERT_LAKES (130),
-    SNOWY_TUNDRA (12),
-    SNOWY_MOUNTAINS (13),
-    ICE_SPIKES (140),
-    MOUNTAINS (3),
-    WOODED_MOUNTAINS (34),
-    GRAVELLY_MOUNTAINS (131),
-    MODIFIED_GRAVELLY_MOUNTAINS (162),
-    MOUNTAIN_EDGE (20),
-    BADLANDS (37),
-    BADLANDS_PLATEAU (39),
-    MODIFIED_BADLANDS_PLATEAU (167),
-    WOODED_BADLANDS_PLATEAU (38),
-    MODIFIED_WOODED_BADLANDS_PLATEAU (166),
-    ERODED_BADLANDS (165),
-    NETHER (8),
-    THE_END (9),
-    SMALL_END_ISLANDS (40),
-    END_MIDLANDS (41),
-    END_HIGHLANDS (42),
-    END_BARRENS (43),
-    THE_VOID (127);
+    OCEAN (0,
+            0x1f, 0x27, 0x99),
+    DEEP_OCEAN (24,
+            0x14, 0x1a, 0x66),
+    FROZEN_OCEAN (10,
+            0x52, 0x5f, 0x66),
+    DEEP_FROZEN_OCEAN (50,
+            0x29, 0x2f, 0x33),
+    COLD_OCEAN (46,
+            0x5c, 0x60, 0x99),
+    DEEP_COLD_OCEAN (49,
+            0x3d, 0x40, 0x66),
+    LUKEWARM_OCEAN (45,
+            0x1f, 0x6c, 0x99),
+    DEEP_LUKEWARM_OCEAN (48,
+            0x14, 0x48, 0x66),
+    WARM_OCEAN (44,
+            0x52, 0xcc, 0xc8),
+    DEEP_WARM_OCEAN (47,
+            0x3d, 0x99, 0x96),
+    RIVER (7,
+            0x7a, 0xae, 0xcc),
+    FROZEN_RIVER (11,
+            0x99, 0xda, 0xff),
+    BEACH (16,
+            0xa3, 0xa6, 0xcc),
+    STONE_SHORE (25,
+            0x6c, 0x6d, 0x6b),
+    SNOWY_BEACH (26,
+            0xcc, 0xcf, 0xff),
+    FOREST (4,
+            0x44, 0x81, 0x05),
+    WOODED_HILLS (18,
+            0x44, 0x81, 0x05),
+    FLOWER_FOREST (132,
+            0x3a, 0x7a, 0x09),
+    BIRCH_FOREST (27,
+            0x44, 0x81, 0x05),
+    BIRCH_FOREST_HILLS (28,
+            0x44, 0x81, 0x05),
+    TALL_BIRCH_FOREST (155,
+            0x44, 0x81, 0x05),
+    TALL_BIRCH_HILLS (156,
+            0x44, 0x81, 0x05),
+    DARK_FOREST (29,
+            0x1f, 0x33, 0x1f),
+    DARK_FOREST_HILLS (157,
+            0x3d, 0x66, 0x3d),
+    JUNGLE (21,
+            0x00, 0x73, 0x11),
+    JUNGLE_HILLS (22,
+            0x00, 0x73, 0x11),
+    MODIFIED_JUNGLE (149,
+            0x00, 0x73, 0x11),
+    JUNGLE_EDGE (23,
+            0x00, 0x73, 0x11),
+    MODIFIED_JUNGLE_EDGE (151,
+            0x00, 0x73, 0x11),
+    BAMBOO_JUNGLE (168,
+            0x00, 0x73, 0x11),
+    BAMBOO_JUNGLE_HILLS (169,
+            0x00, 0x73, 0x11),
+    TAIGA (5,
+            0x49, 0x5a, 0x3c),
+    TAIGA_HILLS (19,
+            0x49, 0x5a, 0x3c),
+    TAIGA_MOUNTAINS (133,
+            0x73, 0x38, 0x18),
+    SNOWY_TAIGA (30,
+            0xba, 0xa3, 0xcc),
+    SNOWY_TAIGA_HILLS (31,
+            0xe8, 0xcc, 0xff),
+    SNOWY_TAIGA_MOUNTAINS (158,
+            0xff, 0xff, 0xff),
+    GIANT_TREE_TAIGA (32,
+            0x49, 0x5a, 0x3c),
+    GIANT_TREE_TAIGA_HILLS (33,
+            0x49, 0x5a, 0x3c),
+    GIANT_SPRUCE_TAIGA (160,
+            0x73, 0x38, 0x18),
+    GIANT_SPRUCE_TAIGA_HILLS (161,
+            0x73, 0x38, 0x18),
+    MUSHROOM_FIELDS (14,
+            0x9e, 0x8b, 0xa3),
+    MUSHROOM_FIELDS_SHORE (15,
+            0x9e, 0x8b, 0xa3),
+    SWAMP (6,
+            0x00, 0x33, 0x31),
+    SWAMP_HILLS (134,
+            0x00, 0x66, 0x63),
+    SAVANNA (35,
+            0x89, 0x9a, 0x12),
+    SAVANNA_PLATEAU (36,
+            0x89, 0x9a, 0x12),
+    SHATTERED_SAVANNA (163,
+            0x89, 0x9a, 0x12),
+    SHATTERED_SAVANNA_PLATEAU (164,
+            0x89, 0x9a, 0x12),
+    PLAINS (1,
+            0x29, 0xac, 0x0c),
+    SUNFLOWER_PLAINS (129,
+            0x29, 0xac, 0x0c),
+    DESERT (2,
+            0xd3, 0xd1, 0xa1),
+    DESERT_HILLS (17,
+            0xd3, 0xd1, 0xa1),
+    DESERT_LAKES (130,
+            0xd3, 0xd1, 0xa1),
+    SNOWY_TUNDRA (12,
+            0x7a, 0x99, 0x98),
+    SNOWY_MOUNTAINS (13,
+            0xa3, 0xbd, 0xcc),
+    ICE_SPIKES (140,
+            0xcc, 0xff, 0xfd),
+    MOUNTAINS (3,
+            0x44, 0x35, 0x2c),
+    WOODED_MOUNTAINS (34,
+            0x44, 0x35, 0x2c),
+    GRAVELLY_MOUNTAINS (131,
+            0x6c, 0x6d, 0x6b),
+    MODIFIED_GRAVELLY_MOUNTAINS (162,
+            0xcc, 0xc4, 0xa3),
+    MOUNTAIN_EDGE (20,
+            0x6c, 0xb2, 0x23),
+    BADLANDS (37,
+            0x77, 0x3b, 0x3a),
+    BADLANDS_PLATEAU (39,
+            0xcc, 0x7a, 0x7a),
+    MODIFIED_BADLANDS_PLATEAU (167,
+            0xff, 0x99, 0x99),
+    WOODED_BADLANDS_PLATEAU (38,
+            0x99, 0x3d, 0x3d),
+    MODIFIED_WOODED_BADLANDS_PLATEAU (166, 
+            0xff, 0x66, 0x66),
+    ERODED_BADLANDS (165,
+            0xcc, 0x00, 0x00),
+    NETHER (8,
+            0xff, 0x00, 0x00),
+    THE_END (9,
+            0xcc, 0x00, 0x52),
+    SMALL_END_ISLANDS (40,
+            0x66, 0x00, 0x29),
+    END_MIDLANDS (41,
+            0x99, 0x00, 0x3d),
+    END_HIGHLANDS (42,
+            0xff, 0x00, 0x66),
+    END_BARRENS (43,
+            0xa8, 0xa3, 0x8d),
+    THE_VOID (127,
+            0x33, 0x0a, 0x1b);
 
     /**
      *  Gets a color value to represent a Minecraft biome.
-     *
-     * @param biome  The biome type to represent.
-     *
-     * @return       An appropriate color to represent that biome.
+     * 
+     * @return       An appropriate color to represent this biome.
      */
-    public static Color getBiomeColor(Biome biome)
+    public Color getColor()
     {
-        return colorMap.get(biome);
+        return color;
     }
     
     /**
@@ -134,162 +207,6 @@ public enum Biome
         return codeBiomes.size();
     }
     
-    // Color map:
-    private static final Map<Biome, Color> colorMap;
-    static
-    {
-        colorMap = new HashMap<>();
-        colorMap.put(BADLANDS_PLATEAU,
-                new Color(0xcc, 0x7a, 0x7a));
-        colorMap.put(MODIFIED_BADLANDS_PLATEAU,
-                new Color(0xff, 0x99, 0x99));
-        colorMap.put(BADLANDS,
-                new Color(0x77, 0x3b, 0x3a));
-        colorMap.put(WOODED_BADLANDS_PLATEAU,
-                new Color(0x99, 0x3d, 0x3d));
-        colorMap.put(MODIFIED_WOODED_BADLANDS_PLATEAU,
-                new Color(0xff, 0x66, 0x66));
-        colorMap.put(ERODED_BADLANDS,
-                new Color(0xcc, 0x00, 0x00));
-        colorMap.put(NETHER,
-                new Color(0xff, 0x00, 0x00));
-        colorMap.put(BIRCH_FOREST,
-                new Color(0x44, 0x81, 0x05));
-        colorMap.put(BIRCH_FOREST_HILLS,
-                new Color(0x44, 0x81, 0x05));
-        colorMap.put(TALL_BIRCH_FOREST,
-                new Color(0x44, 0x81, 0x05));
-        colorMap.put(TALL_BIRCH_HILLS,
-                new Color(0x44, 0x81, 0x05));
-        colorMap.put(SAVANNA_PLATEAU,
-                new Color(0x89, 0x9a, 0x12));
-        colorMap.put(SHATTERED_SAVANNA_PLATEAU,
-                new Color(0x89, 0x9a, 0x12));
-        colorMap.put(SAVANNA,
-                new Color(0x89, 0x9a, 0x12));
-        colorMap.put(SHATTERED_SAVANNA,
-                new Color(0x89, 0x9a, 0x12));
-        colorMap.put(STONE_SHORE,
-                new Color(0x6c, 0x6d, 0x6b));
-        colorMap.put(GRAVELLY_MOUNTAINS,
-                new Color(0x6c, 0x6d, 0x6b));
-        colorMap.put(MODIFIED_GRAVELLY_MOUNTAINS,
-                new Color(0xcc, 0xc4, 0xa3));
-        colorMap.put(MOUNTAIN_EDGE,
-                new Color(0x6c, 0xb2, 0x23));
-        colorMap.put(MOUNTAINS,
-                new Color(0x44, 0x35, 0x2c ));
-        colorMap.put(WOODED_MOUNTAINS,
-                new Color(0x44, 0x35, 0x2c ));
-        colorMap.put(DESERT,
-                new Color(0xd3, 0xd1, 0xa1));
-        colorMap.put(DESERT_HILLS,
-                new Color(0xd3, 0xd1, 0xa1));
-        colorMap.put(JUNGLE_EDGE,
-                new Color(0x00, 0x73, 0x11));
-        colorMap.put(MODIFIED_JUNGLE_EDGE,
-                new Color(0x00, 0x73, 0x11));
-        colorMap.put(DESERT_LAKES,
-                new Color(0xd3, 0xd1, 0xa1));
-        colorMap.put(JUNGLE,
-                new Color(0x00, 0x73, 0x11));
-        colorMap.put(JUNGLE_HILLS,
-                new Color(0x00, 0x73, 0x11));
-        colorMap.put(MODIFIED_JUNGLE,
-                new Color(0x00, 0x73, 0x11));
-        colorMap.put(SUNFLOWER_PLAINS,
-                new Color(0x29, 0xac, 0x0c));
-        colorMap.put(BAMBOO_JUNGLE,
-                new Color(0x00, 0x73, 0x11));
-        colorMap.put(BAMBOO_JUNGLE_HILLS,
-                new Color(0x00, 0x73, 0x11));
-        colorMap.put(PLAINS,
-                new Color(0x29, 0xac, 0x0c));
-        colorMap.put(FOREST,
-                new Color(0x44, 0x81, 0x05));
-        colorMap.put(WOODED_HILLS,
-                new Color(0x44, 0x81, 0x05));
-        colorMap.put(DARK_FOREST,
-                new Color(0x1f, 0x33, 0x1f));
-        colorMap.put(DARK_FOREST_HILLS,
-                new Color(0x3d, 0x66, 0x3d));
-        colorMap.put(SNOWY_TUNDRA,
-                new Color(0x7a, 0x99, 0x98));
-        colorMap.put(ICE_SPIKES,
-                new Color(0xcc, 0xff, 0xfd));
-        colorMap.put(DEEP_WARM_OCEAN,
-                new Color(0x3d, 0x99, 0x96));
-        colorMap.put(WARM_OCEAN,
-                new Color(0x52, 0xcc, 0xc8));
-        colorMap.put(SWAMP,
-                new Color(0x00, 0x33, 0x31));
-        colorMap.put(SWAMP_HILLS,
-                new Color(0x00, 0x66, 0x63));
-        colorMap.put(DEEP_FROZEN_OCEAN,
-                new Color(0x29, 0x2f, 0x33));
-        colorMap.put(FROZEN_OCEAN,
-                new Color(0x52, 0x5f, 0x66));
-        colorMap.put(SNOWY_MOUNTAINS,
-                new Color(0xa3, 0xbd, 0xcc));
-        colorMap.put(RIVER,
-                new Color(0x7a, 0xae, 0xcc));
-        colorMap.put(FROZEN_RIVER,
-                new Color(0x99, 0xda, 0xff));
-        colorMap.put(DEEP_LUKEWARM_OCEAN,
-                new Color(0x14, 0x48, 0x66));
-        colorMap.put(LUKEWARM_OCEAN,
-                new Color(0x1f, 0x6c, 0x99));
-        colorMap.put(BEACH,
-                new Color(0xa3, 0xa6, 0xcc));
-        colorMap.put(SNOWY_BEACH,
-                new Color(0xcc, 0xcf, 0xff));
-        colorMap.put(DEEP_COLD_OCEAN,
-                new Color(0x3d, 0x40, 0x66));
-        colorMap.put(COLD_OCEAN,
-                new Color(0x5c, 0x60, 0x99));
-        colorMap.put(DEEP_OCEAN,
-                new Color(0x14, 0x1a, 0x66));
-        colorMap.put(OCEAN,
-                new Color(0x1f, 0x27, 0x99));
-        colorMap.put(SNOWY_TAIGA,
-                new Color(0xba, 0xa3, 0xcc));
-        colorMap.put(SNOWY_TAIGA_HILLS,
-                new Color(0xe8, 0xcc, 0xff));
-        colorMap.put(FLOWER_FOREST,
-                new Color(0x3a, 0x7a, 0x09));
-        colorMap.put(GIANT_TREE_TAIGA,
-                new Color(0x49, 0x5a, 0x3c));
-        colorMap.put(GIANT_TREE_TAIGA_HILLS,
-                new Color(0x49, 0x5a, 0x3c));
-        colorMap.put(TAIGA,
-                new Color(0x49, 0x5a, 0x3c));
-        colorMap.put(TAIGA_HILLS,
-                new Color(0x49, 0x5a, 0x3c));
-        colorMap.put(MUSHROOM_FIELDS,
-                new Color(0x9e, 0x8b, 0xa3));
-        colorMap.put(MUSHROOM_FIELDS_SHORE,
-                new Color(0x9e, 0x8b, 0xa3));
-        colorMap.put(TAIGA_MOUNTAINS,
-                new Color(0x73, 0x38, 0x18));
-        colorMap.put(SNOWY_TAIGA_MOUNTAINS,
-                new Color(0xff, 0xff, 0xff));
-        colorMap.put(GIANT_SPRUCE_TAIGA,
-                new Color(0x73, 0x38, 0x18));
-        colorMap.put(GIANT_SPRUCE_TAIGA_HILLS,
-                new Color(0x73, 0x38, 0x18));
-        colorMap.put(THE_VOID,
-                new Color(0x33, 0x0a, 0x1b));
-        colorMap.put(END_BARRENS,
-                new Color(0xa8, 0xa3, 0x8d));
-        colorMap.put(SMALL_END_ISLANDS,
-                new Color(0x66, 0x00, 0x29));
-        colorMap.put(END_MIDLANDS,
-                new Color(0x99, 0x00, 0x3d));
-        colorMap.put(THE_END,
-                new Color(0xcc, 0x00, 0x52));
-        colorMap.put(END_HIGHLANDS,
-                new Color(0xff, 0x00, 0x66));
-    }
     
     /**
      * Gets a biome's display name.
@@ -308,10 +225,12 @@ public enum Biome
         return StringUtil.enumToDisplayString(biome);
     }
     
-    private Biome(int code)
+    private Biome(int code, int R, int G, int B)
     {
         biomeCode = code;
+        color = new Color(R, G, B);
     }
     
     private final int biomeCode;
+    private final Color color;
 }

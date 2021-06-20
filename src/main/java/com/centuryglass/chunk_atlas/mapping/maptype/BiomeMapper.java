@@ -69,7 +69,7 @@ public class BiomeMapper extends Mapper
             key.add(new KeyItem(biome.toString(), getMapType(),
                     getRegionName(),
                     BiomeTextures.getTexturePath(biome),
-                    Biome.getBiomeColor(biome)));
+                    biome.getColor()));
         });
         return key;
     }

@@ -87,7 +87,7 @@ public class StructureMapper extends Mapper
             }
             key.add(new KeyItem(structure.toString(), getMapType(),
                     getRegionName(),
-                    Structure.getStructureColor(structure)));
+                    structure.getColor()));
         }
         return key;
     }
@@ -177,7 +177,7 @@ public class StructureMapper extends Mapper
         final double maxDistance = Math.sqrt(18);
         for (Map.Entry<Point, Structure> entry : structureRefs.entrySet())
         {
-            Color structColor = Structure.getStructureColor(entry.getValue());
+            Color structColor = entry.getValue().getColor();
             int x = entry.getKey().x;
             int z = entry.getKey().y;
             // Single structure chunks are hard to spot on a big world map.
