@@ -94,12 +94,11 @@ public class LogConfig extends ConfigFile
                         handler.getLevel().getName());
             }
         };
-/*        if (usePluginLogs && Plugin.isRunning())
+        if (usePluginLogs && Plugin.isRunning())
         {
             logger = Plugin.getRunningPlugin().getLogger();
             useConsoleLogs = false; // Plugin logging replaces console logging.
         }
-        */
         if (logger == null)
         {
             logger = Logger.getLogger("com.centuryglass.chunk_atlas", null);
