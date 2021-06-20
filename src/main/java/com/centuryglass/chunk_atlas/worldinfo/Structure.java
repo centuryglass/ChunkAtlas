@@ -46,6 +46,12 @@ public enum Structure
             0xe5, 0xd7, 0xd7),
     FORTRESS (3, "fortress", StructureType.NETHER_FORTRESS,
             0xa0, 0x4e, 0x44),
+    RUINED_PORTAL (14, "ruined_portal", StructureType.RUINED_PORTAL,
+            0x10, 0x00, 0x2F),
+    NETHER_FOSSIL (15, "nether_fossil", StructureType.NETHER_FOSSIL,
+            0x4C, 0x4B, 0x3F),
+    BASTION_REMNANT (16, "bastion_remnant", StructureType.BASTION_REMNANT,
+            0x13, 0x11, 0x15),
     UNKNOWN (-1,  "unknown", null, 0x00, 0x00, 0x00);
     
     private static final String CLASSNAME = Structure.class.getName();

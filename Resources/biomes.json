@@ -23,6 +23,12 @@
       "id" : "169",
       "texture" : "resources/images/biomeTile/BAMBOO_JUNGLE_HILLS.png"
    },
+   "BASALT DELTAS" : {
+      "color" : "7a9998",
+      "formattedName" : "Basalt Deltas",
+      "id" : "173",
+      "texture" : "resources/images/biomeTile/BASALT_DELTAS.png"
+   },
    "BEACH" : {
       "color" : "a3a6cc",
       "formattedName" : "Beach",
@@ -46,6 +52,12 @@
       "formattedName" : "Cold Ocean",
       "id" : "46",
       "texture" : "resources/images/biomeTile/COLD_OCEAN.png"
+   },
+   "CRIMSON_FOREST" : {
+      "color" : "7a9998",
+      "formattedName" : "Crimson Forest",
+      "id" : "171",
+      "texture" : "resources/images/biomeTile/CRIMSON_FOREST.png"
    },
    "DARK_FOREST" : {
       "color" : "1f331f",
@@ -106,6 +118,12 @@
       "formattedName" : "Desert Lakes",
       "id" : "130",
       "texture" : "resources/images/biomeTile/DESERT_LAKES.png"
+   },
+   "DRIPSTONE CAVES" : {
+      "color" : "7a9998",
+      "formattedName" : "Dripstone Caves",
+      "id" : "174",
+      "texture" : "resources/images/biomeTile/DRIPSTONE_CAVES.png"
    },
    "END_BARRENS" : {
       "color" : "a8a38d",
@@ -214,6 +232,12 @@
       "formattedName" : "Lukewarm Ocean",
       "id" : "45",
       "texture" : "resources/images/biomeTile/LUKEWARM_OCEAN.png"
+   },
+   "LUSH CAVES" : {
+      "color" : "7a9998",
+      "formattedName" : "Lush Caves",
+      "id" : "175",
+      "texture" : "resources/images/biomeTile/LUSH_CAVES.png"
    },
    "MODIFIED_BADLANDS_PLATEAU" : {
       "color" : "ff9999",
@@ -359,6 +383,12 @@
       "id" : "12",
       "texture" : "resources/images/biomeTile/SNOWY_TUNDRA.png"
    },
+   "SOUL_SAND_VALLEY" : {
+      "color" : "7a9998",
+      "formattedName" : "Soul Sand Valley",
+      "id" : "170",
+      "texture" : "resources/images/biomeTile/SOUL_SAND_VALLEY.png"
+   },
    "STONE_SHORE" : {
       "color" : "6c6d6b",
       "formattedName" : "Stone Shore",
@@ -430,6 +460,12 @@
       "formattedName" : "Warm Ocean",
       "id" : "44",
       "texture" : "resources/images/biomeTile/WARM_OCEAN.png"
+   },
+   "WARPED_FOREST" : {
+      "color" : "7a9998",
+      "formattedName" : "Warped Forest",
+      "id" : "172",
+      "texture" : "resources/images/biomeTile/WARPED_FOREST.png"
    },
    "WOODED_BADLANDS_PLATEAU" : {
       "color" : "993d3d",
