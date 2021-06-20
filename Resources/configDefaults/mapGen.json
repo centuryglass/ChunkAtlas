@@ -1,7 +1,7 @@
 {
     "regions": [
         {
-            "regionFilePath": "zregion",
+            "regionFilePath": "world/region",
             "name": "Overworld"
         },
         {
@@ -13,7 +13,7 @@
             "name": "End"
         }
     ],
-    "pixelsPerChunk": 8,
+    "pixelsPerChunk": 1,
     "singleImageMaps": {
         "generate": true,
         "outPath": "maps",
