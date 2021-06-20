@@ -673,7 +673,7 @@ public final class MapCreator
         final String FN_NAME = "createTileMaps";
         Validate.notNull(mapRegion, "Mapped region cannot be null.");
         ExtendedValidate.couldBeDirectory(outDir, "Tile output directory");
-        LogConfig.getLogger().logp(Level.FINE, CLASSNAME, FN_NAME,
+        LogConfig.getLogger().logp(Level.INFO, CLASSNAME, FN_NAME,
                 "Creating tile maps for region {0}.", mapRegion.name);
         ArrayList<File> regionFiles = new ArrayList<>(Arrays.asList(
                 mapRegion.directory.listFiles()));

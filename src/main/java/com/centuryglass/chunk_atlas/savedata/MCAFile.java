@@ -170,6 +170,10 @@ public class MCAFile
         final int zEnd = name.indexOf(".", zStart);
         if (xEnd < 0 || zEnd < 0)
         {
+            
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, "getChunkCoords",
+                    "chunk coords in region file '{0}' could not be loaded.",
+                    new Object[] { regionFile });
             return null;
         }       
         return new Point(
