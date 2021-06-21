@@ -24,7 +24,7 @@
       "texture" : "resources/images/biomeTile/BAMBOO_JUNGLE_HILLS.png"
    },
    "BASALT DELTAS" : {
-      "color" : "7a9998",
+      "color" : "352e36",
       "formattedName" : "Basalt Deltas",
       "id" : "173",
       "texture" : "resources/images/biomeTile/BASALT_DELTAS.png"
@@ -54,7 +54,7 @@
       "texture" : "resources/images/biomeTile/COLD_OCEAN.png"
    },
    "CRIMSON_FOREST" : {
-      "color" : "7a9998",
+      "color" : "97280c",
       "formattedName" : "Crimson Forest",
       "id" : "171",
       "texture" : "resources/images/biomeTile/CRIMSON_FOREST.png"
@@ -120,7 +120,7 @@
       "texture" : "resources/images/biomeTile/DESERT_LAKES.png"
    },
    "DRIPSTONE CAVES" : {
-      "color" : "7a9998",
+      "color" : "7b6c6c",
       "formattedName" : "Dripstone Caves",
       "id" : "174",
       "texture" : "resources/images/biomeTile/DRIPSTONE_CAVES.png"
@@ -234,7 +234,7 @@
       "texture" : "resources/images/biomeTile/LUKEWARM_OCEAN.png"
    },
    "LUSH CAVES" : {
-      "color" : "7a9998",
+      "color" : "163716",
       "formattedName" : "Lush Caves",
       "id" : "175",
       "texture" : "resources/images/biomeTile/LUSH_CAVES.png"
@@ -384,7 +384,7 @@
       "texture" : "resources/images/biomeTile/SNOWY_TUNDRA.png"
    },
    "SOUL_SAND_VALLEY" : {
-      "color" : "7a9998",
+      "color" : "553b30",
       "formattedName" : "Soul Sand Valley",
       "id" : "170",
       "texture" : "resources/images/biomeTile/SOUL_SAND_VALLEY.png"
@@ -462,7 +462,7 @@
       "texture" : "resources/images/biomeTile/WARM_OCEAN.png"
    },
    "WARPED_FOREST" : {
-      "color" : "7a9998",
+      "color" : "1b8c8c",
       "formattedName" : "Warped Forest",
       "id" : "172",
       "texture" : "resources/images/biomeTile/WARPED_FOREST.png"

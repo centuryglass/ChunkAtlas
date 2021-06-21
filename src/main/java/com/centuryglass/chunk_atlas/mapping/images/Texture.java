@@ -42,6 +42,18 @@ public class Texture
             height = 0;
             return;
         }
+        if (textureImage == null)
+        {
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Loading texture image '{0}' failed.", texturePath);
+            textureData = null;
+            width = 0;
+            height = 0;
+            return;
+            
+        }
+        
+        
         width = textureImage.getWidth();
         height = textureImage.getHeight();
         textureData = new Color[width][height];
