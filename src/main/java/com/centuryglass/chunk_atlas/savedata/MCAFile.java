@@ -8,12 +8,14 @@ package com.centuryglass.chunk_atlas.savedata;
 
 import com.centuryglass.chunk_atlas.config.LogConfig;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
+import com.centuryglass.chunk_atlas.util.MapUnit;
 import com.centuryglass.chunk_atlas.worldinfo.ChunkData;
 import java.awt.Point;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Level;
 import org.apache.commons.lang.Validate;
@@ -66,11 +68,14 @@ public class MCAFile
                     "Error reading region file:", e);
             return;
         }
+        
+        LogConfig.getLogger().logp(Level.FINER, CLASSNAME, FN_NAME,
+                    "Scanning region file {0}:", mcaFile.getAbsolutePath());
              
         // Read chunk data offsets within the file:
         int numChunks = DIM_IN_CHUNKS * DIM_IN_CHUNKS;
         final int sectorSize = 4096;
-        int invalidChunks = 0;
+        List<Point> invalidChunks = new ArrayList<>();
         
         // If chunk loading fails, use this function to get chunk coordinates
         // from the chunk index:
@@ -90,10 +95,16 @@ public class MCAFile
                 sectorOffset = regionBuffer.readInt(3);
                 sectorCount = regionBuffer.readByte();
             }
-            catch (ArrayIndexOutOfBoundsException e)
+            catch (IndexOutOfBoundsException e)
             {
                 LogConfig.getLogger().logp(Level.SEVERE, CLASSNAME, FN_NAME,
                         e.toString());
+                // Invalid, out of bounds sector, skip it.
+                loadedChunks.add(new ChunkData(getPos.apply(i),
+                        ChunkData.ErrorFlag.BAD_OFFSET));
+                invalidChunks.add(getPos.apply(i));
+                regionBuffer.reset();
+                continue;
             }
             if (sectorOffset == 0 && sectorCount == 0)
             {
@@ -114,7 +125,7 @@ public class MCAFile
                 // Invalid, out of bounds sector, skip it.
                 loadedChunks.add(new ChunkData(getPos.apply(i),
                         ChunkData.ErrorFlag.BAD_OFFSET));
-                invalidChunks++;
+                invalidChunks.add(getPos.apply(i));
                 regionBuffer.reset();
                 continue;
             }
@@ -130,7 +141,7 @@ public class MCAFile
                 LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
                         "Unexpected EOF: Read only {0} bytes, expected {1}.",
                         new Object[] { chunkBytes.length, chunkByteSize });
-                invalidChunks++;
+                invalidChunks.add(getPos.apply(i));
                 continue;
             }
             ChunkNBT nbtData = new ChunkNBT(chunkBytes);
@@ -143,11 +154,24 @@ public class MCAFile
             loadedChunks.add(extractedData);
             regionBuffer.reset();
         }
-        if (invalidChunks > 0)
+        if (! invalidChunks.isEmpty())
         {
             LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
                     "{0} chunks in region file '{1}' could not be loaded.",
-                    new Object[] { invalidChunks, mcaFile });
+                    new Object[] { invalidChunks.size(), mcaFile.getName() });
+            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                    "Invalid chunk coordinates: {0}",
+                    invalidChunks.stream()
+                    .map((Point point) -> {
+                        Point blockCoords = new Point(regionPt.x + point.x,
+                                regionPt.y + point.y);
+                        blockCoords = MapUnit.convertPoint(blockCoords,
+                                MapUnit.CHUNK, MapUnit.BLOCK);
+                        return "(" + blockCoords.x + ", " + blockCoords.y + ")";
+                     })
+                    .reduce("", (String list, String point) -> {
+                        return list + (list.isEmpty() ? "" : ", ") + point;
+                    }));
         }
     }
 

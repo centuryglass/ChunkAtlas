@@ -173,7 +173,8 @@ public enum Biome
     END_BARRENS (43,
             0xa8, 0xa3, 0x8d),
     THE_VOID (127,
-            0x33, 0x0a, 0x1b);
+            0x33, 0x0a, 0x1b),
+    INVALID (255, 0, 0, 0);
 
     /**
      *  Gets a color value to represent a Minecraft biome.
