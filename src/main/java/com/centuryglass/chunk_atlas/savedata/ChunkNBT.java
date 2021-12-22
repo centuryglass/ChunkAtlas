@@ -33,6 +33,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonBuilderFactory;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
 import org.apache.commons.lang.Validate;
@@ -566,12 +567,31 @@ public class ChunkNBT
         public static final String INHABITED_TIME = "InhabitedTime";
         public static final String LAST_UPDATE    = "LastUpdate";
         public static final String BIOMES         = "Biomes";
+        public static final String SECTIONS       = "Sections";
+        public static final String PALETTE        = "Palette";
         public static final String STRUCTURES     = "Structures";
         public static final String STRUCT_REFS    = "References";
         public static final String STRUCT_STARTS  = "Starts";
         public static final String STRUCT_BOUNDS  = "BB";   
     }
     
+    // Get JSON object, using lowercase key if the camel case key finds nothing
+    private static JsonObject getJsonObject(JsonObject parent, String key) {
+        JsonObject child = parent.getJsonObject(key);
+        if (child != null) {
+            return child;
+        }
+        return parent.getJsonObject(key.toLowerCase());
+    }
+    
+    // Get JSON object, using lowercase key if the camel case key finds nothing
+    private static JsonArray getJsonArray(JsonObject parent, String key) {
+        JsonArray child = parent.getJsonArray(key);
+        if (child != null) {
+            return child;
+        }
+        return parent.getJsonArray(key.toLowerCase());
+    }
     /**
      * Gets data about this map chunk.
      *
@@ -585,13 +605,20 @@ public class ChunkNBT
             return new ChunkData(new Point(0, 0),
                     ChunkData.ErrorFlag.INVALID_NBT);
         }
-        JsonObject levelData = chunkJSON.getJsonObject("").getJsonObject(
-                Keys.LEVEL_DATA);
+        
+        // Keys.LEVEL_DATA is used prior to 1.17(?), after that, level data is
+        // just in the root object.
+        JsonObject levelData = chunkJSON.getJsonObject("");
+        if (levelData != null && levelData.containsKey(Keys.LEVEL_DATA))
+        {
+            levelData = getJsonObject(levelData, Keys.LEVEL_DATA);
+        }
         if (levelData == null)
         {
             return new ChunkData(new Point(0, 0),
                     ChunkData.ErrorFlag.INVALID_NBT);
         }
+        
         Point pos = new Point(
                 levelData.getInt(Keys.X_POS),
                 levelData.getInt(Keys.Z_POS));
@@ -600,28 +627,74 @@ public class ChunkNBT
         long lastUpdate
                 = levelData.getJsonNumber(Keys.LAST_UPDATE).longValue();
         ChunkData chunk = new ChunkData(pos, inhabitedTime, lastUpdate);
-        // Read biome data:
-        JsonArray biomeList = levelData.getJsonArray(Keys.BIOMES);
+        // Read biomeObject data:
+        JsonArray biomeList = getJsonArray(levelData, Keys.BIOMES);
         if (biomeList == null)
         {
-            return new ChunkData(pos, ChunkData.ErrorFlag.INVALID_NBT);
-        }
-        for (int i = 0; i < biomeList.size(); i++)
-        {
-            int biomeCode = Byte.toUnsignedInt((byte) biomeList.getInt(i));
-            final Biome biome = Biome.fromCode(biomeCode);
-            if (biome == null)
+            // Check for 1.17 (?) biomeObject palette strings:
+            JsonArray sections = getJsonArray(levelData, Keys.SECTIONS);
+            if (sections != null)
             {
-                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                        "Found invalid biome code {0}.", biomeCode);
+                for (JsonValue section : sections)
+                {
+                    JsonObject biomeObject = getJsonObject(
+                            section.asJsonObject(), Keys.BIOMES);
+                    if (biomeObject == null)
+                    {
+                        continue;
+                    }
+                    JsonArray paletteList = getJsonArray(biomeObject,
+                            Keys.PALETTE);
+                    if (paletteList == null) {
+                        continue;
+                    }
+                    for (JsonValue biomeString : paletteList)
+                    {
+                        String biomeName = ((JsonString) biomeString)
+                                .getString().toUpperCase();
+                        if (biomeName.contains(":"))
+                        {
+                            biomeName = biomeName.substring(
+                                    biomeName.indexOf(":") + 1);
+                        }
+                        Biome biome = Biome.getClosestMatch(biomeName);
+                        if (biome != null)
+                        {
+                            chunk.addBiome(biome);
+                        }
+                        else 
+                        {
+                            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME,
+                            FN_NAME, "Found unrecognized biome name {0}.",
+                            biomeName);
+                        }
+                    }
+                }
+                
             }
             else
             {
-                chunk.addBiome(Biome.fromCode(biomeCode));
+                chunk.addBiome(Biome.INVALID);
+            }
+        }
+        else {
+            for (int i = 0; i < biomeList.size(); i++)
+            {
+                int biomeCode = Byte.toUnsignedInt((byte) biomeList.getInt(i));
+                final Biome biome = Biome.fromCode(biomeCode);
+                if (biome == null)
+                {
+                    LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                            "Found invalid biome code {0}.", biomeCode);
+                }
+                else
+                {
+                    chunk.addBiome(Biome.fromCode(biomeCode));
+                }
             }
         }
         // Read structure data:
-        JsonObject structureData = levelData.getJsonObject(Keys.STRUCTURES);
+        JsonObject structureData = getJsonObject(levelData, Keys.STRUCTURES);
         if (structureData != null)
         {
             JsonObject newStructures = structureData.getJsonObject(

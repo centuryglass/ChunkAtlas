@@ -189,7 +189,7 @@ public enum Biome
     /**
      *  Gets a biome from its NBT code value.
      * 
-     * @param biomeCode  A biome's NBT code number.
+     * @param biomeCode  A biome NBT code number.
      * 
      * @return           The associated biome, or null if the code isn't valid.
      */
@@ -198,11 +198,44 @@ public enum Biome
         return codeBiomes.get(biomeCode);
     }
     
+   /**
+    *  Gets the biome that most closely matches the given name.
+    * 
+    * @param biomeName  The name of a Minecraft biome.
+    * 
+    * @return           The biome with the longest name that is a substring of
+    *                   biomeName, or null if no match could be found.
+    */
+    public static Biome getClosestMatch(String biomeName)
+    {
+        if (closestMatches.containsKey(biomeName)) {
+            return closestMatches.get(biomeName);
+        }
+        Biome closest = null;
+        for (Biome biome : Biome.values())
+        {
+            if (biome.name().equals(biomeName)) {
+                closest = biome;
+                break;
+            }
+            else if (biomeName.contains(biome.name()) && (closest == null 
+                    || biome.name().length() > closest.name().length()))
+            {
+                closest = biome;
+            }
+        }
+        closestMatches.put(biomeName, closest);
+        return closest;
+    }
     
+    // Store biome name mappings, used when trying to find acceptable matches
+    // for biomes that aren't in the list of expected values:
+    private static final Map<String, Biome> closestMatches;
     // Save (integer code, Biome) pairs for quick lookup:
     private static final Map<Integer, Biome> codeBiomes;
     static
     {
+        closestMatches = new HashMap<>();
         codeBiomes = new HashMap<>();
         for(Biome biome : Biome.values())
         {
@@ -222,7 +255,7 @@ public enum Biome
     
     
     /**
-     * Gets a biome's display name.
+     * Gets a biome display name.
      * 
      * @return  The formatted display name. 
      */

@@ -7,12 +7,16 @@
 package com.centuryglass.chunk_atlas.serverplugin;
 
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.command.*;
+import org.bukkit.entity.Player;
 
 /**
  * Initializes ChunkAtlas as a Minecraft server plugin.
  */
 public class Plugin extends JavaPlugin 
 {
+    private ServerThread serverThread;
+    
     /**
      * Checks if the application is running as a Minecraft server plugin.
      * 
@@ -50,8 +54,25 @@ public class Plugin extends JavaPlugin
     @Override
     public void onEnable()
     {
-        ServerThread serverThread = new ServerThread();
+        serverThread = new ServerThread();
         serverThread.start();
+        getCommand("startMapping").setExecutor(this);
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (sender instanceof Player) {
+            System.out.println("Command only allowed from Console,sender ="
+                    + sender.getName());
+            return true;
+        }
+        if (serverThread.isAlive()) {
+            System.out.println("Server thread is already running");
+            return true;
+        }
+        System.out.println("Restarting server thread..");
+        serverThread = new ServerThread();
+        return true;
     }
     
     @Override

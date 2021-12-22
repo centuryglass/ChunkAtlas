@@ -150,6 +150,7 @@ public class MCAFile
             {
                 extractedData = new ChunkData(getPos.apply(i),
                         extractedData.getErrorType());
+                invalidChunks.add(getPos.apply(i));
             }
             loadedChunks.add(extractedData);
             regionBuffer.reset();

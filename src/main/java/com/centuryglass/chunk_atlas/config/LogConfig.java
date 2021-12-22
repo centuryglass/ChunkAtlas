@@ -9,8 +9,6 @@ import com.centuryglass.chunk_atlas.serverplugin.Plugin;
 import com.centuryglass.chunk_atlas.util.LogLineFormatter;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
