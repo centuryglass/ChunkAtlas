@@ -51,7 +51,22 @@ public class Biome implements Comparable
         {
             String name = entry.getKey();
             JsonObject biomeDef = entry.getValue().asJsonObject();
-            int id = Integer.parseInt(biomeDef.getString(idCodeKey));
+            
+            int id;
+            if (biomeDef.containsKey(idCodeKey))
+            {
+                id = Integer.parseInt(biomeDef.getString(idCodeKey));
+            }
+            else
+            {
+                // Later versions of minecraft no longer use biome ids, assign an unused negative number to prevent
+                // conflicts.
+                id = -1;
+                while (codeBiomes.containsKey(id)) {
+                    id--;
+                }
+                
+            }
             
             if (codeBiomes.containsKey(id)) 
             {
