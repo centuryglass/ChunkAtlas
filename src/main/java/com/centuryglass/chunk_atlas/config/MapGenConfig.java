@@ -7,14 +7,22 @@ package com.centuryglass.chunk_atlas.config;
 
 import com.centuryglass.chunk_atlas.mapping.maptype.MapType;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
+import com.centuryglass.chunk_atlas.worldinfo.Biome;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
+import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonException;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonStructure;
 import org.apache.commons.lang.Validate;
 
 /**
@@ -44,6 +52,29 @@ public class MapGenConfig extends ConfigFile
     public MapGenConfig(File configFile)
     {
         super(configFile, DEFAULT_JSON_RESOURCE);
+        
+        // Load any custom biome files:
+        JsonArray biomeFiles = (JsonArray) getSavedOrDefaultOptions(JsonKeys.CUSTOM_BIOMES);
+        biomeFiles.forEach(biomeFilePath ->               
+        {
+            JsonStructure addedBiomes = null;
+            try {
+                File jsonFile = new File(biomeFilePath.toString().replace("\"", ""));
+                FileInputStream fileStream = new FileInputStream(jsonFile);
+                JsonReader reader = Json.createReader(fileStream);
+                addedBiomes = reader.read();
+            }
+            catch (JsonException |  IllegalStateException | IOException ex) 
+            {
+                LogConfig.getLogger().log(Level.WARNING, "Skipping invalid biome file {0}, error={1}",
+                        new Object[]{biomeFilePath.toString(), ex.toString()});
+            }
+            if (addedBiomes != null)
+            {
+                LogConfig.getLogger().log(Level.INFO, "Loading biomes from file {0}", biomeFilePath.toString());
+                Biome.loadBiomes(addedBiomes);
+            }     
+        });
     }
     
     /**
@@ -337,5 +368,7 @@ public class MapGenConfig extends ConfigFile
         public static final String SCALED_TILES = "createScaled";
         // The set of MapTypes used when generating maps:
         public static final String MAP_TYPES_USED = "mapTypes";
+        // JSON file(s) defining additional biomes:
+        public static final String CUSTOM_BIOMES = "customBiomeFiles";
     } 
 }

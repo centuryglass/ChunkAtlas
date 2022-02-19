@@ -10,8 +10,12 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-ea -classpath %classpath com.centuryglass.chunk_atlas.Main -m testMapGen.json -w testServerConf.json -l testServerLogging.json</exec.args>
+                <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
+                <exec.workingdir>/home/anthony/Workspace/Java/ChunkAtlas</exec.workingdir>
+                <exec.vmArgs>-ea</exec.vmArgs>
+                <exec.appArgs>-m testMapGen.json -w testServerConf.json -l testServerLogging.json</exec.appArgs>
+                <exec.mainClass>com.centuryglass.chunk_atlas.Main</exec.mainClass>
             </properties>
         </action>
         <action>
@@ -24,9 +28,13 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -ea -classpath %classpath com.centuryglass.chunk_atlas.Main -m testMapGen.json -w testServerConf.json -l testServerLogging.json</exec.args>
+                <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
+                <exec.workingdir>/home/anthony/Workspace/Java/ChunkAtlas</exec.workingdir>
+                <exec.vmArgs>-ea -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
+                <exec.appArgs>-m testMapGen.json -w testServerConf.json -l testServerLogging.json</exec.appArgs>
+                <exec.mainClass>com.centuryglass.chunk_atlas.Main</exec.mainClass>
             </properties>
         </action>
         <action>
@@ -39,8 +47,12 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-ea -classpath %classpath com.centuryglass.chunk_atlas.Main -m testMapGen.json -w testServerConf.json -l testServerLogging.json</exec.args>
+                <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
+                <exec.workingdir>/home/anthony/Workspace/Java/ChunkAtlas</exec.workingdir>
+                <exec.vmArgs>-ea</exec.vmArgs>
+                <exec.appArgs>-m testMapGen.json -w testServerConf.json -l testServerLogging.json</exec.appArgs>
+                <exec.mainClass>com.centuryglass.chunk_atlas.Main</exec.mainClass>
             </properties>
         </action>
         <action>

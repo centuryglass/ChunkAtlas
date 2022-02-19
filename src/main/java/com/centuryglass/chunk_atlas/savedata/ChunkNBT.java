@@ -9,8 +9,9 @@
 package com.centuryglass.chunk_atlas.savedata;
 
 import com.centuryglass.chunk_atlas.config.LogConfig;
-import com.centuryglass.chunk_atlas.serverplugin.Plugin;
+//import com.centuryglass.chunk_atlas.serverplugin.Plugin;
 import com.centuryglass.chunk_atlas.util.ExtendedValidate;
+import com.centuryglass.chunk_atlas.util.MapUnit;
 import com.centuryglass.chunk_atlas.worldinfo.Biome;
 import com.centuryglass.chunk_atlas.worldinfo.ChunkData;
 import com.centuryglass.chunk_atlas.worldinfo.Structure;
@@ -674,7 +675,7 @@ public class ChunkNBT
             }
             else
             {
-                chunk.addBiome(Biome.INVALID);
+                chunk.addBiome(Biome.getClosestMatch("INVALID"));
             }
         }
         else {
@@ -685,7 +686,8 @@ public class ChunkNBT
                 if (biome == null)
                 {
                     LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                            "Found invalid biome code {0}.", biomeCode);
+                            "Found invalid biome code {0} at {1}.", new Object[]{String.valueOf(biomeCode),
+                                MapUnit.convertPoint(chunk.getPos(), MapUnit.CHUNK, MapUnit.BLOCK).toString()});
                 }
                 else
                 {

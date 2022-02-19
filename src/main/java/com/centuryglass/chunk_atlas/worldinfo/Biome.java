@@ -5,187 +5,108 @@
  */
 package com.centuryglass.chunk_atlas.worldinfo;
 
-import com.centuryglass.chunk_atlas.util.StringUtil;
+import com.centuryglass.chunk_atlas.config.LogConfig;
+import com.centuryglass.chunk_atlas.util.JarResource;
 import java.awt.Color;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.json.JsonObject;
+import javax.json.JsonStructure;
+import javax.json.JsonValue;
 
-public enum Biome
+public class Biome implements Comparable
 {
-    OCEAN (0,
-            0x1f, 0x27, 0x99),
-    DEEP_OCEAN (24,
-            0x14, 0x1a, 0x66),
-    FROZEN_OCEAN (10,
-            0x52, 0x5f, 0x66),
-    DEEP_FROZEN_OCEAN (50,
-            0x29, 0x2f, 0x33),
-    COLD_OCEAN (46,
-            0x5c, 0x60, 0x99),
-    DEEP_COLD_OCEAN (49,
-            0x3d, 0x40, 0x66),
-    LUKEWARM_OCEAN (45,
-            0x1f, 0x6c, 0x99),
-    DEEP_LUKEWARM_OCEAN (48,
-            0x14, 0x48, 0x66),
-    WARM_OCEAN (44,
-            0x52, 0xcc, 0xc8),
-    DEEP_WARM_OCEAN (47,
-            0x3d, 0x99, 0x96),
-    RIVER (7,
-            0x7a, 0xae, 0xcc),
-    FROZEN_RIVER (11,
-            0x99, 0xda, 0xff),
-    BEACH (16,
-            0xa3, 0xa6, 0xcc),
-    STONE_SHORE (25,
-            0x6c, 0x6d, 0x6b),
-    SNOWY_BEACH (26,
-            0xcc, 0xcf, 0xff),
-    FOREST (4,
-            0x44, 0x81, 0x05),
-    WOODED_HILLS (18,
-            0x44, 0x81, 0x05),
-    FLOWER_FOREST (132,
-            0x3a, 0x7a, 0x09),
-    BIRCH_FOREST (27,
-            0x44, 0x81, 0x05),
-    BIRCH_FOREST_HILLS (28,
-            0x44, 0x81, 0x05),
-    TALL_BIRCH_FOREST (155,
-            0x44, 0x81, 0x05),
-    TALL_BIRCH_HILLS (156,
-            0x44, 0x81, 0x05),
-    DARK_FOREST (29,
-            0x1f, 0x33, 0x1f),
-    DARK_FOREST_HILLS (157,
-            0x3d, 0x66, 0x3d),
-    JUNGLE (21,
-            0x00, 0x73, 0x11),
-    JUNGLE_HILLS (22,
-            0x00, 0x73, 0x11),
-    MODIFIED_JUNGLE (149,
-            0x00, 0x73, 0x11),
-    JUNGLE_EDGE (23,
-            0x00, 0x73, 0x11),
-    MODIFIED_JUNGLE_EDGE (151,
-            0x00, 0x73, 0x11),
-    BAMBOO_JUNGLE (168,
-            0x00, 0x73, 0x11),
-    BAMBOO_JUNGLE_HILLS (169,
-            0x00, 0x73, 0x11),
-    TAIGA (5,
-            0x49, 0x5a, 0x3c),
-    TAIGA_HILLS (19,
-            0x49, 0x5a, 0x3c),
-    TAIGA_MOUNTAINS (133,
-            0x73, 0x38, 0x18),
-    SNOWY_TAIGA (30,
-            0xba, 0xa3, 0xcc),
-    SNOWY_TAIGA_HILLS (31,
-            0xe8, 0xcc, 0xff),
-    SNOWY_TAIGA_MOUNTAINS (158,
-            0xff, 0xff, 0xff),
-    GIANT_TREE_TAIGA (32,
-            0x49, 0x5a, 0x3c),
-    GIANT_TREE_TAIGA_HILLS (33,
-            0x49, 0x5a, 0x3c),
-    GIANT_SPRUCE_TAIGA (160,
-            0x73, 0x38, 0x18),
-    GIANT_SPRUCE_TAIGA_HILLS (161,
-            0x73, 0x38, 0x18),
-    MUSHROOM_FIELDS (14,
-            0x9e, 0x8b, 0xa3),
-    MUSHROOM_FIELDS_SHORE (15,
-            0x9e, 0x8b, 0xa3),
-    SWAMP (6,
-            0x00, 0x33, 0x31),
-    SWAMP_HILLS (134,
-            0x00, 0x66, 0x63),
-    SAVANNA (35,
-            0x89, 0x9a, 0x12),
-    SAVANNA_PLATEAU (36,
-            0x89, 0x9a, 0x12),
-    SHATTERED_SAVANNA (163,
-            0x89, 0x9a, 0x12),
-    SHATTERED_SAVANNA_PLATEAU (164,
-            0x89, 0x9a, 0x12),
-    PLAINS (1,
-            0x29, 0xac, 0x0c),
-    SUNFLOWER_PLAINS (129,
-            0x29, 0xac, 0x0c),
-    DESERT (2,
-            0xd3, 0xd1, 0xa1),
-    DESERT_HILLS (17,
-            0xd3, 0xd1, 0xa1),
-    DESERT_LAKES (130,
-            0xd3, 0xd1, 0xa1),
-    SNOWY_TUNDRA (12,
-            0x7a, 0x99, 0x98),
-    SNOWY_MOUNTAINS (13,
-            0xa3, 0xbd, 0xcc),
-    ICE_SPIKES (140,
-            0xcc, 0xff, 0xfd),
-    MOUNTAINS (3,
-            0x44, 0x35, 0x2c),
-    WOODED_MOUNTAINS (34,
-            0x44, 0x35, 0x2c),
-    GRAVELLY_MOUNTAINS (131,
-            0x6c, 0x6d, 0x6b),
-    MODIFIED_GRAVELLY_MOUNTAINS (162,
-            0xcc, 0xc4, 0xa3),
-    MOUNTAIN_EDGE (20,
-            0x6c, 0xb2, 0x23),
-    BADLANDS (37,
-            0x77, 0x3b, 0x3a),
-    BADLANDS_PLATEAU (39,
-            0xcc, 0x7a, 0x7a),
-    MODIFIED_BADLANDS_PLATEAU (167,
-            0xff, 0x99, 0x99),
-    WOODED_BADLANDS_PLATEAU (38,
-            0x99, 0x3d, 0x3d),
-    MODIFIED_WOODED_BADLANDS_PLATEAU (166, 
-            0xff, 0x66, 0x66),
-    ERODED_BADLANDS (165,
-            0xcc, 0x00, 0x00),
-    DRIPSTONE_CAVES (174,
-            0x7b, 0x6c, 0x6c),
-    LUSH_CAVES (175,
-            0x16, 0x37, 0x16),
-    NETHER (8,
-            0xff, 0x00, 0x00),
-    SOUL_SAND_VALLEY (170,
-            0x55, 0x3b, 0x30),
-    CRIMSON_FOREST (171,
-            0x97, 0x28, 0x0c),
-    WARPED_FOREST (172,
-            0x1b, 0x8c, 0x8c),
-    BASALT_DELTAS (173,
-            0x35, 0x2e, 0x36),
-    THE_END (9,
-            0xcc, 0x00, 0x52),
-    SMALL_END_ISLANDS (40,
-            0x66, 0x00, 0x29),
-    END_MIDLANDS (41,
-            0x99, 0x00, 0x3d),
-    END_HIGHLANDS (42,
-            0xff, 0x00, 0x66),
-    END_BARRENS (43,
-            0xa8, 0xa3, 0x8d),
-    THE_VOID (127,
-            0x33, 0x0a, 0x1b),
-    INVALID (255, 0, 0, 0);
-
+    private static final String BIOME_RESOURCE = "/biomes.json";
+    
+    // Immutable public properties:
+    public final int biomeCode;
+    public final Color color;
+    public final String name;
+    public final String displayName;
+    public final String imageResource;
+    
     /**
-     *  Gets a color value to represent a Minecraft biome.
+     * Adds a set of biomes to the list of all valid biomes, avoiding name conflicts and replacing any biome with a
+     * conflicting  id.
      * 
-     * @return       An appropriate color to represent this biome.
+     * @param biomeDefs   A JSON object defining one or more biome types.  Use biomes.json in the ChunkAtlas
+     *                                   resource directory to determine expected JSON structure.
      */
-    public Color getColor()
+    public static void loadBiomes(JsonStructure biomeDefs)
     {
-        return color;
+        final String colorKey = "color";
+        final String displayNameKey = "formattedName";
+        final String idCodeKey = "id";
+        final String resourceKey = "texture";
+        
+        final JsonObject biomeMap = biomeDefs.asJsonObject();
+        for(Entry<String, JsonValue> entry: biomeMap.entrySet())
+        {
+            String name = entry.getKey();
+            JsonObject biomeDef = entry.getValue().asJsonObject();
+            int id = Integer.parseInt(biomeDef.getString(idCodeKey));
+            
+            if (codeBiomes.containsKey(id)) 
+            {
+                Biome conflictingBiome = codeBiomes.get(id);
+                LogConfig.getLogger().log(Level.WARNING, "Biome '{0}' already exists with ID {1}, this will be replaced by new "
+                        + "biome '{2}'.", new Object[]{conflictingBiome.name, String.valueOf(id), name});
+                codeBiomes.remove(id);
+                closestMatches.remove(conflictingBiome.name);
+            }
+            
+            while (closestMatches.containsKey(name))
+            {
+                Biome closest = closestMatches.get(name);
+                if (closest.name.equals(name))
+                {
+                    String newName;
+                    if (name.matches(".*_\\d+$"))
+                    {
+                        Pattern nameSections = Pattern.compile("^(.*_)(\\d+)$");
+                        Matcher nameMatch = nameSections.matcher(name);
+                        assert(nameMatch.find()); // Assertion will always pass unless the regex above are incorrect.
+                        newName  = nameMatch.group(0) + String.valueOf(Integer.parseInt(nameMatch.group(1)) + 1);
+                    }
+                    else
+                    {
+                        newName = name + "_2";
+                    }
+                    LogConfig.getLogger().log(Level.WARNING,
+                            "A biome named ''{0}'' already exists with id={1}, new biome with id={2} will be renamed to ''{3}''",
+                            new Object[]{name, String.valueOf(closest.biomeCode), String.valueOf(id), newName});
+                    name = newName;
+                }
+                else 
+                {
+                    closestMatches.remove(name);
+                }
+            }
+            
+            Biome addedBiome = new Biome(id, biomeDef.getString(colorKey), name, biomeDef.getString(displayNameKey),
+                    biomeDef.getString(resourceKey));
+            codeBiomes.put(id, addedBiome);
+            closestMatches.put(name, addedBiome);          
+        }
     }
     
+    /**
+     * Get the list of all available biomes.
+     * 
+     * @return  A copy of the list of biomes.
+     */
+    public static List<Biome> values()
+    {
+        return codeBiomes.values().stream().collect(Collectors.toList());
+    }
+
     /**
      *  Gets a biome from its NBT code value.
      * 
@@ -203,7 +124,7 @@ public enum Biome
     * 
     * @param biomeName  The name of a Minecraft biome.
     * 
-    * @return           The biome with the longest name that is a substring of
+    * @return           The biome with the longest name that is a sub-string of
     *                   biomeName, or null if no match could be found.
     */
     public static Biome getClosestMatch(String biomeName)
@@ -212,14 +133,14 @@ public enum Biome
             return closestMatches.get(biomeName);
         }
         Biome closest = null;
-        for (Biome biome : Biome.values())
+        for (Biome biome : codeBiomes.values())
         {
-            if (biome.name().equals(biomeName)) {
+            if (biome.name.equals(biomeName)) {
                 closest = biome;
                 break;
             }
-            else if (biomeName.contains(biome.name()) && (closest == null 
-                    || biome.name().length() > closest.name().length()))
+            else if (biomeName.contains(biome.name) && (closest == null 
+                    || biome.name.length() > closest.name.length()))
             {
                 closest = biome;
             }
@@ -233,13 +154,18 @@ public enum Biome
     private static final Map<String, Biome> closestMatches;
     // Save (integer code, Biome) pairs for quick lookup:
     private static final Map<Integer, Biome> codeBiomes;
+    
     static
     {
         closestMatches = new HashMap<>();
         codeBiomes = new HashMap<>();
-        for(Biome biome : Biome.values())
+        try {
+            JsonStructure biomeResource = JarResource.readJsonResource(BIOME_RESOURCE);
+            loadBiomes(biomeResource);
+        } 
+        catch(IOException e)
         {
-            codeBiomes.put(biome.biomeCode, biome);
+            LogConfig.getLogger().log(Level.SEVERE, "Unable to load default biome definitions:{0}", e.getLocalizedMessage());
         }
     }
     
@@ -253,7 +179,6 @@ public enum Biome
         return codeBiomes.size();
     }
     
-    
     /**
      * Gets a biome display name.
      * 
@@ -262,21 +187,25 @@ public enum Biome
     @Override
     public String toString()
     {
-        String biome = name();
-        String modified = "MODIFIED_";
-        if (biome.startsWith(modified))
-        {
-            biome = biome.substring(modified.length()) + "+";
-        }
-        return StringUtil.enumToDisplayString(biome);
+        return displayName;
     }
     
-    private Biome(int code, int R, int G, int B)
+    private Biome(int code, String color, String name, String displayName, String imagePath)
     {
         biomeCode = code;
-        color = new Color(R, G, B);
+        if (!color.startsWith("#"))
+        {
+            color = "#" + color;
+        }
+        this.color = Color.decode(color.toUpperCase());
+        this.name = name;
+        this.displayName = displayName;
+        this.imageResource = imagePath;
     }
-    
-    private final int biomeCode;
-    private final Color color;
+
+    @Override
+    public int compareTo(Object t) {
+        return this.biomeCode - ((Biome) t).biomeCode;
+    }
+
 }

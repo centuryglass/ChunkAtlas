@@ -108,9 +108,13 @@ public class JarResource
         URL imageURL = JarResource.class.getResource(imagePath);
         if (imageURL == null)
         {
-            return null;
+            throw new IOException("Failed to find image resource");
         }
-        return ImageIO.read(imageURL);
+        BufferedImage image = ImageIO.read(imageURL);
+        if (image == null) {
+            throw new IOException("Failed to read image data");
+        }
+        return image;
     }
     
     /**

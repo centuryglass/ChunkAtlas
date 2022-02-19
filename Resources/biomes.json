@@ -3,486 +3,492 @@
       "color" : "773b3a",
       "formattedName" : "Badlands",
       "id" : "37",
-      "texture" : "resources/images/biomeTile/BADLANDS.png"
+      "texture" : "/biomeTile/BADLANDS.png"
    },
    "BADLANDS_PLATEAU" : {
       "color" : "cc7a7a",
       "formattedName" : "Badlands Plateau",
       "id" : "39",
-      "texture" : "resources/images/biomeTile/BADLANDS_PLATEAU.png"
+      "texture" : "/biomeTile/BADLANDS_PLATEAU.png"
    },
    "BAMBOO_JUNGLE" : {
       "color" : "007311",
       "formattedName" : "Bamboo Jungle",
       "id" : "168",
-      "texture" : "resources/images/biomeTile/BAMBOO_JUNGLE.png"
+      "texture" : "/biomeTile/BAMBOO_JUNGLE.png"
    },
    "BAMBOO_JUNGLE_HILLS" : {
       "color" : "007311",
       "formattedName" : "Bamboo Jungle Hills",
       "id" : "169",
-      "texture" : "resources/images/biomeTile/BAMBOO_JUNGLE_HILLS.png"
+      "texture" : "/biomeTile/BAMBOO_JUNGLE_HILLS.png"
    },
    "BASALT DELTAS" : {
       "color" : "352e36",
       "formattedName" : "Basalt Deltas",
       "id" : "173",
-      "texture" : "resources/images/biomeTile/BASALT_DELTAS.png"
+      "texture" : "/biomeTile/BASALT_DELTAS.png"
    },
    "BEACH" : {
       "color" : "a3a6cc",
       "formattedName" : "Beach",
       "id" : "16",
-      "texture" : "resources/images/biomeTile/BEACH.png"
+      "texture" : "/biomeTile/BEACH.png"
    },
    "BIRCH_FOREST" : {
       "color" : "448105",
       "formattedName" : "Birch Forest",
       "id" : "27",
-      "texture" : "resources/images/biomeTile/BIRCH_FOREST.png"
+      "texture" : "/biomeTile/BIRCH_FOREST.png"
    },
    "BIRCH_FOREST_HILLS" : {
       "color" : "448105",
       "formattedName" : "Birch Forest Hills",
       "id" : "28",
-      "texture" : "resources/images/biomeTile/BIRCH_FOREST_HILLS.png"
+      "texture" : "/biomeTile/BIRCH_FOREST_HILLS.png"
    },
    "COLD_OCEAN" : {
       "color" : "5c6099",
       "formattedName" : "Cold Ocean",
       "id" : "46",
-      "texture" : "resources/images/biomeTile/COLD_OCEAN.png"
+      "texture" : "/biomeTile/COLD_OCEAN.png"
    },
    "CRIMSON_FOREST" : {
       "color" : "97280c",
       "formattedName" : "Crimson Forest",
       "id" : "171",
-      "texture" : "resources/images/biomeTile/CRIMSON_FOREST.png"
+      "texture" : "/biomeTile/CRIMSON_FOREST.png"
    },
    "DARK_FOREST" : {
       "color" : "1f331f",
       "formattedName" : "Dark Forest",
       "id" : "29",
-      "texture" : "resources/images/biomeTile/DARK_FOREST.png"
+      "texture" : "/biomeTile/DARK_FOREST.png"
    },
    "DARK_FOREST_HILLS" : {
       "color" : "3d663d",
       "formattedName" : "Dark Forest Hills",
       "id" : "157",
-      "texture" : "resources/images/biomeTile/DARK_FOREST_HILLS.png"
+      "texture" : "/biomeTile/DARK_FOREST_HILLS.png"
    },
    "DEEP_COLD_OCEAN" : {
       "color" : "3d4066",
       "formattedName" : "Deep Cold Ocean",
       "id" : "49",
-      "texture" : "resources/images/biomeTile/DEEP_COLD_OCEAN.png"
+      "texture" : "/biomeTile/DEEP_COLD_OCEAN.png"
    },
    "DEEP_FROZEN_OCEAN" : {
       "color" : "292f33",
       "formattedName" : "Deep Frozen Ocean",
       "id" : "50",
-      "texture" : "resources/images/biomeTile/DEEP_FROZEN_OCEAN.png"
+      "texture" : "/biomeTile/DEEP_FROZEN_OCEAN.png"
    },
    "DEEP_LUKEWARM_OCEAN" : {
       "color" : "144866",
       "formattedName" : "Deep Lukewarm Ocean",
       "id" : "48",
-      "texture" : "resources/images/biomeTile/DEEP_LUKEWARM_OCEAN.png"
+      "texture" : "/biomeTile/DEEP_LUKEWARM_OCEAN.png"
    },
    "DEEP_OCEAN" : {
       "color" : "141a66",
       "formattedName" : "Deep Ocean",
       "id" : "24",
-      "texture" : "resources/images/biomeTile/DEEP_OCEAN.png"
+      "texture" : "/biomeTile/DEEP_OCEAN.png"
    },
    "DEEP_WARM_OCEAN" : {
       "color" : "3d9996",
       "formattedName" : "Deep Warm Ocean",
       "id" : "47",
-      "texture" : "resources/images/biomeTile/DEEP_WARM_OCEAN.png"
+      "texture" : "/biomeTile/DEEP_WARM_OCEAN.png"
    },
    "DESERT" : {
       "color" : "d3d1a1",
       "formattedName" : "Desert",
       "id" : "2",
-      "texture" : "resources/images/biomeTile/DESERT.png"
+      "texture" : "/biomeTile/DESERT.png"
    },
    "DESERT_HILLS" : {
       "color" : "d3d1a1",
       "formattedName" : "Desert Hills",
       "id" : "17",
-      "texture" : "resources/images/biomeTile/DESERT_HILLS.png"
+      "texture" : "/biomeTile/DESERT_HILLS.png"
    },
    "DESERT_LAKES" : {
       "color" : "d3d1a1",
       "formattedName" : "Desert Lakes",
       "id" : "130",
-      "texture" : "resources/images/biomeTile/DESERT_LAKES.png"
+      "texture" : "/biomeTile/DESERT_LAKES.png"
    },
    "DRIPSTONE CAVES" : {
       "color" : "7b6c6c",
       "formattedName" : "Dripstone Caves",
       "id" : "174",
-      "texture" : "resources/images/biomeTile/DRIPSTONE_CAVES.png"
+      "texture" : "/biomeTile/DRIPSTONE_CAVES.png"
    },
    "END_BARRENS" : {
       "color" : "a8a38d",
       "formattedName" : "End Barrens",
       "id" : "43",
-      "texture" : "resources/images/biomeTile/END_BARRENS.png"
+      "texture" : "/biomeTile/END_BARRENS.png"
    },
    "END_HIGHLANDS" : {
       "color" : "ff0066",
       "formattedName" : "End Highlands",
       "id" : "42",
-      "texture" : "resources/images/biomeTile/END_HIGHLANDS.png"
+      "texture" : "/biomeTile/END_HIGHLANDS.png"
    },
    "END_MIDLANDS" : {
       "color" : "99003d",
       "formattedName" : "End Midlands",
       "id" : "41",
-      "texture" : "resources/images/biomeTile/END_MIDLANDS.png"
+      "texture" : "/biomeTile/END_MIDLANDS.png"
    },
    "ERODED_BADLANDS" : {
       "color" : "cc0000",
       "formattedName" : "Eroded Badlands",
       "id" : "165",
-      "texture" : "resources/images/biomeTile/ERODED_BADLANDS.png"
+      "texture" : "/biomeTile/ERODED_BADLANDS.png"
    },
    "FLOWER_FOREST" : {
       "color" : "3a7a09",
       "formattedName" : "Flower Forest",
       "id" : "132",
-      "texture" : "resources/images/biomeTile/FLOWER_FOREST.png"
+      "texture" : "/biomeTile/FLOWER_FOREST.png"
    },
    "FOREST" : {
       "color" : "448105",
       "formattedName" : "Forest",
       "id" : "4",
-      "texture" : "resources/images/biomeTile/FOREST.png"
+      "texture" : "/biomeTile/FOREST.png"
    },
    "FROZEN_OCEAN" : {
       "color" : "525f66",
       "formattedName" : "Frozen Ocean",
       "id" : "10",
-      "texture" : "resources/images/biomeTile/FROZEN_OCEAN.png"
+      "texture" : "/biomeTile/FROZEN_OCEAN.png"
    },
    "FROZEN_RIVER" : {
       "color" : "99daff",
       "formattedName" : "Frozen River",
       "id" : "11",
-      "texture" : "resources/images/biomeTile/FROZEN_RIVER.png"
+      "texture" : "/biomeTile/FROZEN_RIVER.png"
    },
    "GIANT_SPRUCE_TAIGA" : {
       "color" : "733818",
       "formattedName" : "Giant Spruce Taiga",
       "id" : "160",
-      "texture" : "resources/images/biomeTile/GIANT_SPRUCE_TAIGA.png"
+      "texture" : "/biomeTile/GIANT_SPRUCE_TAIGA.png"
    },
    "GIANT_SPRUCE_TAIGA_HILLS" : {
       "color" : "733818",
       "formattedName" : "Giant Spruce Taiga Hills",
       "id" : "161",
-      "texture" : "resources/images/biomeTile/GIANT_SPRUCE_TAIGA_HILLS.png"
+      "texture" : "/biomeTile/GIANT_SPRUCE_TAIGA_HILLS.png"
    },
    "GIANT_TREE_TAIGA" : {
       "color" : "495a3c",
       "formattedName" : "Giant Tree Taiga",
       "id" : "32",
-      "texture" : "resources/images/biomeTile/GIANT_TREE_TAIGA.png"
+      "texture" : "/biomeTile/GIANT_TREE_TAIGA.png"
    },
    "GIANT_TREE_TAIGA_HILLS" : {
       "color" : "495a3c",
       "formattedName" : "Giant Tree Taiga Hills",
       "id" : "33",
-      "texture" : "resources/images/biomeTile/GIANT_TREE_TAIGA_HILLS.png"
+      "texture" : "/biomeTile/GIANT_TREE_TAIGA_HILLS.png"
    },
    "GRAVELLY_MOUNTAINS" : {
       "color" : "6c6d6b",
       "formattedName" : "Gravelly Mountains",
       "id" : "131",
-      "texture" : "resources/images/biomeTile/GRAVELLY_MOUNTAINS.png"
+      "texture" : "/biomeTile/GRAVELLY_MOUNTAINS.png"
    },
    "ICE_SPIKES" : {
       "color" : "ccfffd",
       "formattedName" : "Ice Spikes",
       "id" : "140",
-      "texture" : "resources/images/biomeTile/ICE_SPIKES.png"
+      "texture" : "/biomeTile/ICE_SPIKES.png"
    },
    "JUNGLE" : {
       "color" : "007311",
       "formattedName" : "Jungle",
       "id" : "21",
-      "texture" : "resources/images/biomeTile/JUNGLE.png"
+      "texture" : "/biomeTile/JUNGLE.png"
    },
    "JUNGLE_EDGE" : {
       "color" : "007311",
       "formattedName" : "Jungle Edge",
       "id" : "23",
-      "texture" : "resources/images/biomeTile/JUNGLE_EDGE.png"
+      "texture" : "/biomeTile/JUNGLE_EDGE.png"
    },
    "JUNGLE_HILLS" : {
       "color" : "007311",
       "formattedName" : "Jungle Hills",
       "id" : "22",
-      "texture" : "resources/images/biomeTile/JUNGLE_HILLS.png"
+      "texture" : "/biomeTile/JUNGLE_HILLS.png"
    },
    "LUKEWARM_OCEAN" : {
       "color" : "1f6c99",
       "formattedName" : "Lukewarm Ocean",
       "id" : "45",
-      "texture" : "resources/images/biomeTile/LUKEWARM_OCEAN.png"
+      "texture" : "/biomeTile/LUKEWARM_OCEAN.png"
    },
    "LUSH CAVES" : {
       "color" : "163716",
       "formattedName" : "Lush Caves",
       "id" : "175",
-      "texture" : "resources/images/biomeTile/LUSH_CAVES.png"
+      "texture" : "/biomeTile/LUSH_CAVES.png"
    },
    "MODIFIED_BADLANDS_PLATEAU" : {
       "color" : "ff9999",
       "formattedName" : "Badlands Plateau+",
       "id" : "167",
-      "texture" : "resources/images/biomeTile/MODIFIED_BADLANDS_PLATEAU.png"
+      "texture" : "/biomeTile/MODIFIED_BADLANDS_PLATEAU.png"
    },
    "MODIFIED_GRAVELLY_MOUNTAINS" : {
       "color" : "ccc4a3",
       "formattedName" : "Gravelly Mountains+",
       "id" : "162",
-      "texture" : "resources/images/biomeTile/MODIFIED_GRAVELLY_MOUNTAINS.png"
+      "texture" : "/biomeTile/MODIFIED_GRAVELLY_MOUNTAINS.png"
    },
    "MODIFIED_JUNGLE" : {
       "color" : "007311",
       "formattedName" : "Jungle+",
       "id" : "149",
-      "texture" : "resources/images/biomeTile/MODIFIED_JUNGLE.png"
+      "texture" : "/biomeTile/MODIFIED_JUNGLE.png"
    },
    "MODIFIED_JUNGLE_EDGE" : {
       "color" : "007311",
       "formattedName" : "Jungle Edge+",
       "id" : "151",
-      "texture" : "resources/images/biomeTile/MODIFIED_JUNGLE_EDGE.png"
+      "texture" : "/biomeTile/MODIFIED_JUNGLE_EDGE.png"
    },
    "MODIFIED_WOODED_BADLANDS_PLATEAU" : {
       "color" : "ff6666",
       "formattedName" : "Wooded Badlands Plateau+",
       "id" : "166",
-      "texture" : "resources/images/biomeTile/MODIFIED_WOODED_BADLANDS_PLATEAU.png"
+      "texture" : "/biomeTile/MODIFIED_WOODED_BADLANDS_PLATEAU.png"
    },
    "MOUNTAINS" : {
       "color" : "44352c",
       "formattedName" : "Mountains",
       "id" : "3",
-      "texture" : "resources/images/biomeTile/MOUNTAINS.png"
+      "texture" : "/biomeTile/MOUNTAINS.png"
    },
    "MOUNTAIN_EDGE" : {
       "color" : "6cb223",
       "formattedName" : "Mountain Edge",
       "id" : "20",
-      "texture" : "resources/images/biomeTile/MOUNTAIN_EDGE.png"
+      "texture" : "/biomeTile/MOUNTAIN_EDGE.png"
    },
    "MUSHROOM_FIELDS" : {
       "color" : "9e8ba3",
       "formattedName" : "Mushroom Fields",
       "id" : "14",
-      "texture" : "resources/images/biomeTile/MUSHROOM_FIELDS.png"
+      "texture" : "/biomeTile/MUSHROOM_FIELDS.png"
    },
    "MUSHROOM_FIELDS_SHORE" : {
       "color" : "9e8ba3",
       "formattedName" : "Mushroom Fields Shore",
       "id" : "15",
-      "texture" : "resources/images/biomeTile/MUSHROOM_FIELDS_SHORE.png"
+      "texture" : "/biomeTile/MUSHROOM_FIELDS_SHORE.png"
    },
    "NETHER" : {
       "color" : "ff0000",
       "formattedName" : "Nether",
       "id" : "8",
-      "texture" : "resources/images/biomeTile/NETHER.png"
+      "texture" : "/biomeTile/NETHER.png"
    },
    "OCEAN" : {
       "color" : "1f2799",
       "formattedName" : "Ocean",
       "id" : "0",
-      "texture" : "resources/images/biomeTile/OCEAN.png"
+      "texture" : "/biomeTile/OCEAN.png"
    },
    "PLAINS" : {
       "color" : "29ac0c",
       "formattedName" : "Plains",
       "id" : "1",
-      "texture" : "resources/images/biomeTile/PLAINS.png"
+      "texture" : "/biomeTile/PLAINS.png"
    },
    "RIVER" : {
       "color" : "7aaecc",
       "formattedName" : "River",
       "id" : "7",
-      "texture" : "resources/images/biomeTile/RIVER.png"
+      "texture" : "/biomeTile/RIVER.png"
    },
    "SAVANNA" : {
       "color" : "899a12",
       "formattedName" : "Savanna",
       "id" : "35",
-      "texture" : "resources/images/biomeTile/SAVANNA.png"
+      "texture" : "/biomeTile/SAVANNA.png"
    },
    "SAVANNA_PLATEAU" : {
       "color" : "899a12",
       "formattedName" : "Savanna Plateau",
       "id" : "36",
-      "texture" : "resources/images/biomeTile/SAVANNA_PLATEAU.png"
+      "texture" : "/biomeTile/SAVANNA_PLATEAU.png"
    },
    "SHATTERED_SAVANNA" : {
       "color" : "899a12",
       "formattedName" : "Shattered Savanna",
       "id" : "163",
-      "texture" : "resources/images/biomeTile/SHATTERED_SAVANNA.png"
+      "texture" : "/biomeTile/SHATTERED_SAVANNA.png"
    },
    "SHATTERED_SAVANNA_PLATEAU" : {
       "color" : "899a12",
       "formattedName" : "Shattered Savanna Plateau",
       "id" : "164",
-      "texture" : "resources/images/biomeTile/SHATTERED_SAVANNA_PLATEAU.png"
+      "texture" : "/biomeTile/SHATTERED_SAVANNA_PLATEAU.png"
    },
    "SMALL_END_ISLANDS" : {
       "color" : "660029",
       "formattedName" : "Small End Islands",
       "id" : "40",
-      "texture" : "resources/images/biomeTile/SMALL_END_ISLANDS.png"
+      "texture" : "/biomeTile/SMALL_END_ISLANDS.png"
    },
    "SNOWY_BEACH" : {
       "color" : "cccfff",
       "formattedName" : "Snowy Beach",
       "id" : "26",
-      "texture" : "resources/images/biomeTile/SNOWY_BEACH.png"
+      "texture" : "/biomeTile/SNOWY_BEACH.png"
    },
    "SNOWY_MOUNTAINS" : {
       "color" : "a3bdcc",
       "formattedName" : "Snowy Mountains",
       "id" : "13",
-      "texture" : "resources/images/biomeTile/SNOWY_MOUNTAINS.png"
+      "texture" : "/biomeTile/SNOWY_MOUNTAINS.png"
    },
    "SNOWY_TAIGA" : {
       "color" : "baa3cc",
       "formattedName" : "Snowy Taiga",
       "id" : "30",
-      "texture" : "resources/images/biomeTile/SNOWY_TAIGA.png"
+      "texture" : "/biomeTile/SNOWY_TAIGA.png"
    },
    "SNOWY_TAIGA_HILLS" : {
       "color" : "e8ccff",
       "formattedName" : "Snowy Taiga Hills",
       "id" : "31",
-      "texture" : "resources/images/biomeTile/SNOWY_TAIGA_HILLS.png"
+      "texture" : "/biomeTile/SNOWY_TAIGA_HILLS.png"
    },
    "SNOWY_TAIGA_MOUNTAINS" : {
       "color" : "ffffff",
       "formattedName" : "Snowy Taiga Mountains",
       "id" : "158",
-      "texture" : "resources/images/biomeTile/SNOWY_TAIGA_MOUNTAINS.png"
+      "texture" : "/biomeTile/SNOWY_TAIGA_MOUNTAINS.png"
    },
    "SNOWY_TUNDRA" : {
       "color" : "7a9998",
       "formattedName" : "Snowy Tundra",
       "id" : "12",
-      "texture" : "resources/images/biomeTile/SNOWY_TUNDRA.png"
+      "texture" : "/biomeTile/SNOWY_TUNDRA.png"
    },
    "SOUL_SAND_VALLEY" : {
       "color" : "553b30",
       "formattedName" : "Soul Sand Valley",
       "id" : "170",
-      "texture" : "resources/images/biomeTile/SOUL_SAND_VALLEY.png"
+      "texture" : "/biomeTile/SOUL_SAND_VALLEY.png"
    },
    "STONE_SHORE" : {
       "color" : "6c6d6b",
       "formattedName" : "Stone Shore",
       "id" : "25",
-      "texture" : "resources/images/biomeTile/STONE_SHORE.png"
+      "texture" : "/biomeTile/STONE_SHORE.png"
    },
    "SUNFLOWER_PLAINS" : {
       "color" : "29ac0c",
       "formattedName" : "Sunflower Plains",
       "id" : "129",
-      "texture" : "resources/images/biomeTile/SUNFLOWER_PLAINS.png"
+      "texture" : "/biomeTile/SUNFLOWER_PLAINS.png"
    },
    "SWAMP" : {
       "color" : "003331",
       "formattedName" : "Swamp",
       "id" : "6",
-      "texture" : "resources/images/biomeTile/SWAMP.png"
+      "texture" : "/biomeTile/SWAMP.png"
    },
    "SWAMP_HILLS" : {
       "color" : "006663",
       "formattedName" : "Swamp Hills",
       "id" : "134",
-      "texture" : "resources/images/biomeTile/SWAMP_HILLS.png"
+      "texture" : "/biomeTile/SWAMP_HILLS.png"
    },
    "TAIGA" : {
       "color" : "495a3c",
       "formattedName" : "Taiga",
       "id" : "5",
-      "texture" : "resources/images/biomeTile/TAIGA.png"
+      "texture" : "/biomeTile/TAIGA.png"
    },
    "TAIGA_HILLS" : {
       "color" : "495a3c",
       "formattedName" : "Taiga Hills",
       "id" : "19",
-      "texture" : "resources/images/biomeTile/TAIGA_HILLS.png"
+      "texture" : "/biomeTile/TAIGA_HILLS.png"
    },
    "TAIGA_MOUNTAINS" : {
       "color" : "733818",
       "formattedName" : "Taiga Mountains",
       "id" : "133",
-      "texture" : "resources/images/biomeTile/TAIGA_MOUNTAINS.png"
+      "texture" : "/biomeTile/TAIGA_MOUNTAINS.png"
    },
    "TALL_BIRCH_FOREST" : {
       "color" : "448105",
       "formattedName" : "Tall Birch Forest",
       "id" : "155",
-      "texture" : "resources/images/biomeTile/TALL_BIRCH_FOREST.png"
+      "texture" : "/biomeTile/TALL_BIRCH_FOREST.png"
    },
    "TALL_BIRCH_HILLS" : {
       "color" : "448105",
       "formattedName" : "Tall Birch Hills",
       "id" : "156",
-      "texture" : "resources/images/biomeTile/TALL_BIRCH_HILLS.png"
+      "texture" : "/biomeTile/TALL_BIRCH_HILLS.png"
    },
    "THE_END" : {
       "color" : "cc0052",
       "formattedName" : "The End",
       "id" : "9",
-      "texture" : "resources/images/biomeTile/THE_END.png"
+      "texture" : "/biomeTile/THE_END.png"
    },
    "THE_VOID" : {
       "color" : "330a1b",
       "formattedName" : "The Void",
       "id" : "127",
-      "texture" : "resources/images/biomeTile/THE_VOID.png"
+      "texture" : "/biomeTile/THE_VOID.png"
    },
    "WARM_OCEAN" : {
       "color" : "52ccc8",
       "formattedName" : "Warm Ocean",
       "id" : "44",
-      "texture" : "resources/images/biomeTile/WARM_OCEAN.png"
+      "texture" : "/biomeTile/WARM_OCEAN.png"
    },
    "WARPED_FOREST" : {
       "color" : "1b8c8c",
       "formattedName" : "Warped Forest",
       "id" : "172",
-      "texture" : "resources/images/biomeTile/WARPED_FOREST.png"
+      "texture" : "/biomeTile/WARPED_FOREST.png"
    },
    "WOODED_BADLANDS_PLATEAU" : {
       "color" : "993d3d",
       "formattedName" : "Wooded Badlands Plateau",
       "id" : "38",
-      "texture" : "resources/images/biomeTile/WOODED_BADLANDS_PLATEAU.png"
+      "texture" : "/biomeTile/WOODED_BADLANDS_PLATEAU.png"
    },
    "WOODED_HILLS" : {
       "color" : "448105",
       "formattedName" : "Wooded Hills",
       "id" : "18",
-      "texture" : "resources/images/biomeTile/WOODED_HILLS.png"
+      "texture" : "/biomeTile/WOODED_HILLS.png"
    },
    "WOODED_MOUNTAINS" : {
       "color" : "44352c",
       "formattedName" : "Wooded Mountains",
       "id" : "34",
-      "texture" : "resources/images/biomeTile/WOODED_MOUNTAINS.png"
+      "texture" : "/biomeTile/WOODED_MOUNTAINS.png"
+   },
+   "INVALID" : {
+        "color": "ff0000",
+        "formattedName": "Invalid/Unknown biome",
+        "id": "-1",
+        "texture": "/biomeTile/INVALID.png"
    }
 }

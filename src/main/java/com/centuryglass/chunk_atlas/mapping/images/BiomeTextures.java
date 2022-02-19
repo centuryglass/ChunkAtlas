@@ -19,8 +19,8 @@ public class BiomeTextures
 {
     private static final String CLASSNAME = BiomeTextures.class.getName();
     
-    // Resource directory where all texture images are found:
-    private static final String TEXTURE_DIR = "biomeTile/";
+    // Texture paths starting with this string will be loaded  from JAR resources:
+    private static final String TEXTURE_RESOURCE_DIR = "resources/biomeTile/";
     
     /**
      * Loads all biome textures on construction.
@@ -30,22 +30,13 @@ public class BiomeTextures
         textures = new HashMap<>();
         for (Biome biome : Biome.values())
         {
-            final String texturePath = getTexturePath(biome);
+            String texturePath = biome.imageResource;
+            if (texturePath.startsWith(TEXTURE_RESOURCE_DIR))
+            {
+                texturePath = texturePath.substring(TEXTURE_RESOURCE_DIR.length());
+            }
             textures.put(biome, new Texture(texturePath));
         }
-    }
-    
-    /**
-     * Gets the path to a particular biome's texture resource file.
-     * 
-     * @param biome  The biome used to select the texture.
-     * 
-     * @return       The biome's texture image path. 
-     */
-    public static String getTexturePath(Biome biome)
-    {
-        Validate.notNull(biome, "Biome cannot be null.");
-        return TEXTURE_DIR + biome.name() + ".png";
     }
     
     /**

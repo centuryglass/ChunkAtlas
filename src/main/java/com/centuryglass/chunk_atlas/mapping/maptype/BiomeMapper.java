@@ -12,6 +12,7 @@ import com.centuryglass.chunk_atlas.worldinfo.ChunkData;
 import com.centuryglass.chunk_atlas.mapping.images.BiomeTextures;
 import java.awt.Color;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +26,10 @@ import org.bukkit.World;
  * worldinfo.Biome enum, and documented in the project's mapKey.png file.
  */
 public class BiomeMapper extends Mapper
-{       
+{
+    // Webserver resource path for biome tile images:
+    private final String RESOURCE_PATH = "resources/images/biomeTile/";
+    
     /**
      * Sets the mapper's base output directory and mapped region name on
      * construction.
@@ -66,10 +70,23 @@ public class BiomeMapper extends Mapper
         Set<KeyItem> key = new LinkedHashSet<>();
         encounteredBiomes.forEach((biome) ->
         {
+            String resourcePath = biome.imageResource;
+            if (! new File(resourcePath).isFile())
+            {
+                if (resourcePath.contains(File.pathSeparator))
+                {
+                    resourcePath = new File(RESOURCE_PATH).toString()
+                            + resourcePath.substring(resourcePath.lastIndexOf(File.pathSeparator) - 1);
+                }
+                else
+                {
+                    resourcePath = RESOURCE_PATH + File.pathSeparator + resourcePath;
+                }
+            }
             key.add(new KeyItem(biome.toString(), getMapType(),
                     getRegionName(),
-                    BiomeTextures.getTexturePath(biome),
-                    biome.getColor()));
+                    resourcePath, 
+                    biome.color));
         });
         return key;
     }

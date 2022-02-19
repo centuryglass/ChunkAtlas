@@ -36,5 +36,6 @@
         "ERROR": false,
         "RECENT_ACTIVITY": true,
         "STRUCTURE": true
-    }
+    },
+    "customBiomeFiles": []
 }

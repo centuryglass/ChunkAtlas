@@ -11,8 +11,12 @@ import com.centuryglass.chunk_atlas.util.ExtendedValidate;
 import com.centuryglass.chunk_atlas.util.JarResource;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
+import javax.imageio.ImageIO;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
 
 public class Texture 
 {
@@ -28,32 +32,35 @@ public class Texture
     {
         final String FN_NAME = "Texture";
         ExtendedValidate.notNullOrEmpty(texturePath, "Texture path");
-        final BufferedImage textureImage;
+        BufferedImage textureImage;
         try
         {
             textureImage = JarResource.readImageResource(texturePath);
+            
         }
         catch (IOException e)
         {
-            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                    "Opening texture image '{0}' failed.", texturePath);
-            textureData = null;
-            width = 0;
-            height = 0;
-            return;
+            // Loading from resources failed, try the file system next.        
+             try
+            {
+                File textureFile = new File(texturePath);
+                ExtendedValidate.fileExists(textureFile, "Biome texture image");
+                ImageInputStream stream = new FileImageInputStream(textureFile);
+                textureImage = ImageIO.read(stream);
+                if (textureImage == null) {
+                    throw new IOException("Failed to decode image file");
+                }
+            }
+            catch (IOException e2)
+            {
+                LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
+                        "Opening texture image '{0}' failed, {1}", new Object[]{texturePath, e2});
+                textureData = null;
+                width = 0;
+                height = 0;
+                return;
+            }
         }
-        if (textureImage == null)
-        {
-            LogConfig.getLogger().logp(Level.WARNING, CLASSNAME, FN_NAME,
-                    "Loading texture image '{0}' failed.", texturePath);
-            textureData = null;
-            width = 0;
-            height = 0;
-            return;
-            
-        }
-        
-        
         width = textureImage.getWidth();
         height = textureImage.getHeight();
         textureData = new Color[width][height];
